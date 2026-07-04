@@ -1,0 +1,117 @@
+Update the existing project. Do NOT rebuild or redesign the application from scratch. Only apply the following changes while preserving all existing functionality.
+
+====================================================
+LANGUAGE
+====================================================
+
+Translate the entire user interface into Russian.
+
+This includes, but is not limited to:
+
+- Navigation
+- Buttons
+- Forms
+- Authentication pages
+- Placeholders
+- Validation messages
+- Modal windows
+- Release pages
+- Rating section
+- Comments
+- Empty states
+- Error messages
+- Success messages
+
+Everything visible to the user should be in Russian.
+
+====================================================
+DESIGN UPDATE
+====================================================
+
+I will attach three reference images.
+
+Use them as the primary visual reference for updating the application's design.
+
+Do NOT copy the layouts pixel-by-pixel.
+
+Instead, reproduce the same visual language, including:
+
+- colors
+- spacing
+- typography
+- borders
+- shadows
+- rounded corners
+- cards
+- buttons
+- overall atmosphere
+
+Preserve all existing functionality.
+
+====================================================
+REFERENCE IMAGES
+====================================================
+
+Image 1:
+Shows how the Release (Song) Card should look.
+Use it as the primary reference for the design of release cards and the logo style.
+
+Image 2:
+Shows the overall appearance and style of the website.
+Use it as the reference for the general interface, layout, navigation, spacing, colors and visual language.
+
+Image 3:
+Shows the desired appearance of the rating sliders.
+Recreate the slider style while keeping the current functionality and scoring system unchanged.
+
+====================================================
+LOGO
+====================================================
+
+Redesign the "mzt" logo.
+
+The logo should match the style shown in Images 1 and 2.
+
+The logo in those references is composed only of stylized letters.
+
+Create the "mzt" logo in the same spirit:
+- lettering-based logo
+- similar typography style
+- similar visual weight
+- similar aesthetic
+
+Do NOT copy the original logo directly.
+Instead, create a unique "mzt" logo inspired by the same lettering style.
+
+====================================================
+APPLICATION MODE
+====================================================
+
+Rename the sidebar mode.
+
+Current name:
+
+Music Reviews
+
+New name:
+
+Мясо 30
+
+Only change the displayed name.
+
+Do not rename internal folders, routes, variables or application architecture unless necessary.
+
+====================================================
+IMPORTANT
+====================================================
+
+Focus on improving the visual design while preserving the existing architecture and functionality.
+
+Do not remove or rewrite working features.
+
+Only update:
+
+- Branding
+- Visual design
+- UI styling
+- Visible text

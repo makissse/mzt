@@ -5,14 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRegister, getGetMeQueryKey, useGetMe } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Disc } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
 const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters").max(32),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  username: z.string().min(3, "Минимум 3 символа").max(32),
+  password: z.string().min(6, "Минимум 6 символов"),
 });
 
 export default function Register() {
@@ -50,14 +49,18 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-12">
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <Disc className="h-16 w-16 text-primary" />
-          <h1 className="font-mono text-3xl font-bold tracking-tighter text-primary">mzt</h1>
+        <div className="flex flex-col items-center justify-center space-y-2">
+          <span
+            className="font-black italic text-white leading-none select-none"
+            style={{ fontSize: '2.8rem', letterSpacing: '-0.04em', fontStyle: 'italic' }}
+          >
+            mzt
+          </span>
         </div>
 
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="text-center font-mono text-sm text-muted-foreground uppercase tracking-widest">
-            Registration
+            Регистрация
           </div>
           
           <Form {...form}>
@@ -69,8 +72,8 @@ export default function Register() {
                   <FormItem>
                     <FormControl>
                       <Input 
-                        placeholder="Choose Username" 
-                        className="bg-card border-card-border h-12 text-center font-mono text-lg placeholder:text-muted-foreground focus-visible:ring-primary focus-visible:border-primary transition-all rounded-none" 
+                        placeholder="Придумайте никнейм" 
+                        className="bg-card border-card-border h-12 text-center font-mono text-lg placeholder:text-muted-foreground focus-visible:ring-primary focus-visible:border-primary transition-all" 
                         autoComplete="username"
                         {...field} 
                       />
@@ -87,8 +90,8 @@ export default function Register() {
                     <FormControl>
                       <Input 
                         type="password" 
-                        placeholder="Create Password" 
-                        className="bg-card border-card-border h-12 text-center font-mono text-lg placeholder:text-muted-foreground focus-visible:ring-primary focus-visible:border-primary transition-all rounded-none" 
+                        placeholder="Придумайте пароль" 
+                        className="bg-card border-card-border h-12 text-center font-mono text-lg placeholder:text-muted-foreground focus-visible:ring-primary focus-visible:border-primary transition-all" 
                         autoComplete="new-password"
                         {...field} 
                       />
@@ -100,17 +103,17 @@ export default function Register() {
               
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-mono font-bold text-lg rounded-none transition-all"
+                className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-mono font-bold text-lg transition-all"
                 disabled={register.isPending}
               >
-                {register.isPending ? "Registering..." : "Join"}
+                {register.isPending ? "Регистрация..." : "Зарегистрироваться"}
               </Button>
             </form>
           </Form>
           
           <div className="text-center">
             <Link href="/" className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors">
-              Already have access? (Login)
+              Уже есть аккаунт? Войти
             </Link>
           </div>
         </div>

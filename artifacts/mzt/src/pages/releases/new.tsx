@@ -13,19 +13,40 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { uploadFile } from '@/lib/upload';
 
+// Bug fix: track fields use loose strings; conditional validation applied via superRefine
 const trackSchema = z.object({
-  title: z.string().min(1, "Track title required"),
-  audioUrl: z.string().min(1, "Track audio required"),
+  title: z.string(),
+  audioUrl: z.string(),
 });
 
 const formSchema = z.object({
   type: z.enum([ReleaseInputType.single, ReleaseInputType.album]),
-  artist: z.string().min(1, "Artist name is required"),
-  title: z.string().min(1, "Release title is required"),
+  artist: z.string().min(1, "Укажите исполнителя"),
+  title: z.string().min(1, "Укажите название релиза"),
   description: z.string().optional(),
-  coverUrl: z.string().min(1, "Cover artwork is required"),
-  audioUrl: z.string().optional(), // Used for single
-  tracks: z.array(trackSchema).optional(), // Used for album
+  coverUrl: z.string().min(1, "Загрузите обложку"),
+  audioUrl: z.string().optional(),
+  tracks: z.array(trackSchema).optional(),
+}).superRefine((data, ctx) => {
+  if (data.type === ReleaseInputType.album) {
+    const tracks = data.tracks || [];
+    tracks.forEach((track, i) => {
+      if (!track.title || track.title.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Укажите название трека",
+          path: [`tracks`, i, 'title'],
+        });
+      }
+      if (!track.audioUrl || track.audioUrl.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Укажите аудио для трека",
+          path: [`tracks`, i, 'audioUrl'],
+        });
+      }
+    });
+  }
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -63,14 +84,12 @@ export default function NewRelease() {
       onChange(url);
     } catch (e) {
       console.error(e);
-      // In real app, show toast here
     } finally {
       setIsUploading(false);
     }
   };
 
   const onSubmit = (data: FormValues) => {
-    // Clean up data based on type
     const payload = {
       ...data,
       audioUrl: data.type === 'single' ? data.audioUrl : undefined,
@@ -92,21 +111,21 @@ export default function NewRelease() {
         className="mb-8 font-mono text-muted-foreground hover:text-primary pl-0"
         onClick={() => setLocation('/releases')}
       >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Collection
+        <ArrowLeft className="mr-2 h-4 w-4" /> Назад к коллекции
       </Button>
 
-      <h1 className="text-4xl font-bold font-sans tracking-tight mb-8">Add Release</h1>
+      <h1 className="text-4xl font-bold font-sans tracking-tight mb-8">Добавить релиз</h1>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
           
-          <div className="bg-card p-6 border border-border rounded-md">
+          <div className="bg-card p-6 border border-border rounded-xl">
             <FormField
               control={form.control}
               name="type"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Release Format</FormLabel>
+                  <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Формат релиза</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -117,13 +136,13 @@ export default function NewRelease() {
                         <FormControl>
                           <RadioGroupItem value="single" />
                         </FormControl>
-                        <FormLabel className="font-sans font-medium cursor-pointer">Single</FormLabel>
+                        <FormLabel className="font-sans font-medium cursor-pointer">Сингл</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="album" />
                         </FormControl>
-                        <FormLabel className="font-sans font-medium cursor-pointer">Album / EP</FormLabel>
+                        <FormLabel className="font-sans font-medium cursor-pointer">Альбом / EP</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -139,9 +158,9 @@ export default function NewRelease() {
                 name="artist"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Artist</FormLabel>
+                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Исполнитель</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Aphex Twin" className="font-sans text-lg bg-card rounded-none h-12 border-border focus-visible:ring-primary" {...field} />
+                      <Input placeholder="напр. Скриптонит" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -153,9 +172,9 @@ export default function NewRelease() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Title</FormLabel>
+                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Название</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Selected Ambient Works 85-92" className="font-sans text-lg bg-card rounded-none h-12 border-border focus-visible:ring-primary" {...field} />
+                      <Input placeholder="напр. Дом с нормальными явлениями" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -167,11 +186,11 @@ export default function NewRelease() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Description (Optional)</FormLabel>
+                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Описание (опционально)</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Context about this release..." 
-                        className="font-sans resize-none h-32 bg-card rounded-none border-border focus-visible:ring-primary" 
+                        placeholder="Контекст об этом релизе..." 
+                        className="font-sans resize-none h-32 bg-card rounded-lg border-border focus-visible:ring-primary" 
                         {...field} 
                         value={field.value || ''}
                       />
@@ -188,22 +207,22 @@ export default function NewRelease() {
                 name="coverUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Cover Artwork</FormLabel>
+                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Обложка</FormLabel>
                     <FormControl>
-                      <div className="relative group aspect-square bg-card border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center overflow-hidden">
+                      <div className="relative group aspect-square bg-card border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center overflow-hidden rounded-xl">
                         {field.value ? (
                           <>
-                            <img src={field.value} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover" />
+                            <img src={field.value} alt="Превью обложки" className="absolute inset-0 w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <Button type="button" variant="secondary" onClick={() => field.onChange('')} className="font-mono">
-                                Remove
+                                Удалить
                               </Button>
                             </div>
                           </>
                         ) : (
                           <div className="text-center p-6 flex flex-col items-center">
                             <Upload className="h-8 w-8 text-muted-foreground mb-4" />
-                            <p className="font-mono text-sm text-muted-foreground mb-4">Upload square image</p>
+                            <p className="font-mono text-sm text-muted-foreground mb-4">Загрузите квадратное изображение</p>
                             <Input 
                               type="file" 
                               accept="image/*" 
@@ -221,7 +240,7 @@ export default function NewRelease() {
                               disabled={isUploading}
                               onClick={() => document.getElementById('cover-upload')?.click()}
                             >
-                              {isUploading ? 'Uploading...' : 'Choose File'}
+                              {isUploading ? 'Загрузка...' : 'Выбрать файл'}
                             </Button>
                           </div>
                         )}
@@ -234,9 +253,9 @@ export default function NewRelease() {
             </div>
           </div>
 
-          {/* AUDIO SECTION */}
+          {/* АУДИО */}
           <div className="border-t border-border pt-10">
-            <h3 className="font-mono text-lg mb-6 text-primary uppercase tracking-widest">Audio Content</h3>
+            <h3 className="font-mono text-lg mb-6 text-primary uppercase tracking-widest">Аудио</h3>
             
             {releaseType === 'single' ? (
               <FormField
@@ -244,12 +263,12 @@ export default function NewRelease() {
                 name="audioUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Audio File</FormLabel>
+                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Аудиофайл</FormLabel>
                     <FormControl>
                       <div className="flex gap-4">
                         <Input 
-                          placeholder="https://... or upload" 
-                          className="font-mono bg-card rounded-none h-12" 
+                          placeholder="https://... или загрузите файл" 
+                          className="font-mono bg-card rounded-lg h-12" 
                           {...field} 
                           value={field.value || ''}
                         />
@@ -266,11 +285,11 @@ export default function NewRelease() {
                         <Button 
                           type="button" 
                           variant="secondary" 
-                          className="h-12 px-8 font-mono rounded-none"
+                          className="h-12 px-8 font-mono rounded-lg"
                           disabled={isUploading}
                           onClick={() => document.getElementById('single-audio')?.click()}
                         >
-                          <Upload className="h-4 w-4 mr-2" /> {isUploading ? '...' : 'Upload'}
+                          <Upload className="h-4 w-4 mr-2" /> {isUploading ? '...' : 'Загрузить'}
                         </Button>
                       </div>
                     </FormControl>
@@ -281,7 +300,7 @@ export default function NewRelease() {
             ) : (
               <div className="space-y-4">
                 {trackFields.map((field, index) => (
-                  <div key={field.id} className="flex gap-4 items-start bg-card p-4 border border-border">
+                  <div key={field.id} className="flex gap-4 items-start bg-card p-4 border border-border rounded-xl">
                     <div className="font-mono text-muted-foreground pt-3 w-6 text-right">
                       {index + 1}.
                     </div>
@@ -293,7 +312,7 @@ export default function NewRelease() {
                         render={({ field: inputField }) => (
                           <FormItem>
                             <FormControl>
-                              <Input placeholder="Track Title" className="font-sans bg-background rounded-none border-border" {...inputField} />
+                              <Input placeholder="Название трека" className="font-sans bg-background rounded-lg border-border" {...inputField} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -306,7 +325,7 @@ export default function NewRelease() {
                           <FormItem>
                             <FormControl>
                               <div className="flex gap-2">
-                                <Input placeholder="Audio URL" className="font-mono text-sm bg-background rounded-none border-border" {...inputField} />
+                                <Input placeholder="URL аудио" className="font-mono text-sm bg-background rounded-lg border-border" {...inputField} />
                                 <Input 
                                   type="file" 
                                   accept="audio/*" 
@@ -350,10 +369,10 @@ export default function NewRelease() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="w-full h-12 font-mono border-dashed border-2 hover:border-primary/50 hover:bg-transparent"
+                  className="w-full h-12 font-mono border-dashed border-2 hover:border-primary/50 hover:bg-transparent rounded-xl"
                   onClick={() => appendTrack({ title: '', audioUrl: '' })}
                 >
-                  <Plus className="h-4 w-4 mr-2" /> Add Track
+                  <Plus className="h-4 w-4 mr-2" /> Добавить трек
                 </Button>
               </div>
             )}
@@ -362,10 +381,10 @@ export default function NewRelease() {
           <div className="pt-8 border-t border-border flex justify-end">
             <Button 
               type="submit" 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono font-bold text-lg h-14 px-12 rounded-none transition-all"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono font-bold text-lg h-14 px-12 rounded-xl transition-all"
               disabled={createRelease.isPending || isUploading}
             >
-              {createRelease.isPending ? "Saving..." : "Save Release to Collection"}
+              {createRelease.isPending ? "Сохраняю..." : "Сохранить релиз"}
             </Button>
           </div>
         </form>

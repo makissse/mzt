@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useGetMe, useLogout, getGetMeQueryKey } from '@workspace/api-client-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { Disc, LogOut, Plus } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function AppSidebar() {
@@ -25,10 +25,13 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r border-border bg-sidebar">
       <SidebarHeader className="h-16 flex items-center px-4 border-b border-border">
-        <div className="flex items-center gap-2 font-mono font-bold text-2xl tracking-tighter text-primary">
-          <Disc className="h-6 w-6" />
-          <span>mzt</span>
-        </div>
+        <span
+          className="font-black italic text-white leading-none select-none cursor-pointer"
+          style={{ fontSize: '1.6rem', letterSpacing: '-0.04em', fontStyle: 'italic' }}
+          onClick={() => setLocation('/releases')}
+        >
+          mzt
+        </span>
       </SidebarHeader>
       
       <SidebarContent>
@@ -40,7 +43,7 @@ export function AppSidebar() {
                 isActive={location.pathname.startsWith('/releases')}
                 className="font-mono text-sm tracking-tight hover:text-primary transition-colors"
               >
-                Music Reviews
+                Мясо 30
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -58,7 +61,7 @@ export function AppSidebar() {
               className="text-muted-foreground hover:text-destructive transition-colors font-mono text-xs w-full flex justify-start"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Disconnect
+              Выйти
             </SidebarMenuButton>
           </div>
         )}
