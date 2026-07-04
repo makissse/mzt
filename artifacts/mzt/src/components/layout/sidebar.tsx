@@ -5,6 +5,12 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, Si
 import { LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
+function MztLogo() {
+  return (
+    <img src="/logo.png" alt="МЗТ" className="h-14 w-auto select-none" draggable={false} />
+  );
+}
+
 export function AppSidebar() {
   const [, setLocation] = useLocation();
   const [pathname] = useLocation();
@@ -25,13 +31,12 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r border-border bg-sidebar">
       <SidebarHeader className="h-16 flex items-center px-4 border-b border-border">
-        <span
-          className="font-black italic text-white leading-none select-none cursor-pointer"
-          style={{ fontSize: '1.6rem', letterSpacing: '-0.04em', fontStyle: 'italic' }}
+        <div
+          className="cursor-pointer select-none"
           onClick={() => setLocation('/releases')}
         >
-          mzt
-        </span>
+          <MztLogo />
+        </div>
       </SidebarHeader>
       
       <SidebarContent>

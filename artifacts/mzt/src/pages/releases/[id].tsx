@@ -102,19 +102,14 @@ function ScoreDisplay({ score, label }: { score: number | null | undefined, labe
 function ReviewSlider({ 
   field, 
   label, 
-  description 
 }: { 
   field: any, 
   label: string, 
-  description?: string 
 }) {
   return (
-    <FormItem className="space-y-3 bg-card/60 p-5 border border-border rounded-xl">
+    <FormItem className="space-y-2 bg-card/60 px-5 py-4 border border-border rounded-xl">
       <div className="flex justify-between items-center">
-        <div>
-          <FormLabel className="font-mono text-xs uppercase tracking-wider text-foreground/80">{label}</FormLabel>
-          {description && <p className="text-xs font-mono text-muted-foreground mt-0.5">{description}</p>}
-        </div>
+        <FormLabel className="font-mono text-xs uppercase tracking-wider text-foreground/80">{label}</FormLabel>
         <div className="text-2xl font-bold font-mono text-primary w-8 text-right tabular-nums">
           {field.value}
         </div>
@@ -123,16 +118,12 @@ function ReviewSlider({
         <Slider
           min={1}
           max={10}
-          step={1}
+          step={0.01}
           value={[field.value]}
-          onValueChange={(vals) => field.onChange(vals[0])}
-          className="py-2"
+          onValueChange={(vals) => field.onChange(Math.round(vals[0]))}
+          className="py-1"
         />
       </FormControl>
-      <div className="flex justify-between font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-        <span>Слабо (1)</span>
-        <span>Мастерски (10)</span>
-      </div>
       <FormMessage />
     </FormItem>
   );
@@ -358,35 +349,35 @@ export default function ReleaseDetail() {
                       control={form.control}
                       name="rhymes"
                       render={({ field }) => (
-                        <ReviewSlider field={field} label="Рифмы / Образы" description="Сложность, глубина, игра слов" />
+                        <ReviewSlider field={field} label="Рифмы / Образы" />
                       )}
                     />
                     <FormField
                       control={form.control}
                       name="structure"
                       render={({ field }) => (
-                        <ReviewSlider field={field} label="Структура / Ритмика" description="Аранжировка, темп, связность" />
+                        <ReviewSlider field={field} label="Структура / Ритмика" />
                       )}
                     />
                     <FormField
                       control={form.control}
                       name="styleExecution"
                       render={({ field }) => (
-                        <ReviewSlider field={field} label="Реализация стиля" description="Подача, флоу, техническое мастерство" />
+                        <ReviewSlider field={field} label="Реализация стиля" />
                       )}
                     />
                     <FormField
                       control={form.control}
                       name="individuality"
                       render={({ field }) => (
-                        <ReviewSlider field={field} label="Индивидуальность / Харизма" description="Оригинальность, уникальный голос" />
+                        <ReviewSlider field={field} label="Индивидуальность / Харизма" />
                       )}
                     />
                     <FormField
                       control={form.control}
                       name="atmosphere"
                       render={({ field }) => (
-                        <ReviewSlider field={field} label="Атмосфера / Вайб" description="Вайб, продакшн, погружение — множитель" />
+                        <ReviewSlider field={field} label="Атмосфера / Вайб" />
                       )}
                     />
                   </div>

@@ -122,7 +122,7 @@ export function AudioPlayer({ src }: { src: string }) {
         step={0.1}
         value={[currentTime]}
         onValueChange={seek}
-        className="w-full"
+        className="w-full mt-1.5"
       />
     </div>
   );

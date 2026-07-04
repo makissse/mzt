@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useLocation } from 'wouter';
+import React from "react";
+import { Link, useLocation } from "wouter";
 import {
   useListVideos,
   useListMovies,
@@ -14,26 +14,47 @@ import {
   type Video,
   type Movie,
   type RecommendationMusic,
-} from '@workspace/api-client-react';
-import { Plus, ExternalLink, PlayCircle, Film, Music2, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useQueryClient } from '@tanstack/react-query';
+} from "@workspace/api-client-react";
+import {
+  Plus,
+  ExternalLink,
+  PlayCircle,
+  Film,
+  Music2,
+  Trash2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useQueryClient } from "@tanstack/react-query";
 
 function isYouTubeUrl(url: string): boolean {
   if (!url) return false;
   try {
     const u = new URL(url);
-    return u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be');
+    return (
+      u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be")
+    );
   } catch {
     return false;
   }
 }
 
-function VideoThumbnail({ url, title }: { url?: string | null; title: string }) {
+function VideoThumbnail({
+  url,
+  title,
+}: {
+  url?: string | null;
+  title: string;
+}) {
   if (url) {
-    return <img src={url} alt={title} className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />;
+    return (
+      <img
+        src={url}
+        alt={title}
+        className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+      />
+    );
   }
   return (
     <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-background">
@@ -42,15 +63,23 @@ function VideoThumbnail({ url, title }: { url?: string | null; title: string }) 
   );
 }
 
-function SectionHeading({ title, icon: Icon }: { title: string; icon: React.ComponentType<{ className?: string }> }) {
+function SectionHeading({
+  title,
+  icon: Icon,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
   return (
     <div className="flex items-end justify-between gap-4">
       <div>
         <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-violet-200">
           <Icon className="h-3.5 w-3.5" />
-          Раздел
+          ADHD
         </div>
-        <h2 className="text-3xl font-bold tracking-tight text-white">{title}</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-white">
+          {title}
+        </h2>
       </div>
     </div>
   );
@@ -87,11 +116,16 @@ export default function RecommendationsDashboard() {
     const key = getListVideosQueryKey();
     await queryClient.cancelQueries({ queryKey: key });
     const snapshot = queryClient.getQueryData<Video[]>(key);
-    queryClient.setQueryData<Video[]>(key, (old) => old?.filter((v) => v.id !== id));
-    deleteVideo.mutate({ id }, {
-      onError: () => queryClient.setQueryData(key, snapshot),
-      onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
-    });
+    queryClient.setQueryData<Video[]>(key, (old) =>
+      old?.filter((v) => v.id !== id),
+    );
+    deleteVideo.mutate(
+      { id },
+      {
+        onError: () => queryClient.setQueryData(key, snapshot),
+        onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+      },
+    );
   };
 
   const handleDeleteMovie = async (e: React.MouseEvent, id: number) => {
@@ -100,11 +134,16 @@ export default function RecommendationsDashboard() {
     const key = getListMoviesQueryKey();
     await queryClient.cancelQueries({ queryKey: key });
     const snapshot = queryClient.getQueryData<Movie[]>(key);
-    queryClient.setQueryData<Movie[]>(key, (old) => old?.filter((m) => m.id !== id));
-    deleteMovie.mutate({ id }, {
-      onError: () => queryClient.setQueryData(key, snapshot),
-      onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
-    });
+    queryClient.setQueryData<Movie[]>(key, (old) =>
+      old?.filter((m) => m.id !== id),
+    );
+    deleteMovie.mutate(
+      { id },
+      {
+        onError: () => queryClient.setQueryData(key, snapshot),
+        onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+      },
+    );
   };
 
   const handleDeleteMusic = async (e: React.MouseEvent, id: number) => {
@@ -113,11 +152,16 @@ export default function RecommendationsDashboard() {
     const key = getListMusicQueryKey();
     await queryClient.cancelQueries({ queryKey: key });
     const snapshot = queryClient.getQueryData<RecommendationMusic[]>(key);
-    queryClient.setQueryData<RecommendationMusic[]>(key, (old) => old?.filter((m) => m.id !== id));
-    deleteMusic.mutate({ id }, {
-      onError: () => queryClient.setQueryData(key, snapshot),
-      onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
-    });
+    queryClient.setQueryData<RecommendationMusic[]>(key, (old) =>
+      old?.filter((m) => m.id !== id),
+    );
+    deleteMusic.mutate(
+      { id },
+      {
+        onError: () => queryClient.setQueryData(key, snapshot),
+        onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+      },
+    );
   };
 
   return (
@@ -127,9 +171,11 @@ export default function RecommendationsDashboard() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,85,247,0.16),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_35%)]" />
           <div className="relative flex items-start justify-between gap-6">
             <div className="max-w-2xl">
-              <h1 className="text-4xl font-bold tracking-tight text-white">Рекомендации</h1>
+              <h1 className="text-4xl font-bold tracking-tight text-white">
+                Рекомендации
+              </h1>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Подборки видео, фильмов и музыки. Более свободное, выразительное пространство для идей и находок.
+                Interzise: „The Sopranos”, „Game of Thrones” și filme cu spire.
               </p>
             </div>
             <Link href="/recommendations/new" className="shrink-0">
@@ -147,7 +193,10 @@ export default function RecommendationsDashboard() {
                 <div className="h-8 w-40 animate-pulse rounded-full bg-card" />
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {[...Array(3)].map((__, i) => (
-                    <div key={i} className="h-72 animate-pulse rounded-2xl bg-card" />
+                    <div
+                      key={i}
+                      className="h-72 animate-pulse rounded-2xl bg-card"
+                    />
                   ))}
                 </div>
               </div>
@@ -172,17 +221,31 @@ export default function RecommendationsDashboard() {
                       className="group relative block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40"
                     >
                       {currentUser && (
-                        <DeleteButton onClick={(e) => handleDeleteVideo(e, video.id)} />
+                        <DeleteButton
+                          onClick={(e) => handleDeleteVideo(e, video.id)}
+                        />
                       )}
-                      <VideoThumbnail url={video.thumbnailUrl} title={video.title} />
+                      <VideoThumbnail
+                        url={video.thumbnailUrl}
+                        title={video.title}
+                      />
                       <div className="space-y-3 p-5">
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="line-clamp-2 text-lg font-semibold text-white">{video.title}</h3>
-                          <Badge variant="outline" className="border-violet-500/30 text-violet-200">
+                          <h3 className="line-clamp-2 text-lg font-semibold text-white">
+                            {video.title}
+                          </h3>
+                          <Badge
+                            variant="outline"
+                            className="border-violet-500/30 text-violet-200"
+                          >
                             Видео
                           </Badge>
                         </div>
-                        {video.description && <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{video.description}</p>}
+                        {video.description && (
+                          <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
+                            {video.description}
+                          </p>
+                        )}
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 font-mono text-xs text-violet-200">
                             <ExternalLink className="h-3.5 w-3.5" />
@@ -210,23 +273,36 @@ export default function RecommendationsDashboard() {
               ) : (
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {movies.map((movie) => (
-                    <Card key={movie.id} className="group relative rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-violet-500/40">
+                    <Card
+                      key={movie.id}
+                      className="group relative rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-violet-500/40"
+                    >
                       {currentUser && (
-                        <DeleteButton onClick={(e) => handleDeleteMovie(e, movie.id)} />
+                        <DeleteButton
+                          onClick={(e) => handleDeleteMovie(e, movie.id)}
+                        />
                       )}
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-lg font-semibold text-white">{movie.title}</h3>
+                        <h3 className="text-lg font-semibold text-white">
+                          {movie.title}
+                        </h3>
                         <Badge className="bg-violet-600 text-white hover:bg-violet-600">
                           {movie.rating}/10
                         </Badge>
                       </div>
                       {movie.genre && (
-                        <p className="mt-2 font-mono text-xs uppercase tracking-wider text-violet-300">{movie.genre}</p>
+                        <p className="mt-2 font-mono text-xs uppercase tracking-wider text-violet-300">
+                          {movie.genre}
+                        </p>
                       )}
                       {movie.description ? (
-                        <p className="mt-3 line-clamp-4 text-sm leading-6 text-muted-foreground">{movie.description}</p>
+                        <p className="mt-3 line-clamp-4 text-sm leading-6 text-muted-foreground">
+                          {movie.description}
+                        </p>
                       ) : (
-                        <p className="mt-3 text-sm text-muted-foreground">Описание отсутствует.</p>
+                        <p className="mt-3 text-sm text-muted-foreground">
+                          Описание отсутствует.
+                        </p>
                       )}
                       {movie.createdBy && (
                         <p className="mt-3 font-mono text-[10px] text-muted-foreground">
@@ -248,13 +324,22 @@ export default function RecommendationsDashboard() {
               ) : (
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {music.map((item) => (
-                    <Link key={item.id} href={`/recommendations/music/${item.id}`}>
+                    <Link
+                      key={item.id}
+                      href={`/recommendations/music/${item.id}`}
+                    >
                       <Card className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40">
                         {currentUser && (
-                          <DeleteButton onClick={(e) => handleDeleteMusic(e, item.id)} />
+                          <DeleteButton
+                            onClick={(e) => handleDeleteMusic(e, item.id)}
+                          />
                         )}
                         {item.coverUrl ? (
-                          <img src={item.coverUrl} alt={`${item.artist} — ${item.title}`} className="h-56 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <img
+                            src={item.coverUrl}
+                            alt={`${item.artist} — ${item.title}`}
+                            className="h-56 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
                         ) : (
                           <div className="flex h-56 w-full items-center justify-center bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-background">
                             <Music2 className="h-12 w-12 text-violet-300" />
@@ -263,14 +348,25 @@ export default function RecommendationsDashboard() {
                         <div className="space-y-3 p-5">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <p className="truncate font-mono text-xs uppercase tracking-[0.2em] text-violet-200">{item.artist}</p>
-                              <h3 className="mt-1 line-clamp-2 text-lg font-semibold text-white">{item.title}</h3>
+                              <p className="truncate font-mono text-xs uppercase tracking-[0.2em] text-violet-200">
+                                {item.artist}
+                              </p>
+                              <h3 className="mt-1 line-clamp-2 text-lg font-semibold text-white">
+                                {item.title}
+                              </h3>
                             </div>
-                            <Badge variant="outline" className="border-violet-500/30 text-violet-200">
-                              {item.type === 'album' ? 'Альбом' : 'Сингл'}
+                            <Badge
+                              variant="outline"
+                              className="border-violet-500/30 text-violet-200"
+                            >
+                              {item.type === "album" ? "Альбом" : "Сингл"}
                             </Badge>
                           </div>
-                          {item.description && <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{item.description}</p>}
+                          {item.description && (
+                            <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
+                              {item.description}
+                            </p>
+                          )}
                           {item.createdBy && (
                             <p className="font-mono text-[10px] text-muted-foreground">
                               Добавил: {item.createdBy.username}

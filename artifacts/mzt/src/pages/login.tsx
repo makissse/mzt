@@ -57,13 +57,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-12">
-        <div className="flex flex-col items-center justify-center space-y-2">
-          <span
-            className="font-black italic text-white leading-none select-none"
-            style={{ fontSize: '2.8rem', letterSpacing: '-0.04em', fontStyle: 'italic' }}
-          >
-            mzt
-          </span>
+        <div className="flex flex-col items-center justify-center">
+          <img src="/logo.png" alt="МЗТ" className="h-40 w-auto select-none" draggable={false} />
         </div>
 
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
