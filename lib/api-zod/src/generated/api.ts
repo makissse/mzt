@@ -358,3 +358,249 @@ export const GetStatsResponse = zod.object({
 })
 
 
+/**
+ * @summary List video recommendations
+ */
+export const ListVideosResponseItem = zod.object({
+  "id": zod.number(),
+  "url": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+})
+export const ListVideosResponse = zod.array(ListVideosResponseItem)
+
+
+/**
+ * @summary Add a video recommendation
+ */
+
+
+
+
+export const CreateVideoBody = zod.object({
+  "url": zod.string().min(1),
+  "title": zod.string().min(1),
+  "description": zod.string().optional(),
+  "thumbnailUrl": zod.string().optional()
+})
+
+export const CreateVideoResponse = zod.object({
+  "id": zod.number(),
+  "url": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+})
+
+
+/**
+ * @summary Delete a video recommendation
+ */
+export const DeleteVideoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteVideoResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
+/**
+ * @summary List movie recommendations
+ */
+export const listMoviesResponseRatingMax = 10;
+
+
+
+export const ListMoviesResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "rating": zod.number().min(1).max(listMoviesResponseRatingMax),
+  "createdAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+})
+export const ListMoviesResponse = zod.array(ListMoviesResponseItem)
+
+
+/**
+ * @summary Add a movie recommendation
+ */
+
+export const createMovieBodyRatingMax = 10;
+
+
+
+export const CreateMovieBody = zod.object({
+  "title": zod.string().min(1),
+  "description": zod.string().optional(),
+  "rating": zod.number().min(1).max(createMovieBodyRatingMax)
+})
+
+export const createMovieResponseRatingMax = 10;
+
+
+
+export const CreateMovieResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "rating": zod.number().min(1).max(createMovieResponseRatingMax),
+  "createdAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+})
+
+
+/**
+ * @summary Delete a movie recommendation
+ */
+export const DeleteMovieParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteMovieResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
+/**
+ * @summary List music recommendations
+ */
+export const ListMusicResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['single', 'album']),
+  "artist": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+})
+export const ListMusicResponse = zod.array(ListMusicResponseItem)
+
+
+/**
+ * @summary Add a music recommendation
+ */
+
+
+
+
+export const CreateMusicBody = zod.object({
+  "type": zod.enum(['single', 'album']),
+  "artist": zod.string().min(1),
+  "title": zod.string().min(1),
+  "description": zod.string().optional(),
+  "coverUrl": zod.string().optional(),
+  "tracks": zod.array(zod.object({
+  "title": zod.string(),
+  "audioUrl": zod.string()
+})).optional()
+})
+
+export const CreateMusicResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['single', 'album']),
+  "artist": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+}).and(zod.object({
+  "tracks": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "audioUrl": zod.string(),
+  "order": zod.number()
+})).optional()
+}))
+
+
+/**
+ * @summary Get a music recommendation with tracks
+ */
+export const GetMusicParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetMusicResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['single', 'album']),
+  "artist": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+}).and(zod.object({
+  "tracks": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "audioUrl": zod.string(),
+  "order": zod.number()
+})).optional()
+}))
+
+
+/**
+ * @summary Delete a music recommendation
+ */
+export const DeleteMusicParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteMusicResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
+/**
+ * @summary Fetch YouTube video metadata
+ */
+
+
+
+export const FetchVideoMetaBody = zod.object({
+  "url": zod.string().min(1)
+})
+
+export const FetchVideoMetaResponse = zod.object({
+  "title": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish()
+})
+
+

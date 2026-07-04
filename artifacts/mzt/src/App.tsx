@@ -10,6 +10,9 @@ import Register from '@/pages/register';
 import ReleasesDashboard from '@/pages/releases/index';
 import NewRelease from '@/pages/releases/new';
 import ReleaseDetail from '@/pages/releases/[id]';
+import RecommendationsDashboard from '@/pages/recommendations/index';
+import NewRecommendation from '@/pages/recommendations/new';
+import RecommendationMusicDetail from '@/pages/recommendations/music/[id]';
 import { AppLayout } from '@/components/layout/app-layout';
 
 const queryClient = new QueryClient({
@@ -35,6 +38,15 @@ function Router() {
       </Route>
       <Route path="/releases/:id">
         {() => <AppLayout><ReleaseDetail /></AppLayout>}
+      </Route>
+      <Route path="/recommendations">
+        {() => <AppLayout><RecommendationsDashboard /></AppLayout>}
+      </Route>
+      <Route path="/recommendations/new">
+        {() => <AppLayout><NewRecommendation /></AppLayout>}
+      </Route>
+      <Route path="/recommendations/music/:id">
+        {() => <AppLayout><RecommendationMusicDetail /></AppLayout>}
       </Route>
       
       <Route component={NotFound} />

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { useLocation } from 'wouter';
 import { useGetMe, useLogout, getGetMeQueryKey } from '@workspace/api-client-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
@@ -7,14 +7,13 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function AppSidebar() {
   const [, setLocation] = useLocation();
+  const [pathname] = useLocation();
   const { data: user } = useGetMe();
   const logout = useLogout();
   const queryClient = useQueryClient();
-  const logoutFnRef = useRef(logout.mutate);
-  logoutFnRef.current = logout.mutate;
 
   const handleLogout = () => {
-    logoutFnRef.current(undefined, {
+    logout.mutate(undefined, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
         setLocation('/');
@@ -37,15 +36,24 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => setLocation('/releases')} 
-                isActive={location.pathname.startsWith('/releases')}
-                className="font-mono text-sm tracking-tight hover:text-primary transition-colors"
-              >
-                Мясо 30
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => setLocation('/releases')}
+                  isActive={pathname.startsWith('/releases')}
+                  className="font-mono text-sm tracking-tight hover:text-primary transition-colors"
+                >
+                  Мясо 30
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => setLocation('/recommendations')}
+                  isActive={pathname.startsWith('/recommendations')}
+                  className="font-mono text-sm tracking-tight hover:text-primary transition-colors"
+                >
+                  Рекомендации
+                </SidebarMenuButton>
+              </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

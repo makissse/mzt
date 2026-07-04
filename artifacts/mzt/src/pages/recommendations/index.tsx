@@ -1,0 +1,190 @@
+import React from 'react';
+import { Link, useLocation } from 'wouter';
+import { useListVideos, useListMovies, useListMusic } from '@workspace/api-client-react';
+import { Plus, ExternalLink, PlayCircle, Film, Music2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+function isYouTubeUrl(url: string): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be');
+  } catch {
+    return false;
+  }
+}
+
+function VideoThumbnail({ url, title }: { url?: string | null; title: string }) {
+  if (url) {
+    return <img src={url} alt={title} className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />;
+  }
+  return (
+    <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-background">
+      <PlayCircle className="h-10 w-10 text-violet-300" />
+    </div>
+  );
+}
+
+function SectionHeading({ title, icon: Icon }: { title: string; icon: React.ComponentType<{ className?: string }> }) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <div>
+        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-violet-200">
+          <Icon className="h-3.5 w-3.5" />
+          Раздел
+        </div>
+        <h2 className="text-3xl font-bold tracking-tight text-white">{title}</h2>
+      </div>
+    </div>
+  );
+}
+
+export default function RecommendationsDashboard() {
+  const { data: videos, isLoading: videosLoading } = useListVideos();
+  const { data: movies, isLoading: moviesLoading } = useListMovies();
+  const { data: music, isLoading: musicLoading } = useListMusic();
+
+  const loading = videosLoading || moviesLoading || musicLoading;
+
+  return (
+    <div className="min-h-screen p-8 pb-24">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <header className="relative overflow-hidden rounded-3xl border border-violet-500/20 bg-gradient-to-br from-violet-950/80 via-background to-background p-8 shadow-2xl">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,85,247,0.16),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_35%)]" />
+          <div className="relative flex items-start justify-between gap-6">
+            <div className="max-w-2xl">
+              <h1 className="text-4xl font-bold tracking-tight text-white">Рекомендации</h1>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                Подборки видео, фильмов и музыки. Более свободное, выразительное пространство для идей и находок.
+              </p>
+            </div>
+            <Link href="/recommendations/new" className="shrink-0">
+              <Button className="font-mono bg-violet-600 text-white hover:bg-violet-500">
+                <Plus className="mr-2 h-4 w-4" /> Добавить рекомендацию
+              </Button>
+            </Link>
+          </div>
+        </header>
+
+        {loading ? (
+          <div className="space-y-8">
+            {[...Array(3)].map((_, sectionIndex) => (
+              <div key={sectionIndex} className="space-y-4">
+                <div className="h-8 w-40 animate-pulse rounded-full bg-card" />
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {[...Array(3)].map((__, i) => (
+                    <div key={i} className="h-72 animate-pulse rounded-2xl bg-card" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-14">
+            <section className="space-y-5">
+              <SectionHeading title="Видео" icon={PlayCircle} />
+              {!videos || videos.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-violet-500/20 bg-card/50 p-10 text-center text-sm text-muted-foreground">
+                  Видео пока нет. Добавьте первую подборку.
+                </div>
+              ) : (
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {videos.map((video) => (
+                    <a
+                      key={video.id}
+                      href={video.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40"
+                    >
+                      <VideoThumbnail url={video.thumbnailUrl} title={video.title} />
+                      <div className="space-y-3 p-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="line-clamp-2 text-lg font-semibold text-white">{video.title}</h3>
+                          <Badge variant="outline" className="border-violet-500/30 text-violet-200">
+                            Видео
+                          </Badge>
+                        </div>
+                        {video.description && <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{video.description}</p>}
+                        <div className="flex items-center gap-2 font-mono text-xs text-violet-200">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          Открыть
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-5">
+              <SectionHeading title="Фильмы" icon={Film} />
+              {!movies || movies.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-violet-500/20 bg-card/50 p-10 text-center text-sm text-muted-foreground">
+                  Фильмы пока не добавлены. Будьте первым.
+                </div>
+              ) : (
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {movies.map((movie) => (
+                    <Card key={movie.id} className="rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-violet-500/40">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-lg font-semibold text-white">{movie.title}</h3>
+                        <Badge className="bg-violet-600 text-white hover:bg-violet-600">
+                          {movie.rating}/10
+                        </Badge>
+                      </div>
+                      {movie.description ? (
+                        <p className="mt-3 line-clamp-4 text-sm leading-6 text-muted-foreground">{movie.description}</p>
+                      ) : (
+                        <p className="mt-3 text-sm text-muted-foreground">Описание отсутствует.</p>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-5">
+              <SectionHeading title="Музыка" icon={Music2} />
+              {!music || music.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-violet-500/20 bg-card/50 p-10 text-center text-sm text-muted-foreground">
+                  Музыкальных рекомендаций пока нет.
+                </div>
+              ) : (
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {music.map((item) => (
+                    <Link key={item.id} href={`/recommendations/music/${item.id}`}>
+                      <Card className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40">
+                        {item.coverUrl ? (
+                          <img src={item.coverUrl} alt={`${item.artist} — ${item.title}`} className="h-56 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        ) : (
+                          <div className="flex h-56 w-full items-center justify-center bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-background">
+                            <Music2 className="h-12 w-12 text-violet-300" />
+                          </div>
+                        )}
+                        <div className="space-y-3 p-5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate font-mono text-xs uppercase tracking-[0.2em] text-violet-200">{item.artist}</p>
+                              <h3 className="mt-1 line-clamp-2 text-lg font-semibold text-white">{item.title}</h3>
+                            </div>
+                            <Badge variant="outline" className="border-violet-500/30 text-violet-200">
+                              {item.type === 'album' ? 'Альбом' : 'Сингл'}
+                            </Badge>
+                          </div>
+                          {item.description && <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{item.description}</p>}
+                        </div>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

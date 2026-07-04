@@ -20,6 +20,8 @@ tags:
     description: File uploads
   - name: stats
     description: Platform statistics
+  - name: recommendations
+    description: Recommendations mode
 paths:
   /healthz:
     get:
@@ -264,6 +266,225 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Stats"
+
+  /recommendations/videos:
+    get:
+      operationId: listVideos
+      tags: [recommendations]
+      summary: List video recommendations
+      responses:
+        "200":
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+    post:
+      operationId: createVideo
+      tags: [recommendations]
+      summary: Add a video recommendation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoInput"
+      responses:
+        "201":
+          description: Video created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recommendations/videos/{id}:
+    delete:
+      operationId: deleteVideo
+      tags: [recommendations]
+      summary: Delete a video recommendation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /recommendations/movies:
+    get:
+      operationId: listMovies
+      tags: [recommendations]
+      summary: List movie recommendations
+      responses:
+        "200":
+          description: List of movies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movie"
+    post:
+      operationId: createMovie
+      tags: [recommendations]
+      summary: Add a movie recommendation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovieInput"
+      responses:
+        "201":
+          description: Movie created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recommendations/movies/{id}:
+    delete:
+      operationId: deleteMovie
+      tags: [recommendations]
+      summary: Delete a movie recommendation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /recommendations/music:
+    get:
+      operationId: listMusic
+      tags: [recommendations]
+      summary: List music recommendations
+      responses:
+        "200":
+          description: List of music
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecommendationMusic"
+    post:
+      operationId: createMusic
+      tags: [recommendations]
+      summary: Add a music recommendation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecommendationMusicInput"
+      responses:
+        "201":
+          description: Music created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecommendationMusicDetail"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recommendations/music/{id}:
+    get:
+      operationId: getMusic
+      tags: [recommendations]
+      summary: Get a music recommendation with tracks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Music detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecommendationMusicDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteMusic
+      tags: [recommendations]
+      summary: Delete a music recommendation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /recommendations/fetch-video-meta:
+    post:
+      operationId: fetchVideoMeta
+      tags: [recommendations]
+      summary: Fetch YouTube video metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoUrlInput"
+      responses:
+        "200":
+          description: Metadata fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoMeta"
+        "422":
+          description: Could not fetch metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
@@ -576,3 +797,195 @@ components:
         - totalReleases
         - totalReviews
         - recentReleases
+
+    Video:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        thumbnailUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - url
+        - title
+        - createdAt
+        - createdBy
+
+    VideoInput:
+      type: object
+      properties:
+        url:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        thumbnailUrl:
+          type: string
+      required:
+        - url
+        - title
+
+    VideoUrlInput:
+      type: object
+      properties:
+        url:
+          type: string
+          minLength: 1
+      required:
+        - url
+
+    VideoMeta:
+      type: object
+      properties:
+        title:
+          type: ["string", "null"]
+        thumbnailUrl:
+          type: ["string", "null"]
+
+    Movie:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 10
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - title
+        - rating
+        - createdAt
+        - createdBy
+
+    MovieInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 10
+      required:
+        - title
+        - rating
+
+    RecommendationTrack:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        audioUrl:
+          type: string
+        order:
+          type: integer
+      required:
+        - id
+        - title
+        - audioUrl
+        - order
+
+    RecommendationTrackInput:
+      type: object
+      properties:
+        title:
+          type: string
+        audioUrl:
+          type: string
+      required:
+        - title
+        - audioUrl
+
+    RecommendationMusic:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [single, album]
+        artist:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        coverUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - type
+        - artist
+        - title
+        - createdAt
+        - createdBy
+
+    RecommendationMusicDetail:
+      allOf:
+        - $ref: "#/components/schemas/RecommendationMusic"
+        - type: object
+          properties:
+            tracks:
+              type: array
+              items:
+                $ref: "#/components/schemas/RecommendationTrack"
+
+    RecommendationMusicInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [single, album]
+        artist:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        coverUrl:
+          type: string
+        tracks:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecommendationTrackInput"
+      required:
+        - type
+        - artist
+        - title

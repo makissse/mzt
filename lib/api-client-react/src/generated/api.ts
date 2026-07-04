@@ -23,14 +23,23 @@ import type {
   AuthInput,
   ErrorResponse,
   HealthStatus,
+  Movie,
+  MovieInput,
   OkResponse,
+  RecommendationMusic,
+  RecommendationMusicDetail,
+  RecommendationMusicInput,
   Release,
   ReleaseDetail,
   ReleaseInput,
   Review,
   ReviewInput,
   Stats,
-  User
+  User,
+  Video,
+  VideoInput,
+  VideoMeta,
+  VideoUrlInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -938,4 +947,802 @@ export function useGetStats<TData = Awaited<ReturnType<typeof getStats>>, TError
 
 
 
+
+export const getListVideosUrl = () => {
+
+
+
+
+  return `/api/recommendations/videos`
+}
+
+/**
+ * @summary List video recommendations
+ */
+export const listVideos = async ( options?: RequestInit): Promise<Video[]> => {
+
+  return customFetch<Video[]>(getListVideosUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListVideosQueryKey = () => {
+    return [
+    `/api/recommendations/videos`
+    ] as const;
+    }
+
+
+export const getListVideosQueryOptions = <TData = Awaited<ReturnType<typeof listVideos>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listVideos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListVideosQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listVideos>>> = ({ signal }) => listVideos({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listVideos>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListVideosQueryResult = NonNullable<Awaited<ReturnType<typeof listVideos>>>
+export type ListVideosQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List video recommendations
+ */
+
+export function useListVideos<TData = Awaited<ReturnType<typeof listVideos>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listVideos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListVideosQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateVideoUrl = () => {
+
+
+
+
+  return `/api/recommendations/videos`
+}
+
+/**
+ * @summary Add a video recommendation
+ */
+export const createVideo = async (videoInput: VideoInput, options?: RequestInit): Promise<Video> => {
+
+  return customFetch<Video>(getCreateVideoUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(videoInput)
+  }
+);}
+
+
+
+
+export const getCreateVideoMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideo>>, TError,{data: BodyType<VideoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createVideo>>, TError,{data: BodyType<VideoInput>}, TContext> => {
+
+const mutationKey = ['createVideo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createVideo>>, {data: BodyType<VideoInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createVideo(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateVideoMutationResult = NonNullable<Awaited<ReturnType<typeof createVideo>>>
+    export type CreateVideoMutationBody = BodyType<VideoInput>
+    export type CreateVideoMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Add a video recommendation
+ */
+export const useCreateVideo = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideo>>, TError,{data: BodyType<VideoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createVideo>>,
+        TError,
+        {data: BodyType<VideoInput>},
+        TContext
+      > => {
+      return useMutation(getCreateVideoMutationOptions(options));
+    }
+
+export const getDeleteVideoUrl = (id: number,) => {
+
+
+
+
+  return `/api/recommendations/videos/${id}`
+}
+
+/**
+ * @summary Delete a video recommendation
+ */
+export const deleteVideo = async (id: number, options?: RequestInit): Promise<OkResponse> => {
+
+  return customFetch<OkResponse>(getDeleteVideoUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteVideoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteVideo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVideo>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteVideo(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteVideoMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVideo>>>
+
+    export type DeleteVideoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a video recommendation
+ */
+export const useDeleteVideo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteVideo>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteVideoMutationOptions(options));
+    }
+
+export const getListMoviesUrl = () => {
+
+
+
+
+  return `/api/recommendations/movies`
+}
+
+/**
+ * @summary List movie recommendations
+ */
+export const listMovies = async ( options?: RequestInit): Promise<Movie[]> => {
+
+  return customFetch<Movie[]>(getListMoviesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMoviesQueryKey = () => {
+    return [
+    `/api/recommendations/movies`
+    ] as const;
+    }
+
+
+export const getListMoviesQueryOptions = <TData = Awaited<ReturnType<typeof listMovies>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMovies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMoviesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMovies>>> = ({ signal }) => listMovies({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMovies>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMoviesQueryResult = NonNullable<Awaited<ReturnType<typeof listMovies>>>
+export type ListMoviesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List movie recommendations
+ */
+
+export function useListMovies<TData = Awaited<ReturnType<typeof listMovies>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMovies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMoviesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateMovieUrl = () => {
+
+
+
+
+  return `/api/recommendations/movies`
+}
+
+/**
+ * @summary Add a movie recommendation
+ */
+export const createMovie = async (movieInput: MovieInput, options?: RequestInit): Promise<Movie> => {
+
+  return customFetch<Movie>(getCreateMovieUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(movieInput)
+  }
+);}
+
+
+
+
+export const getCreateMovieMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMovie>>, TError,{data: BodyType<MovieInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createMovie>>, TError,{data: BodyType<MovieInput>}, TContext> => {
+
+const mutationKey = ['createMovie'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMovie>>, {data: BodyType<MovieInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createMovie(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateMovieMutationResult = NonNullable<Awaited<ReturnType<typeof createMovie>>>
+    export type CreateMovieMutationBody = BodyType<MovieInput>
+    export type CreateMovieMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Add a movie recommendation
+ */
+export const useCreateMovie = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMovie>>, TError,{data: BodyType<MovieInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createMovie>>,
+        TError,
+        {data: BodyType<MovieInput>},
+        TContext
+      > => {
+      return useMutation(getCreateMovieMutationOptions(options));
+    }
+
+export const getDeleteMovieUrl = (id: number,) => {
+
+
+
+
+  return `/api/recommendations/movies/${id}`
+}
+
+/**
+ * @summary Delete a movie recommendation
+ */
+export const deleteMovie = async (id: number, options?: RequestInit): Promise<OkResponse> => {
+
+  return customFetch<OkResponse>(getDeleteMovieUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteMovieMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMovie>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteMovie>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteMovie'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMovie>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteMovie(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteMovieMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMovie>>>
+
+    export type DeleteMovieMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a movie recommendation
+ */
+export const useDeleteMovie = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMovie>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteMovie>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteMovieMutationOptions(options));
+    }
+
+export const getListMusicUrl = () => {
+
+
+
+
+  return `/api/recommendations/music`
+}
+
+/**
+ * @summary List music recommendations
+ */
+export const listMusic = async ( options?: RequestInit): Promise<RecommendationMusic[]> => {
+
+  return customFetch<RecommendationMusic[]>(getListMusicUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMusicQueryKey = () => {
+    return [
+    `/api/recommendations/music`
+    ] as const;
+    }
+
+
+export const getListMusicQueryOptions = <TData = Awaited<ReturnType<typeof listMusic>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMusic>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMusicQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMusic>>> = ({ signal }) => listMusic({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMusic>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMusicQueryResult = NonNullable<Awaited<ReturnType<typeof listMusic>>>
+export type ListMusicQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List music recommendations
+ */
+
+export function useListMusic<TData = Awaited<ReturnType<typeof listMusic>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMusic>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMusicQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateMusicUrl = () => {
+
+
+
+
+  return `/api/recommendations/music`
+}
+
+/**
+ * @summary Add a music recommendation
+ */
+export const createMusic = async (recommendationMusicInput: RecommendationMusicInput, options?: RequestInit): Promise<RecommendationMusicDetail> => {
+
+  return customFetch<RecommendationMusicDetail>(getCreateMusicUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(recommendationMusicInput)
+  }
+);}
+
+
+
+
+export const getCreateMusicMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMusic>>, TError,{data: BodyType<RecommendationMusicInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createMusic>>, TError,{data: BodyType<RecommendationMusicInput>}, TContext> => {
+
+const mutationKey = ['createMusic'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMusic>>, {data: BodyType<RecommendationMusicInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createMusic(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateMusicMutationResult = NonNullable<Awaited<ReturnType<typeof createMusic>>>
+    export type CreateMusicMutationBody = BodyType<RecommendationMusicInput>
+    export type CreateMusicMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Add a music recommendation
+ */
+export const useCreateMusic = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMusic>>, TError,{data: BodyType<RecommendationMusicInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createMusic>>,
+        TError,
+        {data: BodyType<RecommendationMusicInput>},
+        TContext
+      > => {
+      return useMutation(getCreateMusicMutationOptions(options));
+    }
+
+export const getGetMusicUrl = (id: number,) => {
+
+
+
+
+  return `/api/recommendations/music/${id}`
+}
+
+/**
+ * @summary Get a music recommendation with tracks
+ */
+export const getMusic = async (id: number, options?: RequestInit): Promise<RecommendationMusicDetail> => {
+
+  return customFetch<RecommendationMusicDetail>(getGetMusicUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMusicQueryKey = (id: number,) => {
+    return [
+    `/api/recommendations/music/${id}`
+    ] as const;
+    }
+
+
+export const getGetMusicQueryOptions = <TData = Awaited<ReturnType<typeof getMusic>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMusic>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMusicQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMusic>>> = ({ signal }) => getMusic(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMusic>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMusicQueryResult = NonNullable<Awaited<ReturnType<typeof getMusic>>>
+export type GetMusicQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a music recommendation with tracks
+ */
+
+export function useGetMusic<TData = Awaited<ReturnType<typeof getMusic>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMusic>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMusicQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDeleteMusicUrl = (id: number,) => {
+
+
+
+
+  return `/api/recommendations/music/${id}`
+}
+
+/**
+ * @summary Delete a music recommendation
+ */
+export const deleteMusic = async (id: number, options?: RequestInit): Promise<OkResponse> => {
+
+  return customFetch<OkResponse>(getDeleteMusicUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteMusicMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMusic>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteMusic>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteMusic'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMusic>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteMusic(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteMusicMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMusic>>>
+
+    export type DeleteMusicMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a music recommendation
+ */
+export const useDeleteMusic = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMusic>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteMusic>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteMusicMutationOptions(options));
+    }
+
+export const getFetchVideoMetaUrl = () => {
+
+
+
+
+  return `/api/recommendations/fetch-video-meta`
+}
+
+/**
+ * @summary Fetch YouTube video metadata
+ */
+export const fetchVideoMeta = async (videoUrlInput: VideoUrlInput, options?: RequestInit): Promise<VideoMeta> => {
+
+  return customFetch<VideoMeta>(getFetchVideoMetaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(videoUrlInput)
+  }
+);}
+
+
+
+
+export const getFetchVideoMetaMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof fetchVideoMeta>>, TError,{data: BodyType<VideoUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof fetchVideoMeta>>, TError,{data: BodyType<VideoUrlInput>}, TContext> => {
+
+const mutationKey = ['fetchVideoMeta'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof fetchVideoMeta>>, {data: BodyType<VideoUrlInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  fetchVideoMeta(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type FetchVideoMetaMutationResult = NonNullable<Awaited<ReturnType<typeof fetchVideoMeta>>>
+    export type FetchVideoMetaMutationBody = BodyType<VideoUrlInput>
+    export type FetchVideoMetaMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Fetch YouTube video metadata
+ */
+export const useFetchVideoMeta = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof fetchVideoMeta>>, TError,{data: BodyType<VideoUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof fetchVideoMeta>>,
+        TError,
+        {data: BodyType<VideoUrlInput>},
+        TContext
+      > => {
+      return useMutation(getFetchVideoMetaMutationOptions(options));
+    }
 

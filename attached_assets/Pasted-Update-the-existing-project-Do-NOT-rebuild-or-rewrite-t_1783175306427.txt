@@ -1,0 +1,191 @@
+Update the existing project. Do NOT rebuild or rewrite the application from scratch. Only apply the changes below while preserving all existing functionality and architecture.
+
+====================================================
+GLOBAL REQUIREMENTS
+====================================================
+
+- All UI text must be in Russian.
+- Keep existing working features intact.
+- Do not refactor architecture unless necessary for fixes.
+- Maintain modular, scalable structure.
+
+====================================================
+BUG FIXES
+====================================================
+
+1. USERNAME ALREADY TAKEN MESSAGE
+
+During registration, when a username is already taken, the system does NOT show any error message.
+
+Fix:
+- Display a clear error message in Russian: "Этот никнейм уже занят"
+- Prevent account creation if username is taken
+- Ensure validation works before submission
+
+====================================================
+
+2. LOGOUT NOT WORKING
+
+The "Logout" button does nothing.
+
+Fix:
+- Ensure proper session termination
+- After logout, redirect user to home page
+- Verify auth state is cleared correctly
+- Do NOT rely on page refresh hacks
+
+====================================================
+
+3. AUDIO / YOUTUBE LINKS NOT WORKING
+
+When a user provides an external link (e.g. YouTube), it does not open or behave correctly.
+
+Fix:
+- External links must open correctly in a new tab
+- YouTube links should be properly clickable and playable when possible
+- Ensure URL handling is correct and not broken by sanitization
+
+====================================================
+
+4. AUDIO PLAYER UI ISSUE
+
+The audio player is too small and unusable:
+- Volume slider is broken or outside bounds
+
+Fix:
+- Increase player size
+- Ensure volume control is fully visible and usable
+- Improve responsive layout of audio controls
+
+====================================================
+MODE SYSTEM
+====================================================
+
+The application has multiple modes in the sidebar.
+
+Currently existing mode:
+- "Мясо 30"
+
+Add a new mode:
+
+====================================================
+NEW MODE: "РЕКОМЕНДАЦИИ"
+====================================================
+
+This mode must have a visually distinct style from "Мясо 30".
+
+It should feel more expressive / creative / engaging.
+
+====================================================
+RECOMMENDATIONS MODE STRUCTURE
+====================================================
+
+This mode contains 3 content types:
+
+------------------------------------
+1. VIDEO
+------------------------------------
+
+Fields:
+- Video link (YouTube preferred)
+- Optional description
+- Optional title (if auto-fetch fails)
+
+Requirements:
+- Automatically fetch video title from YouTube if possible
+- Automatically fetch thumbnail (preview image)
+- If auto-fetch fails, allow manual title input
+- Clicking the item must open the video in a new tab
+- UI must be fully in Russian
+
+------------------------------------
+2. MOVIES
+------------------------------------
+
+Fields:
+- Title (required)
+- Description (optional)
+- Rating (10-point scale)
+
+Requirements:
+- Clean UI for movie cards
+- Rating system from 1 to 10
+- All text in Russian
+
+------------------------------------
+3. MUSIC
+------------------------------------
+
+Fields:
+- Title (required)
+- Artist (required)
+- Optional description
+- Type selector:
+  - Single
+  - Album / EP
+
+Requirements:
+- Must support both Singles and Albums
+- Album/EP should allow multiple tracks
+- Each track contains:
+  - Title
+  - External URL OR uploaded audio file
+- Audio must play correctly in UI
+
+====================================================
+DESIGN REQUIREMENTS
+====================================================
+
+- "Рекомендации" must have a different visual identity from "Мясо 30"
+- More expressive and visually engaging
+- Keep dark theme consistent
+- Use modern UI components
+- Maintain readability and clean layout
+
+====================================================
+IMAGE SUPPORT (IF APPLICABLE)
+====================================================
+
+For video items:
+- Use YouTube thumbnails if available
+- Display preview images in cards
+
+====================================================
+NAVIGATION
+====================================================
+
+Sidebar must contain:
+
+- Logo
+- Modes list:
+  - Мясо 30
+  - Рекомендации
+
+Switching modes must not reload the page.
+
+====================================================
+IMPORTANT RULES
+====================================================
+
+- Do NOT break existing working features
+- Do NOT rewrite authentication system
+- Do NOT change database schema unless required for bug fixes
+- Fix only what is necessary
+- Keep system stable and production-ready
+
+====================================================
+FINAL GOAL
+====================================================
+
+A stable multi-mode application with:
+
+- Russian UI
+- Working authentication (register/login/logout)
+- Fixed username validation
+- Fixed audio system and external links
+- Improved audio player UI
+- Mode "Мясо 30"
+- New mode "Рекомендации" with:
+  - Video (YouTube-based, auto thumbnail + title)
+  - Movies (title + description + rating)
+  - Music (single/album system with tracks)

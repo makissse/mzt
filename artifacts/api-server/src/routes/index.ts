@@ -5,6 +5,7 @@ import releasesRouter from "./releases";
 import reviewsRouter from "./reviews";
 import uploadRouter from "./upload";
 import statsRouter from "./stats";
+import recommendationsRouter from "./recommendations";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(releasesRouter);
 router.use(reviewsRouter);
 router.use(uploadRouter);
 router.use(statsRouter);
+router.use(recommendationsRouter);
 
 export default router;

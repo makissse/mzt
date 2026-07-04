@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { AlertCircle } from 'lucide-react';
 
 const registerSchema = z.object({
   username: z.string().min(3, "Минимум 3 символа").max(32),
@@ -35,11 +36,18 @@ export default function Register() {
     },
   });
 
+  const [apiError, setApiError] = React.useState<string | null>(null);
+
   const onSubmit = (data: z.infer<typeof registerSchema>) => {
+    setApiError(null);
     register.mutate({ data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
         setLocation('/releases');
+      },
+      onError: (err) => {
+        const message = (err as any)?.data?.error ?? (err as Error)?.message ?? 'Не удалось зарегистрироваться';
+        setApiError(message);
       }
     });
   };
@@ -110,6 +118,13 @@ export default function Register() {
               </Button>
             </form>
           </Form>
+
+          {apiError && (
+            <div className="flex items-center justify-center gap-2 font-mono text-xs text-destructive text-center bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>{apiError}</span>
+            </div>
+          )}
           
           <div className="text-center">
             <Link href="/" className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors">

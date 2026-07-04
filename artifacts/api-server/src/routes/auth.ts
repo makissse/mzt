@@ -29,7 +29,7 @@ router.post("/auth/register", async (req, res) => {
     .limit(1);
 
   if (existing.length > 0) {
-    res.status(400).json({ error: "Username already taken" });
+    res.status(400).json({ error: "Этот никнейм уже занят" });
     return;
   }
 

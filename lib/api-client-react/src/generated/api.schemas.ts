@@ -195,3 +195,117 @@ export interface Stats {
   recentReleases: Release[];
 }
 
+export interface Video {
+  id: number;
+  url: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  createdAt: string;
+  createdBy: User;
+}
+
+export interface VideoInput {
+  /** @minLength 1 */
+  url: string;
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+}
+
+export interface VideoUrlInput {
+  /** @minLength 1 */
+  url: string;
+}
+
+export interface VideoMeta {
+  /** @nullable */
+  title?: string | null;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+}
+
+export interface Movie {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  rating: number;
+  createdAt: string;
+  createdBy: User;
+}
+
+export interface MovieInput {
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  rating: number;
+}
+
+export interface RecommendationTrack {
+  id: number;
+  title: string;
+  audioUrl: string;
+  order: number;
+}
+
+export interface RecommendationTrackInput {
+  title: string;
+  audioUrl: string;
+}
+
+export type RecommendationMusicType = typeof RecommendationMusicType[keyof typeof RecommendationMusicType];
+
+
+export const RecommendationMusicType = {
+  single: 'single',
+  album: 'album',
+} as const;
+
+export interface RecommendationMusic {
+  id: number;
+  type: RecommendationMusicType;
+  artist: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  coverUrl?: string | null;
+  createdAt: string;
+  createdBy: User;
+}
+
+export type RecommendationMusicDetail = RecommendationMusic & {
+  tracks?: RecommendationTrack[];
+};
+
+export type RecommendationMusicInputType = typeof RecommendationMusicInputType[keyof typeof RecommendationMusicInputType];
+
+
+export const RecommendationMusicInputType = {
+  single: 'single',
+  album: 'album',
+} as const;
+
+export interface RecommendationMusicInput {
+  type: RecommendationMusicInputType;
+  /** @minLength 1 */
+  artist: string;
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  coverUrl?: string;
+  tracks?: RecommendationTrackInput[];
+}
+

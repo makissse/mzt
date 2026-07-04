@@ -12,7 +12,7 @@ import {
   useGetMe
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2, Disc } from 'lucide-react';
+import { ArrowLeft, Trash2, Disc, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,6 +29,60 @@ const reviewSchema = z.object({
 });
 
 type ReviewFormValues = z.infer<typeof reviewSchema>;
+
+function isYouTubeUrl(url: string): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be');
+  } catch {
+    return false;
+  }
+}
+
+function isAudioFileUrl(url: string): boolean {
+  if (!url) return false;
+  if (url.startsWith('/api/uploads/')) return true;
+  try {
+    const u = new URL(url);
+    const pathname = u.pathname.toLowerCase();
+    return /\.(mp3|mp4|m4a|ogg|wav|flac|aac|webm|weba)(\?.*)?$/.test(pathname);
+  } catch {
+    return false;
+  }
+}
+
+function AudioLink({ url, label }: { url: string, label: string }) {
+  if (isYouTubeUrl(url)) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-mono text-sm transition-colors"
+      >
+        <ExternalLink className="h-4 w-4" /> Открыть на YouTube
+      </a>
+    );
+  }
+  if (!isAudioFileUrl(url)) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-lg font-mono text-sm transition-colors"
+      >
+        <ExternalLink className="h-4 w-4" /> {label}
+      </a>
+    );
+  }
+  return (
+    <div className="w-full bg-card border border-border rounded-lg p-3 flex items-center gap-3">
+      <audio src={url} controls className="w-full h-11" />
+    </div>
+  );
+}
 
 function ScoreDisplay({ score, label }: { score: number | null | undefined, label: string }) {
   if (score === null || score === undefined) {
@@ -221,22 +275,26 @@ export default function ReleaseDetail() {
                 <h3 className="font-mono text-sm uppercase tracking-widest text-muted-foreground mb-4 border-b border-border pb-2">Аудио</h3>
                 
                 {release.type === 'single' && release.audioUrl && (
-                  <div className="bg-card p-4 border border-border rounded-xl flex items-center justify-between">
-                    <span className="font-sans font-medium">{release.title}</span>
-                    <audio src={release.audioUrl} controls className="h-8 max-w-[200px]" />
+                  <div className="bg-card p-4 border border-border rounded-xl flex items-center justify-between gap-4">
+                    <span className="font-sans font-medium truncate">{release.title}</span>
+                    <div className="flex-shrink-0">
+                      <AudioLink url={release.audioUrl} label="Открыть ссылку" />
+                    </div>
                   </div>
                 )}
 
                 {release.type === 'album' && release.tracks && release.tracks.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {release.tracks.map((track, i) => (
-                      <div key={track.id} className="bg-card p-3 border border-border rounded-xl flex items-center justify-between group hover:border-primary/30 transition-colors">
+                      <div key={track.id} className="bg-card p-4 border border-border rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:border-primary/30 transition-colors">
                         <div className="flex items-center gap-4">
                           <span className="font-mono text-muted-foreground text-sm w-6 text-right">{i + 1}.</span>
                           <span className="font-sans font-medium">{track.title}</span>
                         </div>
                         {track.audioUrl && (
-                          <audio src={track.audioUrl} controls className="h-8 max-w-[200px] opacity-50 group-hover:opacity-100 transition-opacity" />
+                          <div className="w-full md:w-auto md:min-w-[320px] flex-shrink-0">
+                            <AudioLink url={track.audioUrl} label="Открыть ссылку" />
+                          </div>
                         )}
                       </div>
                     ))}
