@@ -1,10 +1,25 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
-import { useListVideos, useListMovies, useListMusic } from '@workspace/api-client-react';
-import { Plus, ExternalLink, PlayCircle, Film, Music2 } from 'lucide-react';
+import {
+  useListVideos,
+  useListMovies,
+  useListMusic,
+  useGetMe,
+  useDeleteVideo,
+  useDeleteMovie,
+  useDeleteMusic,
+  getListVideosQueryKey,
+  getListMoviesQueryKey,
+  getListMusicQueryKey,
+  type Video,
+  type Movie,
+  type RecommendationMusic,
+} from '@workspace/api-client-react';
+import { Plus, ExternalLink, PlayCircle, Film, Music2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useQueryClient } from '@tanstack/react-query';
 
 function isYouTubeUrl(url: string): boolean {
   if (!url) return false;
@@ -41,12 +56,69 @@ function SectionHeading({ title, icon: Icon }: { title: string; icon: React.Comp
   );
 }
 
+function DeleteButton({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-red-400 opacity-0 transition-opacity hover:bg-black/80 hover:text-red-300 group-hover:opacity-100"
+      title="Удалить"
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+    </button>
+  );
+}
+
 export default function RecommendationsDashboard() {
   const { data: videos, isLoading: videosLoading } = useListVideos();
   const { data: movies, isLoading: moviesLoading } = useListMovies();
   const { data: music, isLoading: musicLoading } = useListMusic();
+  const { data: currentUser } = useGetMe();
+  const queryClient = useQueryClient();
+
+  const deleteVideo = useDeleteVideo();
+  const deleteMovie = useDeleteMovie();
+  const deleteMusic = useDeleteMusic();
 
   const loading = videosLoading || moviesLoading || musicLoading;
+
+  const handleDeleteVideo = async (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = getListVideosQueryKey();
+    await queryClient.cancelQueries({ queryKey: key });
+    const snapshot = queryClient.getQueryData<Video[]>(key);
+    queryClient.setQueryData<Video[]>(key, (old) => old?.filter((v) => v.id !== id));
+    deleteVideo.mutate({ id }, {
+      onError: () => queryClient.setQueryData(key, snapshot),
+      onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+    });
+  };
+
+  const handleDeleteMovie = async (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = getListMoviesQueryKey();
+    await queryClient.cancelQueries({ queryKey: key });
+    const snapshot = queryClient.getQueryData<Movie[]>(key);
+    queryClient.setQueryData<Movie[]>(key, (old) => old?.filter((m) => m.id !== id));
+    deleteMovie.mutate({ id }, {
+      onError: () => queryClient.setQueryData(key, snapshot),
+      onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+    });
+  };
+
+  const handleDeleteMusic = async (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = getListMusicQueryKey();
+    await queryClient.cancelQueries({ queryKey: key });
+    const snapshot = queryClient.getQueryData<RecommendationMusic[]>(key);
+    queryClient.setQueryData<RecommendationMusic[]>(key, (old) => old?.filter((m) => m.id !== id));
+    deleteMusic.mutate({ id }, {
+      onError: () => queryClient.setQueryData(key, snapshot),
+      onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+    });
+  };
 
   return (
     <div className="min-h-screen p-8 pb-24">
@@ -97,8 +169,11 @@ export default function RecommendationsDashboard() {
                       href={video.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40"
+                      className="group relative block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40"
                     >
+                      {currentUser && (
+                        <DeleteButton onClick={(e) => handleDeleteVideo(e, video.id)} />
+                      )}
                       <VideoThumbnail url={video.thumbnailUrl} title={video.title} />
                       <div className="space-y-3 p-5">
                         <div className="flex items-start justify-between gap-3">
@@ -108,9 +183,16 @@ export default function RecommendationsDashboard() {
                           </Badge>
                         </div>
                         {video.description && <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{video.description}</p>}
-                        <div className="flex items-center gap-2 font-mono text-xs text-violet-200">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          Открыть
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 font-mono text-xs text-violet-200">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Открыть
+                          </div>
+                          {video.createdBy && (
+                            <span className="font-mono text-[10px] text-muted-foreground">
+                              Добавил: {video.createdBy.username}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </a>
@@ -128,17 +210,28 @@ export default function RecommendationsDashboard() {
               ) : (
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {movies.map((movie) => (
-                    <Card key={movie.id} className="rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-violet-500/40">
+                    <Card key={movie.id} className="group relative rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-violet-500/40">
+                      {currentUser && (
+                        <DeleteButton onClick={(e) => handleDeleteMovie(e, movie.id)} />
+                      )}
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-lg font-semibold text-white">{movie.title}</h3>
                         <Badge className="bg-violet-600 text-white hover:bg-violet-600">
                           {movie.rating}/10
                         </Badge>
                       </div>
+                      {movie.genre && (
+                        <p className="mt-2 font-mono text-xs uppercase tracking-wider text-violet-300">{movie.genre}</p>
+                      )}
                       {movie.description ? (
                         <p className="mt-3 line-clamp-4 text-sm leading-6 text-muted-foreground">{movie.description}</p>
                       ) : (
                         <p className="mt-3 text-sm text-muted-foreground">Описание отсутствует.</p>
+                      )}
+                      {movie.createdBy && (
+                        <p className="mt-3 font-mono text-[10px] text-muted-foreground">
+                          Добавил: {movie.createdBy.username}
+                        </p>
                       )}
                     </Card>
                   ))}
@@ -156,7 +249,10 @@ export default function RecommendationsDashboard() {
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {music.map((item) => (
                     <Link key={item.id} href={`/recommendations/music/${item.id}`}>
-                      <Card className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40">
+                      <Card className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40">
+                        {currentUser && (
+                          <DeleteButton onClick={(e) => handleDeleteMusic(e, item.id)} />
+                        )}
                         {item.coverUrl ? (
                           <img src={item.coverUrl} alt={`${item.artist} — ${item.title}`} className="h-56 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         ) : (
@@ -175,6 +271,11 @@ export default function RecommendationsDashboard() {
                             </Badge>
                           </div>
                           {item.description && <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{item.description}</p>}
+                          {item.createdBy && (
+                            <p className="font-mono text-[10px] text-muted-foreground">
+                              Добавил: {item.createdBy.username}
+                            </p>
+                          )}
                         </div>
                       </Card>
                     </Link>

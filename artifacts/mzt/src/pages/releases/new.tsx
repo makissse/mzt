@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { uploadFile } from '@/lib/upload';
+import { toast } from 'sonner';
 
 // Bug fix: track fields use loose strings; conditional validation applied via superRefine
 const trackSchema = z.object({
@@ -83,7 +84,8 @@ export default function NewRelease() {
       const url = await uploadFile(file);
       onChange(url);
     } catch (e) {
-      console.error(e);
+      const message = e instanceof Error ? e.message : 'Ошибка загрузки файла';
+      toast.error(message);
     } finally {
       setIsUploading(false);
     }

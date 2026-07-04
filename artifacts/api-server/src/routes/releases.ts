@@ -223,11 +223,6 @@ router.delete("/releases/:id", requireAuth, async (req, res) => {
     return;
   }
 
-  if (release.createdById !== req.session.userId) {
-    res.status(403).json({ error: "You can only delete your own releases" });
-    return;
-  }
-
   await db.delete(releasesTable).where(eq(releasesTable.id, id));
   res.json({ ok: true });
 });

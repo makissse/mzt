@@ -105,11 +105,6 @@ router.delete("/recommendations/videos/:id", requireAuth, async (req, res) => {
     return;
   }
 
-  if (video.createdById !== req.session.userId) {
-    res.status(403).json({ error: "You can only delete your own videos" });
-    return;
-  }
-
   await db.delete(videosTable).where(eq(videosTable.id, id));
   res.json({ ok: true });
 });
@@ -131,6 +126,7 @@ router.get("/recommendations/movies", async (_req, res) => {
       id: row.movie.id,
       title: row.movie.title,
       description: row.movie.description,
+      genre: row.movie.genre,
       rating: row.movie.rating,
       createdAt: row.movie.createdAt,
       createdBy: row.user as { id: number; username: string; createdAt: Date },
@@ -141,10 +137,10 @@ router.get("/recommendations/movies", async (_req, res) => {
 });
 
 router.post("/recommendations/movies", requireAuth, async (req, res) => {
-  const { title, description, rating } = req.body ?? {};
+  const { title, description, genre, rating } = req.body ?? {};
 
-  if (!title || typeof rating !== "number" || rating < 1 || rating > 10) {
-    res.status(400).json({ error: "title and rating 1-10 are required" });
+  if (!title || !genre || typeof rating !== "number" || rating < 1 || rating > 10) {
+    res.status(400).json({ error: "title, genre and rating 1-10 are required" });
     return;
   }
 
@@ -153,6 +149,7 @@ router.post("/recommendations/movies", requireAuth, async (req, res) => {
     .values({
       title,
       description: description || null,
+      genre,
       rating,
       createdById: req.session.userId!,
     })
@@ -164,6 +161,7 @@ router.post("/recommendations/movies", requireAuth, async (req, res) => {
     id: movie.id,
     title: movie.title,
     description: movie.description,
+    genre: movie.genre,
     rating: movie.rating,
     createdAt: movie.createdAt,
     createdBy,
@@ -185,11 +183,6 @@ router.delete("/recommendations/movies/:id", requireAuth, async (req, res) => {
 
   if (!movie) {
     res.status(404).json({ error: "Movie not found" });
-    return;
-  }
-
-  if (movie.createdById !== req.session.userId) {
-    res.status(403).json({ error: "You can only delete your own movies" });
     return;
   }
 
@@ -228,8 +221,8 @@ router.get("/recommendations/music", async (_req, res) => {
 router.post("/recommendations/music", requireAuth, async (req, res) => {
   const { type, artist, title, description, coverUrl, tracks } = req.body ?? {};
 
-  if (!type || !artist || !title) {
-    res.status(400).json({ error: "type, artist, title are required" });
+  if (!type || !title) {
+    res.status(400).json({ error: "type and title are required" });
     return;
   }
 
@@ -349,11 +342,6 @@ router.delete("/recommendations/music/:id", requireAuth, async (req, res) => {
 
   if (!music) {
     res.status(404).json({ error: "Music not found" });
-    return;
-  }
-
-  if (music.createdById !== req.session.userId) {
-    res.status(403).json({ error: "You can only delete your own music" });
     return;
   }
 

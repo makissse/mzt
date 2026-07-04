@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
@@ -66,6 +67,7 @@ function App() {
           <Router />
         </WouterRouter>
         <Toaster />
+        <Sonner theme="dark" richColors />
       </TooltipProvider>
     </QueryClientProvider>
   );

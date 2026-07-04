@@ -7,6 +7,7 @@ export const moviesTable = pgTable("movies", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
+  genre: text("genre").notNull().default(''),
   rating: integer("rating").notNull(),
   createdById: integer("created_by_id").notNull().references(() => usersTable.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),

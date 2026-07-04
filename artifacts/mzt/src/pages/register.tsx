@@ -3,7 +3,7 @@ import { useLocation, Link } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRegister, getGetMeQueryKey, useGetMe } from '@workspace/api-client-react';
+import { useRegister, getGetMeQueryKey, useGetMe, storeAuthToken } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,8 +41,10 @@ export default function Register() {
   const onSubmit = (data: z.infer<typeof registerSchema>) => {
     setApiError(null);
     register.mutate({ data }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+      onSuccess: (userData) => {
+        const token = (userData as any).authToken;
+        if (token) storeAuthToken(token);
+        queryClient.setQueryData(getGetMeQueryKey(), userData);
         setLocation('/releases');
       },
       onError: (err) => {

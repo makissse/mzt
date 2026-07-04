@@ -12,6 +12,8 @@ export interface Movie {
   title: string;
   /** @nullable */
   description?: string | null;
+  /** @minLength 1 */
+  genre: string;
   /**
      * @minimum 1
      * @maximum 10

@@ -10,8 +10,7 @@ import type { RecommendationTrackInput } from './recommendationTrackInput';
 
 export interface RecommendationMusicInput {
   type: RecommendationMusicInputType;
-  /** @minLength 1 */
-  artist: string;
+  artist?: string;
   /** @minLength 1 */
   title: string;
   description?: string;

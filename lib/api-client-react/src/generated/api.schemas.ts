@@ -233,6 +233,8 @@ export interface Movie {
   title: string;
   /** @nullable */
   description?: string | null;
+  /** @minLength 1 */
+  genre: string;
   /**
      * @minimum 1
      * @maximum 10
@@ -246,6 +248,8 @@ export interface MovieInput {
   /** @minLength 1 */
   title: string;
   description?: string;
+  /** @minLength 1 */
+  genre: string;
   /**
      * @minimum 1
      * @maximum 10
@@ -300,8 +304,7 @@ export const RecommendationMusicInputType = {
 
 export interface RecommendationMusicInput {
   type: RecommendationMusicInputType;
-  /** @minLength 1 */
-  artist: string;
+  artist?: string;
   /** @minLength 1 */
   title: string;
   description?: string;

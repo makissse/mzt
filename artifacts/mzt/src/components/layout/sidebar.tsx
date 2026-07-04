@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'wouter';
-import { useGetMe, useLogout, getGetMeQueryKey } from '@workspace/api-client-react';
+import { useGetMe, useLogout, getGetMeQueryKey, clearAuthToken } from '@workspace/api-client-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,7 +15,8 @@ export function AppSidebar() {
   const handleLogout = () => {
     logout.mutate(undefined, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+        clearAuthToken();
+        queryClient.removeQueries({ queryKey: getGetMeQueryKey() });
         setLocation('/');
       }
     });

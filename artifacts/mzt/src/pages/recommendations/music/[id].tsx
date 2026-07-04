@@ -6,6 +6,7 @@ import { useGetMe, useGetMusic, useDeleteMusic, getGetMusicQueryKey } from '@wor
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { AudioPlayer } from '@/components/audio-player';
 
 function isYouTubeUrl(url: string): boolean {
   if (!url) return false;
@@ -36,14 +37,14 @@ function AudioLink({ url, label }: { url: string; label: string }) {
       </a>
     );
   }
-  if (!isAudioFileUrl(url)) {
-    return (
-      <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 font-mono text-sm text-secondary-foreground transition-colors hover:bg-secondary/80">
-        <Music2 className="h-4 w-4" /> {label}
-      </a>
-    );
+  if (isAudioFileUrl(url)) {
+    return <AudioPlayer src={url} />;
   }
-  return <audio src={url} controls className="w-full" />;
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 font-mono text-sm text-secondary-foreground transition-colors hover:bg-secondary/80">
+      <Music2 className="h-4 w-4" /> {label}
+    </a>
+  );
 }
 
 export default function RecommendationMusicDetail() {
@@ -93,7 +94,7 @@ export default function RecommendationMusicDetail() {
             <div className="p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-200">{music.artist}</p>
+                  {music.artist && <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-200">{music.artist}</p>}
                   <h1 className="mt-2 text-4xl font-bold tracking-tight text-white">{music.title}</h1>
                 </div>
                 <Badge className="bg-violet-600 text-white hover:bg-violet-600">
@@ -104,7 +105,7 @@ export default function RecommendationMusicDetail() {
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Добавил</span>
                 <span className="font-mono text-sm text-white">{music.createdBy.username}</span>
-                {isCreator && (
+                {user && (
                   <Button variant="outline" className="ml-auto text-destructive hover:text-destructive" onClick={handleDelete}>
                     <Trash2 className="mr-2 h-4 w-4" /> Удалить
                   </Button>

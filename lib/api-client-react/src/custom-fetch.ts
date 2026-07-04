@@ -18,6 +18,30 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
 
+// ---------------------------------------------------------------------------
+// Cookie-free auth fallback (Replit iframe preview)
+// ---------------------------------------------------------------------------
+const MZT_TOKEN_KEY = "mzt-auth-token";
+
+/** Persist a server-issued auth token so it survives page refreshes. */
+export function storeAuthToken(token: string): void {
+  if (typeof sessionStorage !== "undefined") {
+    sessionStorage.setItem(MZT_TOKEN_KEY, token);
+  }
+}
+
+/** Remove the stored auth token (call on logout). */
+export function clearAuthToken(): void {
+  if (typeof sessionStorage !== "undefined") {
+    sessionStorage.removeItem(MZT_TOKEN_KEY);
+  }
+}
+
+export function getStoredAuthToken(): string | null {
+  if (typeof sessionStorage === "undefined") return null;
+  return sessionStorage.getItem(MZT_TOKEN_KEY);
+}
+
 /**
  * Set a base URL that is prepended to every relative request URL
  * (i.e. paths that start with `/`).
@@ -356,6 +380,14 @@ export async function customFetch<T = unknown>(
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
+  }
+
+  // Cookie-free auth fallback: attach the stored token as a custom header so
+  // the server can authenticate requests even when the browser blocks cookies
+  // (e.g. Replit's iframe preview with third-party cookie restrictions).
+  const storedToken = getStoredAuthToken();
+  if (storedToken && !headers.has("x-auth-token")) {
+    headers.set("x-auth-token", storedToken);
   }
 
   const requestInfo = { method, url: resolveUrl(input) };

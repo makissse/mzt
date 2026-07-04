@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { createAuthToken, deleteAuthToken } from "../lib/auth-tokens";
 
 const router = Router();
 
@@ -45,8 +46,9 @@ router.post("/auth/register", async (req, res) => {
     });
 
   req.session.userId = user.id;
+  const authToken = createAuthToken(user.id);
 
-  res.status(201).json(user);
+  res.status(201).json({ ...user, authToken });
 });
 
 router.post("/auth/login", async (req, res) => {
@@ -76,15 +78,19 @@ router.post("/auth/login", async (req, res) => {
   }
 
   req.session.userId = user.id;
+  const authToken = createAuthToken(user.id);
 
   res.json({
     id: user.id,
     username: user.username,
     createdAt: user.createdAt,
+    authToken,
   });
 });
 
 router.post("/auth/logout", (req, res) => {
+  const token = req.headers["x-auth-token"] as string | undefined;
+  if (token) deleteAuthToken(token);
   req.session.destroy(() => {
     res.json({ ok: true });
   });

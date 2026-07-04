@@ -1,0 +1,72 @@
+Update the existing project. Do NOT rebuild or refactor the application. Only apply the fixes and changes below while preserving all existing functionality.
+
+====================================================
+CRITICAL BUG FIX: FILE UPLOADS NOT WORKING
+====================================================
+
+There is a major issue in the application:
+
+Users cannot upload anything.
+
+This includes:
+- Images (covers, avatars, etc.)
+- Audio files
+- Any file-based uploads in Singles, Albums/EPs, Music, and Recommendations modes
+
+Problem:
+- Upload actions either do nothing or silently fail
+- Files are not stored or attached to created items
+- No proper error feedback is shown
+
+Fix requirements:
+
+- Ensure file upload system works end-to-end
+- Uploaded images must be saved and retrievable
+- Uploaded audio files must play correctly in the UI
+- If using external storage (e.g. S3, Cloudinary, etc.), ensure correct integration
+- If local storage is used, ensure persistence works correctly in development and production
+- Show clear error messages if upload fails
+
+====================================================
+PERMISSIONS / DELETE SYSTEM
+====================================================
+
+Current requirement:
+
+Simplify permissions system.
+
+Change behavior:
+
+- ANY authenticated user can delete ANY content item
+  (releases, videos, movies, music entries, recommendations)
+
+Remove owner-only restrictions.
+
+Requirements:
+
+- Delete button must be visible for all logged-in users
+- Any user can delete any item immediately
+- Deletion must update UI instantly without refresh
+- No role system or admin checks required
+
+====================================================
+IMPORTANT RULES
+====================================================
+
+- Do NOT break authentication system
+- Do NOT redesign the UI
+- Do NOT change architecture unless required for upload fix
+- Keep changes minimal and targeted
+- Ensure consistency across all modes ("Мясо 30" and "Рекомендации")
+
+====================================================
+FINAL GOAL
+====================================================
+
+Fix the application so that:
+
+- File uploads work reliably (images + audio)
+- Uploaded content is properly saved and displayed
+- Any user can delete any content item
+- UI updates instantly after upload or deletion
+- System remains stable and production-ready

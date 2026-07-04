@@ -1,73 +1,56 @@
 # mzt
 
-A private music review platform for a small group of friends. Users register with a username and password, add Singles or Albums/EPs, and leave detailed reviews using a custom 90-point scoring system.
-
-## Run & Operate
-
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
-- `pnpm --filter @workspace/mzt run dev` — run the frontend (port 19721, served at `/`)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
-- Required env: `SESSION_SECRET` — secret for express-session
+A modular private platform for a small group of friends. The first mode is a **Music Reviews** system where users can add and review music releases (Singles, Albums, EPs) using a custom 90-point scoring system.
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React 19 + Vite + Tailwind CSS + shadcn/ui + wouter + React Query
-- API: Express 5 with express-session (cookie auth)
-- Auth: username/password only, bcryptjs (cost 12)
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (zod/v4), drizzle-zod
-- API codegen: Orval (from OpenAPI spec in lib/api-spec/openapi.yaml)
-- File uploads: multer → served at /api/uploads/:filename
+- **Frontend**: React 19 + Vite + Tailwind CSS + shadcn/ui (`artifacts/mzt`)
+- **Backend**: Express.js 5 API server (`artifacts/api-server`)
+- **Database**: PostgreSQL via Drizzle ORM (`lib/db`)
+- **Shared**: Zod schemas (`lib/api-zod`), React Query hooks (`lib/api-client-react`)
+- **Package manager**: pnpm workspaces
 
-## Where things live
+## How to run
 
-- `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
-- `lib/db/src/schema/` — Drizzle DB schema (users, releases, tracks, reviews)
-- `artifacts/api-server/src/routes/` — Express route handlers
-- `artifacts/api-server/src/lib/score.ts` — centralized 90-point scoring formula
-- `artifacts/mzt/src/` — React frontend
-- `artifacts/mzt/src/lib/score.ts` — same scoring formula mirrored for live preview
+All workflows are pre-configured. On start:
 
-## Architecture decisions
+1. **API Server** (`artifacts/api-server: API Server`) — builds and starts the Express backend on `$PORT`
+2. **Frontend** (`artifacts/mzt: web`) — starts the Vite dev server on `$PORT`
 
-- Session-cookie auth (no JWT): keeps auth simple for a private platform, no email required.
-- Scoring formula centralized in both frontend and backend `score.ts` — frontend for real-time preview, backend for persistent storage.
-- Modular sidebar architecture: only "Music Reviews" exists now; new modes can be added to the sidebar without refactoring.
-- One review per user per release enforced by a DB unique constraint (`(user_id, release_id)`).
-- File uploads stored on local disk at `./uploads/` relative to the API server process; served at `/api/uploads/:filename`.
+## Environment variables / secrets
 
-## Custom Scoring System
+| Key | Type | Notes |
+|-----|------|-------|
+| `DATABASE_URL` | Runtime-managed | Auto-provided by Replit PostgreSQL |
+| `SESSION_SECRET` | Secret | Used for Express session signing |
 
-- Base criteria (1–10 each): Rhymes/Imagery, Structure/Rhythm, Style Execution, Individuality/Charisma
-- Multiplier (1–10): Atmosphere/Vibe
-- Formula: `round(min(90, (sum_of_base * 1.4) * atmosphereMultiplier[atmosphere]))`
-- Multipliers: 1→1.0000, 2→1.0675, 3→1.1349, 4→1.2024, 5→1.2699, 6→1.3373, 7→1.4048, 8→1.4723, 9→1.5397, 10→1.6072
-- Scores always displayed as whole integers, never exceed 90.
+## Database
 
-## Product
+Schema is managed with Drizzle ORM. To apply schema changes to development:
 
-- Home/login page: mzt logo, username+password login, register link
-- Music Reviews dashboard: grid of all releases with cover art, artist, title, average score
-- Add Release: Single (cover, artist, title, description, audio URL/upload) or Album/EP (same + dynamic track list)
-- Release detail: hero cover, metadata, average score, review form with 5 custom sliders + live score preview, all reviews listed
-- One review per user per release; delete required before re-reviewing
+```bash
+pnpm --filter @workspace/db run push
+```
+
+Tables: `users`, `releases`, `tracks`, `reviews`, `videos`, `movies`, `recommendationMusic`, `recommendationTracks`
+
+## Monorepo structure
+
+```
+artifacts/
+  api-server/   Express.js backend
+  mzt/          React frontend
+  mockup-sandbox/  UI prototyping sandbox
+lib/
+  api-client-react/  React Query hooks (generated)
+  api-spec/          OpenAPI spec + Orval config
+  api-zod/           Shared Zod schemas
+  db/                Drizzle ORM schema & client
+scripts/             Workspace maintenance scripts
+```
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-- After any `lib/api-spec/openapi.yaml` change, always run codegen before leaf typechecks.
-- After changing `lib/*` packages, run `pnpm run typecheck:libs` so leaf packages see fresh declarations.
-- bcryptjs is used (not bcrypt) to avoid native build approval requirements.
-- File upload endpoint (`POST /api/upload`) requires authentication.
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Dark theme, minimalistic design
+- Russian-language UI
+- Private platform (username/password auth only, no OAuth)

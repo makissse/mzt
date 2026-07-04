@@ -3,7 +3,7 @@ import { useLocation, Link } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useLogin, getGetMeQueryKey, useGetMe } from '@workspace/api-client-react';
+import { useLogin, getGetMeQueryKey, useGetMe, storeAuthToken } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,8 +37,16 @@ export default function Login() {
 
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
     login.mutate({ data }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+      onSuccess: (userData) => {
+        // Store the server-issued token so customFetch can send it as
+        // X-Auth-Token on every subsequent request (fallback for browsers
+        // that block third-party cookies in the Replit iframe preview).
+        const token = (userData as any).authToken;
+        if (token) storeAuthToken(token);
+
+        // Seed the cache directly so the user is instantly "logged in"
+        // without waiting for a /api/auth/me round-trip.
+        queryClient.setQueryData(getGetMeQueryKey(), userData);
         setLocation('/releases');
       }
     });

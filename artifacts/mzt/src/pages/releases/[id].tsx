@@ -13,6 +13,7 @@ import {
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Trash2, Disc, ExternalLink } from 'lucide-react';
+import { AudioPlayer } from '@/components/audio-player';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -65,22 +66,18 @@ function AudioLink({ url, label }: { url: string, label: string }) {
       </a>
     );
   }
-  if (!isAudioFileUrl(url)) {
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-lg font-mono text-sm transition-colors"
-      >
-        <ExternalLink className="h-4 w-4" /> {label}
-      </a>
-    );
+  if (isAudioFileUrl(url)) {
+    return <AudioPlayer src={url} />;
   }
   return (
-    <div className="w-full bg-card border border-border rounded-lg p-3 flex items-center gap-3">
-      <audio src={url} controls className="w-full h-11" />
-    </div>
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-lg font-mono text-sm transition-colors"
+    >
+      <ExternalLink className="h-4 w-4" /> {label}
+    </a>
   );
 }
 
@@ -250,7 +247,7 @@ export default function ReleaseDetail() {
                   <h2 className="font-mono text-primary text-xl uppercase tracking-widest mb-2">{release.artist}</h2>
                   <h1 className="font-sans text-5xl md:text-6xl font-bold tracking-tighter leading-tight">{release.title}</h1>
                 </div>
-                {isCreator && (
+                {user && (
                   <Button variant="ghost" size="icon" onClick={handleDeleteRelease} className="text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-5 w-5" />
                   </Button>

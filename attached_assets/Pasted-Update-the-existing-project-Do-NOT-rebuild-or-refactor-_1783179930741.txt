@@ -1,0 +1,77 @@
+Update the existing project. Do NOT rebuild or refactor the application. Only apply the changes below while preserving all existing functionality and architecture.
+
+====================================================
+FEATURE UPDATE: RECOMMENDATIONS MODE
+====================================================
+
+In the "Рекомендации" mode, update all content cards (video, movies, music) with additional social metadata and management features.
+
+====================================================
+1. AUTHOR INFORMATION
+====================================================
+
+Each recommendation item must display:
+
+- Username of the user who created the post ("added by")
+- Display it clearly in the card UI (e.g. bottom or top corner depending on design)
+
+Requirements:
+- Must show creator for:
+  - Videos
+  - Movies
+  - Music
+- Username must come from authenticated session
+- Display must be in Russian UI style (e.g. "Добавил: username")
+
+====================================================
+2. DELETE FUNCTIONALITY
+====================================================
+
+Each recommendation item must have a delete button.
+
+Rules:
+- Only the user who created the item can delete it
+- Other users cannot see or use delete button
+- After deletion:
+  - UI must update immediately without page reload
+  - Item must be removed from list instantly
+
+====================================================
+BUG FIX: LOGOUT ISSUE
+====================================================
+
+Current issue:
+User clicks "Logout" button, but:
+
+- Session is actually cleared on backend
+- BUT UI does NOT update immediately
+- Username still remains visible until page refresh
+
+Fix requirements:
+- Logout must immediately update UI state
+- Username must disappear instantly after logout
+- User must be redirected to home page after logout
+- No manual page refresh should be required
+- Ensure frontend auth state is properly reset
+
+====================================================
+IMPORTANT RULES
+====================================================
+
+- Do NOT break existing functionality
+- Do NOT refactor authentication system unnecessarily
+- Do NOT change database schema unless strictly required
+- Keep changes minimal but correct
+- Ensure consistency across all modes ("Мясо 30" and "Рекомендации")
+
+====================================================
+FINAL GOAL
+====================================================
+
+Improve "Рекомендации" mode by adding:
+
+- Author attribution on every post
+- Delete functionality (owner-only)
+- Proper real-time UI updates for auth state
+- Fully working logout without page refresh
+- Stable behavior across the entire app

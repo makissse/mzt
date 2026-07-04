@@ -10,6 +10,8 @@ export interface MovieInput {
   /** @minLength 1 */
   title: string;
   description?: string;
+  /** @minLength 1 */
+  genre: string;
   /**
      * @minimum 1
      * @maximum 10
