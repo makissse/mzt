@@ -190,6 +190,7 @@ function Sidebar({
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
+              backgroundColor: 'hsl(var(--sidebar))',
             } as React.CSSProperties
           }
           side={side}

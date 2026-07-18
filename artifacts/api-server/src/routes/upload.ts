@@ -18,18 +18,39 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/png",
   "image/webp",
   "image/gif",
+  // MP3
   "audio/mpeg",
+  "audio/mp3",
+  // AAC / M4A / ALAC (all use mp4 container or x-alac)
   "audio/mp4",
-  "audio/ogg",
-  "audio/wav",
-  "audio/flac",
   "audio/aac",
+  "audio/x-aac",
+  "audio/x-alac",
+  "audio/alac",
+  // OGG (Vorbis / Opus)
+  "audio/ogg",
+  "audio/vorbis",
+  "audio/opus",
+  // WAV / WAVE
+  "audio/wav",
+  "audio/wave",
+  "audio/x-wav",
+  "audio/vnd.wave",
+  // FLAC
+  "audio/flac",
+  "audio/x-flac",
+  // WebM
   "audio/webm",
 ]);
 
 const ALLOWED_EXTENSIONS = new Set([
   ".jpg", ".jpeg", ".png", ".webp", ".gif",
-  ".mp3", ".m4a", ".ogg", ".wav", ".flac", ".aac", ".webm",
+  ".mp3",
+  ".m4a", ".aac", ".alac",
+  ".ogg", ".opus",
+  ".wav",
+  ".flac",
+  ".webm",
 ]);
 
 const uploadsDir = path.join(process.cwd(), "uploads");

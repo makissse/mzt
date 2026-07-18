@@ -486,6 +486,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /secret-photo:
+    get:
+      operationId: getSecretPhoto
+      tags: [auth]
+      summary: Get secret photo unlock status
+      responses:
+        "200":
+          description: Unlock status and photo URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SecretPhotoStatus"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -526,6 +545,55 @@ components:
         - id
         - username
         - createdAt
+
+    SecretPhotoStatus:
+      type: object
+      properties:
+        unlocked:
+          type: boolean
+        photoUrl:
+          type: ["string", "null"]
+        progress:
+          type: object
+          properties:
+            recommendations:
+              type: object
+              properties:
+                current:
+                  type: integer
+                needed:
+                  type: integer
+              required:
+                - current
+                - needed
+            reviews:
+              type: object
+              properties:
+                current:
+                  type: integer
+                needed:
+                  type: integer
+              required:
+                - current
+                - needed
+            tracks:
+              type: object
+              properties:
+                current:
+                  type: integer
+                needed:
+                  type: integer
+              required:
+                - current
+                - needed
+          required:
+            - recommendations
+            - reviews
+            - tracks
+      required:
+        - unlocked
+        - photoUrl
+        - progress
 
     AuthInput:
       type: object
@@ -866,6 +934,8 @@ components:
           type: string
         description:
           type: ["string", "null"]
+        genre:
+          type: string
         rating:
           type: integer
           minimum: 1
@@ -878,6 +948,7 @@ components:
       required:
         - id
         - title
+        - genre
         - rating
         - createdAt
         - createdBy
@@ -890,12 +961,16 @@ components:
           minLength: 1
         description:
           type: string
+        genre:
+          type: string
+          minLength: 1
         rating:
           type: integer
           minimum: 1
           maximum: 10
       required:
         - title
+        - genre
         - rating
 
     RecommendationTrack:

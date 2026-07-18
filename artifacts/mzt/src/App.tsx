@@ -14,6 +14,8 @@ import ReleaseDetail from '@/pages/releases/[id]';
 import RecommendationsDashboard from '@/pages/recommendations/index';
 import NewRecommendation from '@/pages/recommendations/new';
 import RecommendationMusicDetail from '@/pages/recommendations/music/[id]';
+import TimelinePage from '@/pages/timeline/index';
+import SecretPhotoPage from '@/pages/secret-photo/index';
 import { AppLayout } from '@/components/layout/app-layout';
 
 const queryClient = new QueryClient({
@@ -48,6 +50,12 @@ function Router() {
       </Route>
       <Route path="/recommendations/music/:id">
         {() => <AppLayout><RecommendationMusicDetail /></AppLayout>}
+      </Route>
+      <Route path="/timeline">
+        {() => <AppLayout><TimelinePage /></AppLayout>}
+      </Route>
+      <Route path="/secret-photo">
+        {() => <AppLayout><SecretPhotoPage /></AppLayout>}
       </Route>
       
       <Route component={NotFound} />

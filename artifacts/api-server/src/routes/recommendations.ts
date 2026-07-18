@@ -2,12 +2,14 @@ import { Router } from "express";
 import {
   db,
   videosTable,
+  videoVotesTable,
   moviesTable,
   recommendationMusicTable,
   recommendationTracksTable,
   usersTable,
+  incrementUserActivity,
 } from "@workspace/db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
 
 const router = Router();
 
@@ -30,26 +32,54 @@ async function getCreatedBy(createdById: number) {
 
 // ---------- VIDEOS ----------
 
-router.get("/recommendations/videos", async (_req, res) => {
+router.get("/recommendations/videos", async (req, res) => {
   const rows = await db
     .select({
       video: videosTable,
       user: { id: usersTable.id, username: usersTable.username, createdAt: usersTable.createdAt },
     })
     .from(videosTable)
-    .leftJoin(usersTable, eq(videosTable.createdById, usersTable.id))
-    .orderBy(desc(videosTable.createdAt));
+    .leftJoin(usersTable, eq(videosTable.createdById, usersTable.id));
 
-  const videos = await Promise.all(
-    rows.map(async (row) => ({
-      id: row.video.id,
-      url: row.video.url,
-      title: row.video.title,
-      description: row.video.description,
-      thumbnailUrl: row.video.thumbnailUrl,
-      createdAt: row.video.createdAt,
-      createdBy: row.user as { id: number; username: string; createdAt: Date },
-    }))
+  // Aggregate vote counts per video
+  const voteAggregates = await db
+    .select({
+      videoId: videoVotesTable.videoId,
+      voteCount: sql<number>`coalesce(sum(${videoVotesTable.vote}), 0)`,
+    })
+    .from(videoVotesTable)
+    .groupBy(videoVotesTable.videoId);
+
+  const voteMap = new Map(voteAggregates.map((v) => [v.videoId, Number(v.voteCount)]));
+
+  // Current user's votes
+  const userId: number | undefined = (req as any).session?.userId;
+  const userVoteMap = new Map<number, number>();
+  if (userId) {
+    const userVotes = await db
+      .select({ videoId: videoVotesTable.videoId, vote: videoVotesTable.vote })
+      .from(videoVotesTable)
+      .where(eq(videoVotesTable.userId, userId));
+    for (const v of userVotes) userVoteMap.set(v.videoId, v.vote);
+  }
+
+  const videos = rows.map((row) => ({
+    id: row.video.id,
+    url: row.video.url,
+    title: row.video.title,
+    description: row.video.description,
+    thumbnailUrl: row.video.thumbnailUrl,
+    createdAt: row.video.createdAt,
+    createdBy: row.user as { id: number; username: string; createdAt: Date },
+    voteCount: voteMap.get(row.video.id) ?? 0,
+    userVote: userVoteMap.get(row.video.id) ?? 0,
+  }));
+
+  // Sort by voteCount desc, then newest first
+  videos.sort(
+    (a, b) =>
+      b.voteCount - a.voteCount ||
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
   res.json(videos);
@@ -74,6 +104,8 @@ router.post("/recommendations/videos", requireAuth, async (req, res) => {
     })
     .returning();
 
+  await incrementUserActivity(req.session.userId!, "lifetime_recommendations");
+
   const createdBy = await getCreatedBy(video.createdById);
 
   res.status(201).json({
@@ -84,6 +116,60 @@ router.post("/recommendations/videos", requireAuth, async (req, res) => {
     thumbnailUrl: video.thumbnailUrl,
     createdAt: video.createdAt,
     createdBy,
+    voteCount: 0,
+    userVote: 0,
+  });
+});
+
+router.post("/recommendations/videos/:id/vote", requireAuth, async (req, res) => {
+  const videoId = parseInt(req.params.id, 10);
+  const { vote } = req.body ?? {};
+  const userId = req.session.userId!;
+
+  if (isNaN(videoId)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  if (![1, -1, 0].includes(vote)) {
+    res.status(400).json({ error: "vote must be 1, -1, or 0" });
+    return;
+  }
+
+  // Check existing vote
+  const [existing] = await db
+    .select()
+    .from(videoVotesTable)
+    .where(and(eq(videoVotesTable.videoId, videoId), eq(videoVotesTable.userId, userId)))
+    .limit(1);
+
+  if (vote === 0 || (existing && existing.vote === vote)) {
+    // Remove vote (explicit 0 or toggling off same vote)
+    if (existing) {
+      await db.delete(videoVotesTable).where(eq(videoVotesTable.id, existing.id));
+    }
+  } else if (existing) {
+    // Update to opposite vote
+    await db.update(videoVotesTable).set({ vote }).where(eq(videoVotesTable.id, existing.id));
+  } else {
+    // New vote
+    await db.insert(videoVotesTable).values({ videoId, userId, vote });
+  }
+
+  // Return updated counts
+  const [agg] = await db
+    .select({ voteCount: sql<number>`coalesce(sum(${videoVotesTable.vote}), 0)` })
+    .from(videoVotesTable)
+    .where(eq(videoVotesTable.videoId, videoId));
+
+  const [myVote] = await db
+    .select({ vote: videoVotesTable.vote })
+    .from(videoVotesTable)
+    .where(and(eq(videoVotesTable.videoId, videoId), eq(videoVotesTable.userId, userId)))
+    .limit(1);
+
+  res.json({
+    voteCount: Number(agg?.voteCount) || 0,
+    userVote: myVote?.vote ?? 0,
   });
 });
 
@@ -154,6 +240,8 @@ router.post("/recommendations/movies", requireAuth, async (req, res) => {
       createdById: req.session.userId!,
     })
     .returning();
+
+  await incrementUserActivity(req.session.userId!, "lifetime_recommendations");
 
   const createdBy = await getCreatedBy(movie.createdById);
 
@@ -251,7 +339,10 @@ router.post("/recommendations/music", requireAuth, async (req, res) => {
       order: i + 1,
     }));
     await db.insert(recommendationTracksTable).values(trackValues);
+    await incrementUserActivity(req.session.userId!, "lifetime_tracks", trackValues.length);
   }
+
+  await incrementUserActivity(req.session.userId!, "lifetime_recommendations");
 
   const createdBy = await getCreatedBy(music.createdById);
   const savedTracks =

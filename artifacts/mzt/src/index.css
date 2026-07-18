@@ -47,6 +47,15 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
 }
 
 :root, .dark {
@@ -81,6 +90,15 @@
   --border: 222 18% 16%;
   --input: 222 18% 14%;
   --ring: 218 92% 62%;
+
+  --sidebar: 222 22% 7%;
+  --sidebar-foreground: 0 0% 92%;
+  --sidebar-primary: 218 92% 62%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 18% 14%;
+  --sidebar-accent-foreground: 0 0% 90%;
+  --sidebar-border: 222 18% 16%;
+  --sidebar-ring: 218 92% 62%;
 
   --radius: 0.625rem;
 

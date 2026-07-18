@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Play, Pause, Volume2, VolumeX, Download, AlertCircle } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 
 function formatTime(seconds: number): string {
@@ -9,6 +9,76 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+const MIME_BY_EXT: Record<string, string> = {
+  '.mp3':  'audio/mpeg',
+  '.wav':  'audio/wav',
+  '.flac': 'audio/flac',
+  '.alac': 'audio/x-alac',
+  '.aac':  'audio/aac',
+  '.m4a':  'audio/mp4',
+  '.ogg':  'audio/ogg',
+  '.opus': 'audio/ogg; codecs=opus',
+  '.webm': 'audio/webm',
+};
+
+function getExtension(url: string): string {
+  const clean = url.split('?')[0];
+  const dot = clean.lastIndexOf('.');
+  return dot >= 0 ? clean.slice(dot).toLowerCase() : '';
+}
+
+function getMimeType(url: string): string {
+  return MIME_BY_EXT[getExtension(url)] ?? 'audio/mpeg';
+}
+
+function canBrowserPlay(mime: string): boolean {
+  try {
+    const a = document.createElement('audio');
+    const result = a.canPlayType(mime);
+    return result === 'probably' || result === 'maybe';
+  } catch {
+    return true;
+  }
+}
+
+function DownloadFallback({ src, mime }: { src: string; mime: string }) {
+  const ext = getExtension(src).replace('.', '').toUpperCase() || 'файл';
+
+  const handleDownload = async () => {
+    try {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = obj;
+      a.download = src.split('/').pop() ?? 'audio';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(obj);
+    } catch {
+      window.open(src, '_blank');
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 w-full">
+      <AlertCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+      <span className="flex-1 font-mono text-xs text-muted-foreground">
+        {ext} — браузер не поддерживает этот формат
+      </span>
+      <button
+        type="button"
+        onClick={handleDownload}
+        className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 font-mono text-xs text-foreground hover:border-primary/40 hover:text-primary transition-all"
+      >
+        <Download className="h-3.5 w-3.5" />
+        Скачать
+      </button>
+    </div>
+  );
+}
+
 export function AudioPlayer({ src }: { src: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -16,6 +86,21 @@ export function AudioPlayer({ src }: { src: string }) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [playbackError, setPlaybackError] = useState(false);
+
+  const mime = getMimeType(src);
+  const browserSupported = canBrowserPlay(mime);
+
+  useEffect(() => {
+    setPlaybackError(false);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+  }, [src]);
+
+  if (!browserSupported || playbackError) {
+    return <DownloadFallback src={src} mime={mime} />;
+  }
 
   const toggle = () => {
     const audio = audioRef.current;
@@ -23,7 +108,7 @@ export function AudioPlayer({ src }: { src: string }) {
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play().catch(() => {});
+      audio.play().catch(() => setPlaybackError(true));
     }
   };
 
@@ -67,30 +152,27 @@ export function AudioPlayer({ src }: { src: string }) {
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
+        onError={() => setPlaybackError(true)}
       />
 
       {/* Controls row */}
       <div className="flex items-center gap-3">
-        {/* Play / Pause */}
         <button
           type="button"
           onClick={toggle}
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-600 text-white transition-colors hover:bg-violet-500"
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/80"
         >
           {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 translate-x-px" />}
         </button>
 
-        {/* Time display */}
         <span className="flex-shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
           {formatTime(currentTime)}
           <span className="mx-1 opacity-40">/</span>
           {formatTime(duration)}
         </span>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Mute toggle */}
         <button
           type="button"
           onClick={toggleMute}
@@ -103,7 +185,6 @@ export function AudioPlayer({ src }: { src: string }) {
           )}
         </button>
 
-        {/* Volume slider */}
         <div className="w-20 flex-shrink-0">
           <Slider
             min={0}
@@ -115,7 +196,7 @@ export function AudioPlayer({ src }: { src: string }) {
         </div>
       </div>
 
-      {/* Progress bar row — full width, clearly separate from time */}
+      {/* Progress bar */}
       <Slider
         min={0}
         max={duration || 1}

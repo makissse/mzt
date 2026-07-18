@@ -5,16 +5,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateRelease, getListReleasesQueryKey, ReleaseInputType } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Upload, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Upload, Plus, Trash2, ArrowLeft, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { uploadFile } from '@/lib/upload';
 import { toast } from 'sonner';
 
-// Bug fix: track fields use loose strings; conditional validation applied via superRefine
 const trackSchema = z.object({
   title: z.string(),
   audioUrl: z.string(),
@@ -27,6 +27,7 @@ const formSchema = z.object({
   description: z.string().optional(),
   coverUrl: z.string().min(1, "Загрузите обложку"),
   audioUrl: z.string().optional(),
+  isOurTrack: z.boolean().optional(),
   tracks: z.array(trackSchema).optional(),
 }).superRefine((data, ctx) => {
   if (data.type === ReleaseInputType.album) {
@@ -67,6 +68,7 @@ export default function NewRelease() {
       description: '',
       coverUrl: '',
       audioUrl: '',
+      isOurTrack: false,
       tracks: [{ title: '', audioUrl: '' }]
     },
   });
@@ -96,9 +98,10 @@ export default function NewRelease() {
       ...data,
       audioUrl: data.type === 'single' ? data.audioUrl : undefined,
       tracks: data.type === 'album' ? data.tracks : undefined,
+      isOurTrack: data.isOurTrack ?? false,
     };
 
-    createRelease.mutate({ data: payload }, {
+    createRelease.mutate({ data: payload as any }, {
       onSuccess: (release) => {
         queryClient.invalidateQueries({ queryKey: getListReleasesQueryKey() });
         setLocation(`/releases/${release.id}`);
@@ -121,6 +124,7 @@ export default function NewRelease() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
           
+          {/* FORMAT */}
           <div className="bg-card p-6 border border-border rounded-xl">
             <FormField
               control={form.control}
@@ -153,6 +157,31 @@ export default function NewRelease() {
             />
           </div>
 
+          {/* OUR TRACK checkbox */}
+          <FormField
+            control={form.control}
+            name="isOurTrack"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-3 space-y-0 bg-card border border-border rounded-xl p-5">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                    id="is-our-track"
+                    className="h-5 w-5 border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                  />
+                </FormControl>
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-primary fill-primary" />
+                  <FormLabel htmlFor="is-our-track" className="font-mono text-sm cursor-pointer select-none">
+                    Наш трек — добавить в раздел наших релизов
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          {/* METADATA */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <FormField
@@ -162,7 +191,7 @@ export default function NewRelease() {
                   <FormItem>
                     <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Исполнитель</FormLabel>
                     <FormControl>
-                      <Input placeholder="напр. Скриптонит" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
+                      <Input placeholder="напр. MC. putzermann" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -176,7 +205,7 @@ export default function NewRelease() {
                   <FormItem>
                     <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Название</FormLabel>
                     <FormControl>
-                      <Input placeholder="напр. Дом с нормальными явлениями" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
+                      <Input placeholder="напр. disss na cuckolda" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -191,7 +220,7 @@ export default function NewRelease() {
                     <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Описание (опционально)</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Контекст об этом релизе..." 
+                        placeholder="Контекст, история, вдохновение..." 
                         className="font-sans resize-none h-32 bg-card rounded-lg border-border focus-visible:ring-primary" 
                         {...field} 
                         value={field.value || ''}
@@ -255,7 +284,7 @@ export default function NewRelease() {
             </div>
           </div>
 
-          {/* АУДИО */}
+          {/* AUDIO */}
           <div className="border-t border-border pt-10">
             <h3 className="font-mono text-lg mb-6 text-primary uppercase tracking-widest">Аудио</h3>
             

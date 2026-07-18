@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, reviewsTable, usersTable } from "@workspace/db";
+import { db, reviewsTable, usersTable, incrementUserActivity } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { calculateScore } from "../lib/score";
 
@@ -65,6 +65,8 @@ router.post("/releases/:releaseId/reviews", requireAuth, async (req, res) => {
       comment: comment.trim(),
     })
     .returning();
+
+  await incrementUserActivity(review.userId, "lifetime_reviews");
 
   const [user] = await db
     .select({ id: usersTable.id, username: usersTable.username, createdAt: usersTable.createdAt })

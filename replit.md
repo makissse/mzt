@@ -1,56 +1,45 @@
-# mzt
+# МЗТ — Media Management Platform
 
-A modular private platform for a small group of friends. The first mode is a **Music Reviews** system where users can add and review music releases (Singles, Albums, EPs) using a custom 90-point scoring system.
+A media management and recommendation platform for music/video releases, tracks, and statistics.
 
 ## Stack
 
-- **Frontend**: React 19 + Vite + Tailwind CSS + shadcn/ui (`artifacts/mzt`)
-- **Backend**: Express.js 5 API server (`artifacts/api-server`)
-- **Database**: PostgreSQL via Drizzle ORM (`lib/db`)
-- **Shared**: Zod schemas (`lib/api-zod`), React Query hooks (`lib/api-client-react`)
-- **Package manager**: pnpm workspaces
+- **Frontend** (`artifacts/mzt`): React 19 + Vite, TypeScript, Tailwind CSS, Radix UI, TanStack Query, Wouter
+- **Backend** (`artifacts/api-server`): Express 5, Node.js, TypeScript, Drizzle ORM, Pino logging, Multer (file uploads), express-session
+- **Database**: PostgreSQL (Replit managed), Drizzle ORM + drizzle-kit migrations
+- **Shared libs** (`lib/`): `api-spec` (OpenAPI), `api-client-react` (generated hooks), `api-zod` (Zod schemas), `db` (Drizzle schema + client)
 
-## How to run
+## Running the app
 
-All workflows are pre-configured. On start:
+Both services are configured as Replit workflows and start automatically:
 
-1. **API Server** (`artifacts/api-server: API Server`) — builds and starts the Express backend on `$PORT`
-2. **Frontend** (`artifacts/mzt: web`) — starts the Vite dev server on `$PORT`
+| Workflow | Command |
+|---|---|
+| `artifacts/mzt: web` | `pnpm --filter @workspace/mzt run dev` |
+| `artifacts/api-server: API Server` | `pnpm --filter @workspace/api-server run dev` |
 
-## Environment variables / secrets
+## Environment variables
 
-| Key | Type | Notes |
-|-----|------|-------|
-| `DATABASE_URL` | Runtime-managed | Auto-provided by Replit PostgreSQL |
-| `SESSION_SECRET` | Secret | Used for Express session signing |
+| Variable | Source |
+|---|---|
+| `DATABASE_URL` | Replit runtime-managed (auto-injected) |
+| `SESSION_SECRET` | Replit secret |
 
-## Database
+## Database schema
 
-Schema is managed with Drizzle ORM. To apply schema changes to development:
+Push schema changes to the dev database:
 
 ```bash
 pnpm --filter @workspace/db run push
 ```
 
-Tables: `users`, `releases`, `tracks`, `reviews`, `videos`, `movies`, `recommendationMusic`, `recommendationTracks`
+## Install dependencies
 
-## Monorepo structure
-
-```
-artifacts/
-  api-server/   Express.js backend
-  mzt/          React frontend
-  mockup-sandbox/  UI prototyping sandbox
-lib/
-  api-client-react/  React Query hooks (generated)
-  api-spec/          OpenAPI spec + Orval config
-  api-zod/           Shared Zod schemas
-  db/                Drizzle ORM schema & client
-scripts/             Workspace maintenance scripts
+```bash
+pnpm install
 ```
 
 ## User preferences
 
-- Dark theme, minimalistic design
-- Russian-language UI
-- Private platform (username/password auth only, no OAuth)
+- Keep the existing monorepo structure (pnpm workspace with `artifacts/` and `lib/`)
+- Do not migrate or replace the database setup

@@ -429,6 +429,7 @@ export const ListMoviesResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "description": zod.string().nullish(),
+  "genre": zod.string(),
   "rating": zod.number().min(1).max(listMoviesResponseRatingMax),
   "createdAt": zod.coerce.date(),
   "createdBy": zod.object({
@@ -444,6 +445,7 @@ export const ListMoviesResponse = zod.array(ListMoviesResponseItem)
  * @summary Add a movie recommendation
  */
 
+
 export const createMovieBodyRatingMax = 10;
 
 
@@ -451,6 +453,7 @@ export const createMovieBodyRatingMax = 10;
 export const CreateMovieBody = zod.object({
   "title": zod.string().min(1),
   "description": zod.string().optional(),
+  "genre": zod.string().min(1),
   "rating": zod.number().min(1).max(createMovieBodyRatingMax)
 })
 
@@ -462,6 +465,7 @@ export const CreateMovieResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "description": zod.string().nullish(),
+  "genre": zod.string(),
   "rating": zod.number().min(1).max(createMovieResponseRatingMax),
   "createdAt": zod.coerce.date(),
   "createdBy": zod.object({
@@ -601,6 +605,29 @@ export const FetchVideoMetaBody = zod.object({
 export const FetchVideoMetaResponse = zod.object({
   "title": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get secret photo unlock status
+ */
+export const GetSecretPhotoResponse = zod.object({
+  "unlocked": zod.boolean(),
+  "photoUrl": zod.string().nullable(),
+  "progress": zod.object({
+  "recommendations": zod.object({
+  "current": zod.number(),
+  "needed": zod.number()
+}),
+  "reviews": zod.object({
+  "current": zod.number(),
+  "needed": zod.number()
+}),
+  "tracks": zod.object({
+  "current": zod.number(),
+  "needed": zod.number()
+})
+})
 })
 
 

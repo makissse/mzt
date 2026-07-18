@@ -23,6 +23,34 @@ export interface User {
   createdAt: string;
 }
 
+export type SecretPhotoStatusProgressRecommendations = {
+  current: number;
+  needed: number;
+};
+
+export type SecretPhotoStatusProgressReviews = {
+  current: number;
+  needed: number;
+};
+
+export type SecretPhotoStatusProgressTracks = {
+  current: number;
+  needed: number;
+};
+
+export type SecretPhotoStatusProgress = {
+  recommendations: SecretPhotoStatusProgressRecommendations;
+  reviews: SecretPhotoStatusProgressReviews;
+  tracks: SecretPhotoStatusProgressTracks;
+};
+
+export interface SecretPhotoStatus {
+  unlocked: boolean;
+  /** @nullable */
+  photoUrl: string | null;
+  progress: SecretPhotoStatusProgress;
+}
+
 export interface AuthInput {
   /**
      * @minLength 3
@@ -233,7 +261,6 @@ export interface Movie {
   title: string;
   /** @nullable */
   description?: string | null;
-  /** @minLength 1 */
   genre: string;
   /**
      * @minimum 1
@@ -304,7 +331,8 @@ export const RecommendationMusicInputType = {
 
 export interface RecommendationMusicInput {
   type: RecommendationMusicInputType;
-  artist?: string;
+  /** @minLength 1 */
+  artist: string;
   /** @minLength 1 */
   title: string;
   description?: string;

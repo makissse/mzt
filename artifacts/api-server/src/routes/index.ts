@@ -6,6 +6,7 @@ import reviewsRouter from "./reviews";
 import uploadRouter from "./upload";
 import statsRouter from "./stats";
 import recommendationsRouter from "./recommendations";
+import secretPhotoRouter from "./secretPhoto";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(reviewsRouter);
 router.use(uploadRouter);
 router.use(statsRouter);
 router.use(recommendationsRouter);
+router.use(secretPhotoRouter);
 
 export default router;

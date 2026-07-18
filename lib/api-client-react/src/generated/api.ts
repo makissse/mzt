@@ -34,6 +34,7 @@ import type {
   ReleaseInput,
   Review,
   ReviewInput,
+  SecretPhotoStatus,
   Stats,
   User,
   Video,
@@ -1745,4 +1746,81 @@ export const useFetchVideoMeta = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getFetchVideoMetaMutationOptions(options));
     }
+
+export const getGetSecretPhotoUrl = () => {
+
+
+
+
+  return `/api/secret-photo`
+}
+
+/**
+ * @summary Get secret photo unlock status
+ */
+export const getSecretPhoto = async ( options?: RequestInit): Promise<SecretPhotoStatus> => {
+
+  return customFetch<SecretPhotoStatus>(getGetSecretPhotoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSecretPhotoQueryKey = () => {
+    return [
+    `/api/secret-photo`
+    ] as const;
+    }
+
+
+export const getGetSecretPhotoQueryOptions = <TData = Awaited<ReturnType<typeof getSecretPhoto>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSecretPhoto>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSecretPhotoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSecretPhoto>>> = ({ signal }) => getSecretPhoto({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSecretPhoto>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSecretPhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getSecretPhoto>>>
+export type GetSecretPhotoQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get secret photo unlock status
+ */
+
+export function useGetSecretPhoto<TData = Awaited<ReturnType<typeof getSecretPhoto>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSecretPhoto>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSecretPhotoQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

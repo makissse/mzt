@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   useListVideos,
@@ -11,6 +11,7 @@ import {
   getListVideosQueryKey,
   getListMoviesQueryKey,
   getListMusicQueryKey,
+  getStoredAuthToken,
   type Video,
   type Movie,
   type RecommendationMusic,
@@ -22,11 +23,15 @@ import {
   Film,
   Music2,
   Trash2,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
+
+type VideoWithVotes = Video & { voteCount: number; userVote: number };
 
 function isYouTubeUrl(url: string): boolean {
   if (!url) return false;
@@ -97,18 +102,124 @@ function DeleteButton({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
   );
 }
 
+function VoteButtons({
+  videoId,
+  voteCount,
+  userVote,
+  onVote,
+  isLoggedIn,
+}: {
+  videoId: number;
+  voteCount: number;
+  userVote: number;
+  onVote: (id: number, vote: 1 | -1 | 0) => void;
+  isLoggedIn: boolean;
+}) {
+  const handleUpvote = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isLoggedIn) return;
+    onVote(videoId, userVote === 1 ? 0 : 1);
+  };
+
+  const handleDownvote = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isLoggedIn) return;
+    onVote(videoId, userVote === -1 ? 0 : -1);
+  };
+
+  return (
+    <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
+      <button
+        onClick={handleUpvote}
+        disabled={!isLoggedIn}
+        className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
+          userVote === 1
+            ? "text-orange-400"
+            : "text-muted-foreground hover:text-orange-400"
+        } disabled:opacity-40 disabled:cursor-default`}
+        title="Наверх"
+      >
+        <ChevronUp className="h-5 w-5" />
+      </button>
+      <span
+        className={`min-w-[1.5rem] text-center font-mono text-sm font-bold tabular-nums ${
+          userVote === 1
+            ? "text-orange-400"
+            : userVote === -1
+            ? "text-blue-400"
+            : "text-muted-foreground"
+        }`}
+      >
+        {voteCount}
+      </span>
+      <button
+        onClick={handleDownvote}
+        disabled={!isLoggedIn}
+        className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
+          userVote === -1
+            ? "text-blue-400"
+            : "text-muted-foreground hover:text-blue-400"
+        } disabled:opacity-40 disabled:cursor-default`}
+        title="Вниз"
+      >
+        <ChevronDown className="h-5 w-5" />
+      </button>
+    </div>
+  );
+}
+
 export default function RecommendationsDashboard() {
-  const { data: videos, isLoading: videosLoading } = useListVideos();
+  const { data: rawVideos, isLoading: videosLoading } = useListVideos();
   const { data: movies, isLoading: moviesLoading } = useListMovies();
   const { data: music, isLoading: musicLoading } = useListMusic();
   const { data: currentUser } = useGetMe();
   const queryClient = useQueryClient();
+
+  // Local vote state: map of videoId -> { voteCount, userVote }
+  const [voteOverrides, setVoteOverrides] = useState<
+    Map<number, { voteCount: number; userVote: number }>
+  >(new Map());
+
+  const videos = rawVideos as VideoWithVotes[] | undefined;
 
   const deleteVideo = useDeleteVideo();
   const deleteMovie = useDeleteMovie();
   const deleteMusic = useDeleteMusic();
 
   const loading = videosLoading || moviesLoading || musicLoading;
+
+  const getVote = (v: VideoWithVotes) => {
+    const override = voteOverrides.get(v.id);
+    return override ?? { voteCount: v.voteCount ?? 0, userVote: v.userVote ?? 0 };
+  };
+
+  const handleVote = async (videoId: number, vote: 1 | -1 | 0) => {
+    // Include x-auth-token so voting works when cookies are blocked (Replit iframe preview).
+    const token = getStoredAuthToken();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["x-auth-token"] = token;
+
+    try {
+      const res = await fetch(`/api/recommendations/videos/${videoId}/vote`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify({ vote }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setVoteOverrides((prev) => {
+          const next = new Map(prev);
+          next.set(videoId, { voteCount: data.voteCount, userVote: data.userVote });
+          return next;
+        });
+      }
+    } catch {
+      // silently fail — vote state stays unchanged
+    }
+  };
 
   const handleDeleteVideo = async (e: React.MouseEvent, id: number) => {
     e.preventDefault();
@@ -164,22 +275,31 @@ export default function RecommendationsDashboard() {
     );
   };
 
+  // Sort videos by current vote count (descending), breaking ties by createdAt
+  const sortedVideos = videos
+    ? [...videos].sort((a, b) => {
+        const va = getVote(a).voteCount;
+        const vb = getVote(b).voteCount;
+        return vb - va || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })
+    : [];
+
   return (
     <div className="min-h-screen p-8 pb-24">
       <div className="mx-auto max-w-7xl space-y-10">
         <header className="relative overflow-hidden rounded-3xl border border-violet-500/20 bg-gradient-to-br from-violet-950/80 via-background to-background p-8 shadow-2xl">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,85,247,0.16),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_35%)]" />
-          <div className="relative flex items-start justify-between gap-6">
+          <div className="relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="max-w-2xl">
               <h1 className="text-4xl font-bold tracking-tight text-white">
                 Рекомендации
               </h1>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Interzise: „The Sopranos”, „Game of Thrones” și filme cu spire.
+                Interzise: „The Sopranos", „Game of Thrones" și filme cu spire.
               </p>
             </div>
-            <Link href="/recommendations/new" className="shrink-0">
-              <Button className="font-mono bg-violet-600 text-white hover:bg-violet-500">
+            <Link href="/recommendations/new" className="shrink-0 self-start">
+              <Button className="font-mono bg-violet-600 text-white hover:bg-violet-500 w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Добавить рекомендацию
               </Button>
             </Link>
@@ -204,52 +324,63 @@ export default function RecommendationsDashboard() {
           </div>
         ) : (
           <div className="space-y-14">
+            {/* VIDEOS */}
             <section className="space-y-5">
               <SectionHeading title="Видео" icon={PlayCircle} />
-              {!videos || videos.length === 0 ? (
+              {sortedVideos.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-violet-500/20 bg-card/50 p-10 text-center text-sm text-muted-foreground">
                   Видео пока нет. Добавьте первую подборку.
                 </div>
               ) : (
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {videos.map((video) => (
-                    <a
-                      key={video.id}
-                      href={video.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group relative block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40"
-                    >
-                      {currentUser && (
-                        <DeleteButton
-                          onClick={(e) => handleDeleteVideo(e, video.id)}
-                        />
-                      )}
-                      <VideoThumbnail
-                        url={video.thumbnailUrl}
-                        title={video.title}
-                      />
-                      <div className="space-y-3 p-5">
-                        <div className="flex items-start justify-between gap-3">
-                          <h3 className="line-clamp-2 text-lg font-semibold text-white">
-                            {video.title}
-                          </h3>
-                          <Badge
-                            variant="outline"
-                            className="border-violet-500/30 text-violet-200"
-                          >
-                            Видео
-                          </Badge>
-                        </div>
-                        {video.description && (
-                          <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
-                            {video.description}
-                          </p>
+                  {sortedVideos.map((video) => {
+                    const { voteCount, userVote } = getVote(video);
+                    return (
+                      <a
+                        key={video.id}
+                        href={video.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-violet-500/40"
+                      >
+                        {currentUser && (
+                          <DeleteButton
+                            onClick={(e) => handleDeleteVideo(e, video.id)}
+                          />
                         )}
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 font-mono text-xs text-violet-200">
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            Открыть
+                        <VideoThumbnail
+                          url={video.thumbnailUrl}
+                          title={video.title}
+                        />
+                        <div className="space-y-3 p-5">
+                          <div className="flex items-start justify-between gap-3">
+                            <h3 className="line-clamp-2 text-lg font-semibold text-white">
+                              {video.title}
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className="border-violet-500/30 text-violet-200 shrink-0"
+                            >
+                              Видео
+                            </Badge>
+                          </div>
+                          {video.description && (
+                            <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
+                              {video.description}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between gap-2">
+                            <VoteButtons
+                              videoId={video.id}
+                              voteCount={voteCount}
+                              userVote={userVote}
+                              onVote={handleVote}
+                              isLoggedIn={!!currentUser}
+                            />
+                            <div className="flex items-center gap-2 font-mono text-xs text-violet-200">
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              Открыть
+                            </div>
                           </div>
                           {video.createdBy && (
                             <span className="font-mono text-[10px] text-muted-foreground">
@@ -257,13 +388,14 @@ export default function RecommendationsDashboard() {
                             </span>
                           )}
                         </div>
-                      </div>
-                    </a>
-                  ))}
+                      </a>
+                    );
+                  })}
                 </div>
               )}
             </section>
 
+            {/* MOVIES */}
             <section className="space-y-5">
               <SectionHeading title="Фильмы" icon={Film} />
               {!movies || movies.length === 0 ? (
@@ -315,6 +447,7 @@ export default function RecommendationsDashboard() {
               )}
             </section>
 
+            {/* MUSIC */}
             <section className="space-y-5">
               <SectionHeading title="Музыка" icon={Music2} />
               {!music || music.length === 0 ? (

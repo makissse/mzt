@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
@@ -11,6 +11,7 @@ export const releasesTable = pgTable("releases", {
   description: text("description"),
   coverUrl: text("cover_url").notNull(),
   audioUrl: text("audio_url"), // for singles only
+  isOurTrack: boolean("is_our_track").notNull().default(false),
   createdById: integer("created_by_id").notNull().references(() => usersTable.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
