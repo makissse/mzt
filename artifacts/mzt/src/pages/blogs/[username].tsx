@@ -1,0 +1,1144 @@
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useRoute } from 'wouter';
+import { useGetBlog, useCreateBlogPost, useUpdateBlogPost, useDeleteBlogPost, useUpdateMyBlog, useGetMe, getGetBlogQueryKey } from '@workspace/api-client-react';
+import { getStoredAuthToken } from '@workspace/api-client-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AudioPlayer } from '@/components/audio-player';
+import { uploadFile } from '@/lib/upload';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import {
+  Loader2,
+  PenSquare,
+  Trash2,
+  Paperclip,
+  Image as ImageIcon,
+  X,
+  Sparkles,
+  Heart,
+  MessageCircle,
+  Send,
+  Camera,
+  StopCircle,
+  Play,
+  Pause,
+} from 'lucide-react';
+import type { BlogPost } from '@workspace/api-client-react';
+
+// ─── Extended types ────────────────────────────────────────────────────────────
+
+type ExtMedia = { id: number; type: string; url: string; order: number; isCircle: boolean };
+
+type ExtPost = BlogPost & {
+  likesCount: number;
+  isLikedByMe: boolean;
+  commentsCount: number;
+  media: ExtMedia[];
+};
+
+type ExtBlog = {
+  id: number;
+  title: string;
+  handle: string;
+  description: string;
+  avatarUrl: string | null;
+  coverUrl: string | null;
+  ownerUsername: string | null;
+  user: { id: number; username: string };
+  isOwner: boolean;
+};
+
+type MediaItem = { type: 'image' | 'video' | 'audio'; url: string; isCircle?: boolean };
+
+// ─── Blog themes ───────────────────────────────────────────────────────────────
+
+type BlogTheme = {
+  accent: string;
+  accentBg: string;
+  accentBorder: string;
+  coverGradient: string;
+};
+
+const BLOG_THEMES: Record<string, BlogTheme> = {
+  'pysy-exe': {
+    accent: '#00ff41',
+    accentBg: 'rgba(0,255,65,0.09)',
+    accentBorder: 'rgba(0,255,65,0.25)',
+    coverGradient: 'linear-gradient(135deg, #040d04 0%, #001a00 60%, #002600 100%)',
+  },
+  'putzermann-core': {
+    accent: '#ff6b00',
+    accentBg: 'rgba(255,107,0,0.09)',
+    accentBorder: 'rgba(255,107,0,0.25)',
+    coverGradient: 'linear-gradient(135deg, #100500 0%, #1f0900 60%, #2a0c00 100%)',
+  },
+};
+
+const DEFAULT_THEME: BlogTheme = {
+  accent: 'hsl(var(--primary))',
+  accentBg: 'hsl(var(--primary) / 0.09)',
+  accentBorder: 'hsl(var(--primary) / 0.25)',
+  coverGradient: 'linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--background)) 100%)',
+};
+
+function getTheme(handle: string): BlogTheme {
+  return BLOG_THEMES[handle] ?? DEFAULT_THEME;
+}
+
+// ─── Auth headers helper ───────────────────────────────────────────────────────
+
+function authHeaders(): HeadersInit {
+  const token = getStoredAuthToken();
+  return token ? { 'x-auth-token': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+}
+
+// ─── Circle Video Recorder ─────────────────────────────────────────────────────
+
+function CircleVideoRecorder({
+  onRecorded,
+  onClose,
+  theme,
+}: {
+  onRecorded: (blob: Blob) => void;
+  onClose: () => void;
+  theme: BlogTheme;
+}) {
+  const [phase, setPhase] = useState<'idle' | 'preview' | 'recording' | 'done'>('idle');
+  const [countdown, setCountdown] = useState(60);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const openCamera = async () => {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+      setStream(s);
+      setPhase('preview');
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = s;
+          videoRef.current.play().catch(() => {});
+        }
+      }, 50);
+    } catch {
+      alert('Не удалось получить доступ к камере');
+    }
+  };
+
+  const startRecording = () => {
+    if (!stream) return;
+    chunksRef.current = [];
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : 'video/webm';
+    const recorder = new MediaRecorder(stream, { mimeType });
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+      onRecorded(blob);
+    };
+    recorder.start(100);
+    recorderRef.current = recorder;
+    setPhase('recording');
+    setCountdown(60);
+    timerRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          stopRecording();
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+  };
+
+  const stopRecording = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
+    stream?.getTracks().forEach((t) => t.stop());
+    setStream(null);
+    setPhase('done');
+  }, [stream]);
+
+  useEffect(() => () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    stream?.getTracks().forEach((t) => t.stop());
+  }, [stream]);
+
+  return (
+    <div className="flex flex-col items-center gap-5">
+      <div
+        className="relative w-56 h-56 rounded-full overflow-hidden border-4 bg-black"
+        style={{ borderColor: theme.accentBorder }}
+      >
+        {phase === 'idle' ? (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+            <Camera className="h-14 w-14 opacity-40" />
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            style={{ transform: 'scaleX(-1)' }}
+          />
+        )}
+        {phase === 'recording' && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-1">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-white text-xs font-mono font-bold">{countdown}s</span>
+          </div>
+        )}
+        {phase === 'done' && (
+          <div className="w-full h-full flex items-center justify-center bg-black/70 text-white">
+            <div className="text-center">
+              <div className="text-2xl mb-1">✓</div>
+              <p className="text-xs font-mono">Записано</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-3">
+        {phase === 'idle' && (
+          <>
+            <Button onClick={openCamera} className="font-mono gap-2" style={{ backgroundColor: theme.accent, color: '#000' }}>
+              <Camera className="h-4 w-4" />
+              Открыть камеру
+            </Button>
+            <Button variant="outline" onClick={onClose} className="font-mono">Отмена</Button>
+          </>
+        )}
+        {phase === 'preview' && (
+          <>
+            <Button onClick={startRecording} className="font-mono gap-2 bg-red-500 hover:bg-red-600 text-white">
+              <span className="w-2.5 h-2.5 rounded-full bg-white" />
+              Запись
+            </Button>
+            <Button variant="outline" onClick={() => { stream?.getTracks().forEach((t) => t.stop()); setStream(null); setPhase('idle'); }} className="font-mono">Отмена</Button>
+          </>
+        )}
+        {phase === 'recording' && (
+          <Button onClick={stopRecording} variant="outline" className="font-mono gap-2">
+            <StopCircle className="h-4 w-4 text-red-500" />
+            Остановить
+          </Button>
+        )}
+        {phase === 'done' && (
+          <>
+            <Button onClick={onClose} className="font-mono" style={{ backgroundColor: theme.accent, color: '#000' }}>Готово</Button>
+            <Button variant="outline" onClick={() => setPhase('idle')} className="font-mono">Ещё раз</Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Circle Video Player ───────────────────────────────────────────────────────
+
+const CVIDEO_PX = 176;       // w-44 in pixels
+const CVIDEO_OFFSET = 10;    // gap from video edge to container edge
+const CONTAINER_SIZE = CVIDEO_PX + CVIDEO_OFFSET * 2; // 196
+const RING_CENTER = CONTAINER_SIZE / 2;                // 98
+const RING_R = RING_CENTER - CVIDEO_OFFSET / 2 - 1;   // ~92
+const RING_STROKE = 4;
+const CIRC = 2 * Math.PI * RING_R;
+
+function CircleVideoPlayer({
+  src,
+  accentColor,
+}: {
+  src: string;
+  accentColor: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [phase, setPhase] = useState<'idle' | 'playing' | 'paused'>('idle');
+  const [progress, setProgress] = useState(0); // 0–1
+  const rafRef = useRef<number | null>(null);
+
+  const startProgressLoop = useCallback(() => {
+    const v = videoRef.current;
+    if (!v || rafRef.current) return;
+    const tick = () => {
+      setProgress(v.currentTime / v.duration);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  const stopProgressLoop = useCallback(() => {
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onPlay  = () => { setPhase('playing'); startProgressLoop(); };
+    const onPause = () => { setPhase('paused'); stopProgressLoop(); };
+    const onEnded = () => { setPhase('idle'); stopProgressLoop(); setProgress(0); };
+    const onLoaded = () => setProgress(v.currentTime / v.duration);
+    v.addEventListener('play',        onPlay);
+    v.addEventListener('pause',       onPause);
+    v.addEventListener('ended',       onEnded);
+    v.addEventListener('loadeddata',  onLoaded);
+    v.addEventListener('loadedmetadata', onLoaded);
+    return () => {
+      v.removeEventListener('play',        onPlay);
+      v.removeEventListener('pause',       onPause);
+      v.removeEventListener('ended',       onEnded);
+      v.removeEventListener('loadeddata',  onLoaded);
+      v.removeEventListener('loadedmetadata', onLoaded);
+      stopProgressLoop();
+    };
+  }, [startProgressLoop, stopProgressLoop]);
+
+  const toggle = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) v.play();
+    else          v.pause();
+  };
+
+  const dashOffset = CIRC * (1 - progress);
+
+  return (
+    <div
+      className="relative flex-shrink-0 cursor-pointer select-none"
+      style={{ width: CONTAINER_SIZE, height: CONTAINER_SIZE }}
+      onClick={toggle}
+    >
+      {/* Video circle */}
+      <div
+        className="absolute rounded-full overflow-hidden bg-black"
+        style={{
+          width:  CVIDEO_PX,
+          height: CVIDEO_PX,
+          top:    CVIDEO_OFFSET,
+          left:   CVIDEO_OFFSET,
+        }}
+      >
+        <video
+          ref={videoRef}
+          src={src}
+          className="w-full h-full object-cover pointer-events-none"
+          preload="metadata"
+          playsInline
+        />
+      </div>
+
+      {/* Progress ring SVG — rotated so 0% starts at 12 o'clock */}
+      <svg
+        width={CONTAINER_SIZE}
+        height={CONTAINER_SIZE}
+        className="absolute inset-0 pointer-events-none"
+        style={{ transform: 'rotate(-90deg)' }}
+      >
+        {/* Track */}
+        <circle
+          cx={RING_CENTER}
+          cy={RING_CENTER}
+          r={RING_R}
+          fill="none"
+          stroke="rgba(255,255,255,0.18)"
+          strokeWidth={RING_STROKE}
+        />
+        {/* Progress */}
+        <circle
+          cx={RING_CENTER}
+          cy={RING_CENTER}
+          r={RING_R}
+          fill="none"
+          stroke={accentColor}
+          strokeWidth={RING_STROKE}
+          strokeLinecap="round"
+          strokeDasharray={CIRC}
+          strokeDashoffset={dashOffset}
+          style={{ transition: 'stroke-dashoffset 0.15s linear' }}
+        />
+      </svg>
+
+      {/* Icon overlay — only when paused (play icon = "resume") */}
+      {phase === 'paused' && (
+        <div
+          className="absolute flex items-center justify-center"
+          style={{ top: CVIDEO_OFFSET, left: CVIDEO_OFFSET, width: CVIDEO_PX, height: CVIDEO_PX, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.38)' }}
+        >
+          <Play className="h-10 w-10 text-white drop-shadow-lg" fill="white" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Media Grid ────────────────────────────────────────────────────────────────
+
+function MediaGrid({
+  items,
+  accentColor,
+}: {
+  items: Array<{ type: string; url: string; isCircle?: boolean }>;
+  accentColor: string;
+}) {
+  if (items.length === 0) return null;
+
+  const images = items.filter((m) => m.type === 'image');
+  const videos = items.filter((m) => m.type === 'video');
+  const audios = items.filter((m) => m.type === 'audio');
+
+  return (
+    <div className="space-y-3 mt-3">
+      {images.length > 0 && (
+        <div className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'}`}>
+          {images.map((img, idx) => (
+            <div key={idx} className={`relative overflow-hidden rounded-2xl border border-border/60 bg-card ${images.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}>
+              <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </div>
+          ))}
+        </div>
+      )}
+      {videos.map((vid, idx) => (
+        vid.isCircle ? (
+          <div key={idx} className="flex justify-center">
+            <CircleVideoPlayer src={vid.url} accentColor={accentColor} />
+          </div>
+        ) : (
+          <div key={idx} className="rounded-2xl overflow-hidden border border-border/60 bg-card">
+            <video src={vid.url} controls className="w-full max-h-[460px]" preload="metadata" />
+          </div>
+        )
+      ))}
+      {audios.map((aud, idx) => (
+        <div key={idx}><AudioPlayer src={aud.url} /></div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Comments section ──────────────────────────────────────────────────────────
+
+type Comment = { id: number; content: string; createdAt: string; user: { username: string } };
+
+function CommentsSection({ postId, me, theme }: { postId: number; me?: { username: string } | null; theme: BlogTheme }) {
+  const [text, setText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: comments = [], isLoading } = useQuery<Comment[]>({
+    queryKey: ['blog-comments', postId],
+    queryFn: async () => {
+      const res = await fetch(`/api/blogs/posts/${postId}/comments`, {
+        credentials: 'include',
+        headers: { 'x-auth-token': getStoredAuthToken() ?? '' },
+      });
+      return res.json();
+    },
+  });
+
+  const submit = async () => {
+    if (!text.trim()) return;
+    setSubmitting(true);
+    try {
+      await fetch(`/api/blogs/posts/${postId}/comments`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: authHeaders(),
+        body: JSON.stringify({ content: text.trim() }),
+      });
+      setText('');
+      queryClient.invalidateQueries({ queryKey: ['blog-comments', postId] });
+    } catch {
+      alert('Ошибка отправки комментария');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border/40 space-y-3">
+      {isLoading ? (
+        <div className="flex justify-center py-2"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
+      ) : comments.length === 0 ? (
+        <p className="text-xs text-muted-foreground font-mono px-1">Комментариев пока нет</p>
+      ) : (
+        <div className="space-y-2">
+          {comments.map((c) => (
+            <div key={c.id} className="flex gap-2">
+              <span className="font-mono text-xs font-bold flex-shrink-0" style={{ color: theme.accent }}>
+                {c.user.username}
+              </span>
+              <span className="font-sans text-xs text-foreground leading-relaxed">{c.content}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {me && (
+        <div className="flex gap-2">
+          <Input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Написать комментарий..."
+            className="h-8 text-xs font-sans bg-background/50 border-border/60"
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
+          />
+          <Button
+            size="sm"
+            onClick={submit}
+            disabled={submitting || !text.trim()}
+            className="h-8 px-3 font-mono"
+            style={{ backgroundColor: theme.accent, color: '#000' }}
+          >
+            {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Post Card ─────────────────────────────────────────────────────────────────
+
+function PostCard({
+  post,
+  blog,
+  me,
+  theme,
+  likesState,
+  onToggleLike,
+  onEdit,
+  onDelete,
+}: {
+  post: ExtPost;
+  blog: ExtBlog;
+  me?: { username: string } | null;
+  theme: BlogTheme;
+  likesState: { count: number; liked: boolean };
+  onToggleLike: (postId: number) => void;
+  onEdit: (post: ExtPost) => void;
+  onDelete: (post: ExtPost) => void;
+}) {
+  const [commentsOpen, setCommentsOpen] = useState(false);
+
+  return (
+    <article
+      className="bg-card border rounded-2xl p-4 sm:p-5 transition-all duration-200"
+      style={{ borderColor: commentsOpen ? theme.accentBorder : undefined }}
+    >
+      <div className="flex items-center gap-3 mb-3">
+        <Avatar className="h-10 w-10 border-2 border-background shadow-md flex-shrink-0">
+          <AvatarImage src={blog.avatarUrl ?? undefined} />
+          <AvatarFallback
+            className="font-bold text-sm"
+            style={{ background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent }}
+          >
+            {blog.user.username.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <p className="font-mono text-xs font-bold" style={{ color: theme.accent }}>
+            {post.createdBy?.username ?? blog.user.username}
+          </p>
+          <p className="text-muted-foreground font-sans text-xs">
+            {format(new Date(post.createdAt as string), 'd MMM yyyy, HH:mm', { locale: ru })}
+            {post.updatedAt !== post.createdAt && ' · изм.'}
+          </p>
+        </div>
+        {post.isOwner && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onEdit(post)}
+              className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              <PenSquare className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => onDelete(post)}
+              className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {post.title && (
+        <h2 className="font-mono font-bold text-base sm:text-lg mb-1 leading-tight">{post.title}</h2>
+      )}
+
+      {post.content && (
+        <div className="whitespace-pre-wrap font-sans text-sm sm:text-base text-foreground leading-relaxed">
+          {post.content}
+        </div>
+      )}
+
+      <MediaGrid items={post.media ?? []} accentColor={theme.accent} />
+
+      {/* Action bar */}
+      <div className="flex items-center gap-5 mt-4 text-muted-foreground">
+        <button
+          onClick={() => onToggleLike(post.id)}
+          disabled={!me}
+          className="flex items-center gap-1.5 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+          style={likesState.liked ? { color: '#ef4444' } : undefined}
+          title={me ? undefined : 'Войдите чтобы поставить лайк'}
+        >
+          <Heart className="h-4 w-4" fill={likesState.liked ? '#ef4444' : 'none'} />
+          <span>{likesState.count}</span>
+        </button>
+        <button
+          onClick={() => setCommentsOpen((o) => !o)}
+          className="flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"
+          style={commentsOpen ? { color: theme.accent } : undefined}
+        >
+          <MessageCircle className="h-4 w-4" />
+          <span>{post.commentsCount + (commentsOpen ? 0 : 0)}</span>
+        </button>
+      </div>
+
+      {commentsOpen && (
+        <CommentsSection postId={post.id} me={me} theme={theme} />
+      )}
+    </article>
+  );
+}
+
+// ─── Create Post Box ───────────────────────────────────────────────────────────
+
+function CreatePostBox({
+  handle,
+  blog,
+  me,
+  theme,
+  onPosted,
+}: {
+  handle: string;
+  blog: ExtBlog;
+  me: { username: string };
+  theme: BlogTheme;
+  onPosted: () => void;
+}) {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [circleOpen, setCircleOpen] = useState(false);
+  const create = useCreateBlogPost();
+  const queryClient = useQueryClient();
+
+  const handleFile = async (file: File, type: 'image' | 'video' | 'audio', isCircle = false) => {
+    setUploading(true);
+    try {
+      const url = await uploadFile(file);
+      setMedia((prev) => [...prev, { type, url, isCircle }]);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Ошибка загрузки');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCircleVideo = async (blob: Blob) => {
+    setCircleOpen(false);
+    const file = new File([blob], `circle-${Date.now()}.webm`, { type: 'video/webm' });
+    await handleFile(file, 'video', true);
+  };
+
+  const removeMedia = (idx: number) => setMedia((prev) => prev.filter((_, i) => i !== idx));
+
+  const canSubmit = title.trim().length > 0 || content.trim().length > 0 || media.length > 0;
+
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    setSaving(true);
+    try {
+      await create.mutateAsync({
+        handle,
+        data: {
+          title: title.trim(),
+          content,
+          media: media.map((m) => ({ type: m.type, url: m.url, isCircle: m.isCircle })) as any,
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: getGetBlogQueryKey(handle) });
+      setTitle('');
+      setContent('');
+      setMedia([]);
+      onPosted();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Ошибка публикации');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="border rounded-2xl p-4 sm:p-5 mb-6" style={{ borderColor: theme.accentBorder, backgroundColor: theme.accentBg }}>
+        <div className="space-y-3">
+          <Input
+            placeholder="Заголовок поста"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="bg-background/60 border-border/60 font-mono font-semibold"
+          />
+          <Textarea
+            placeholder="Что нового?"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={3}
+            className="bg-background/60 border-border/60 font-sans resize-none"
+          />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-1">
+              <label className="cursor-pointer p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-card transition-colors" title="Прикрепить файл">
+                <Paperclip className="h-4 w-4" />
+                <input type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  files.forEach((f) => {
+                    if (f.type.startsWith('image/')) handleFile(f, 'image');
+                    else if (f.type.startsWith('video/')) handleFile(f, 'video');
+                    else if (f.type.startsWith('audio/')) handleFile(f, 'audio');
+                  });
+                  e.target.value = '';
+                }} />
+              </label>
+              {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground ml-1" />}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                onClick={() => setCircleOpen(true)}
+                disabled={uploading}
+                className="font-mono gap-1.5"
+                style={{ backgroundColor: theme.accent, color: '#000' }}
+                title="Снять кружок"
+              >
+                <Camera className="h-4 w-4" />
+                Кружок
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={saving || uploading || !canSubmit}
+                className="font-mono gap-1.5"
+                style={{ backgroundColor: theme.accent, color: '#000' }}
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Опубликовать
+              </Button>
+            </div>
+          </div>
+          {media.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {media.map((m, i) => (
+                <div key={i} className="relative group rounded-lg border border-border/60 overflow-hidden w-16 h-16 bg-card">
+                  {m.type === 'image' ? (
+                    <img src={m.url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-1">
+                      {m.isCircle ? <Camera className="h-4 w-4" /> : m.type === 'video' ? <Video className="h-4 w-4" /> : <Music className="h-4 w-4" />}
+                      {m.isCircle && <span className="text-[9px] font-mono">кружок</span>}
+                    </div>
+                  )}
+                  <button type="button" onClick={() => removeMedia(i)} className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Dialog open={circleOpen} onOpenChange={setCircleOpen}>
+        <DialogContent className="max-w-sm border border-border/60 bg-card/95 backdrop-blur">
+          <DialogHeader>
+            <DialogTitle className="font-mono text-base font-bold flex items-center gap-2">
+              <Camera className="h-4 w-4" style={{ color: theme.accent }} />
+              Снять кружок
+            </DialogTitle>
+          </DialogHeader>
+          <CircleVideoRecorder onRecorded={handleCircleVideo} onClose={() => setCircleOpen(false)} theme={theme} />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+// ─── Edit Blog Dialog ──────────────────────────────────────────────────────────
+
+function EditBlogDialog({
+  blog,
+  open,
+  onClose,
+  theme,
+}: {
+  blog: ExtBlog;
+  open: boolean;
+  onClose: () => void;
+  theme: BlogTheme;
+}) {
+  const [title, setTitle] = useState(blog.title);
+  const [description, setDescription] = useState(blog.description);
+  const [avatarUrl, setAvatarUrl] = useState(blog.avatarUrl ?? '');
+  const [coverUrl, setCoverUrl] = useState(blog.coverUrl ?? '');
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const update = useUpdateMyBlog();
+  const queryClient = useQueryClient();
+
+  const handleFile = async (file: File, type: 'avatar' | 'cover') => {
+    setUploading(true);
+    try {
+      const url = await uploadFile(file);
+      if (type === 'avatar') setAvatarUrl(url);
+      else setCoverUrl(url);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Ошибка загрузки');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    try {
+      await update.mutateAsync({
+        handle: blog.handle,
+        data: { title: title.trim(), description: description.trim(), avatarUrl: avatarUrl || null, coverUrl: coverUrl || null },
+      });
+      await queryClient.invalidateQueries({ queryKey: getGetBlogQueryKey(blog.handle) });
+      onClose();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Ошибка обновления');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg border border-border/60 bg-card/95 backdrop-blur">
+        <DialogHeader>
+          <DialogTitle className="font-mono text-lg font-bold flex items-center gap-2">
+            <PenSquare className="h-5 w-5" style={{ color: theme.accent }} />
+            Редактировать блог
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <Input placeholder="Название блога" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-background/50 border-border/60 font-mono" />
+          <Textarea placeholder="Описание" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="bg-background/50 border-border/60 font-sans resize-none" />
+          <div className="flex gap-3">
+            <label className="flex-1 cursor-pointer rounded-xl border border-border/60 bg-background/50 p-4 text-center hover:border-primary/50 transition-colors">
+              {coverUrl ? (
+                <div className="relative">
+                  <img src={coverUrl} alt="" className="w-full h-20 object-cover rounded-lg" />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setCoverUrl(''); }} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white"><X className="h-3 w-3" /></button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-muted-foreground"><ImageIcon className="h-5 w-5" /><span className="text-xs font-sans">Обложка</span></div>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'cover'); e.target.value = ''; }} />
+            </label>
+            <label className="flex-1 cursor-pointer rounded-xl border border-border/60 bg-background/50 p-4 text-center hover:border-primary/50 transition-colors">
+              {avatarUrl ? (
+                <div className="relative">
+                  <img src={avatarUrl} alt="" className="w-16 h-16 mx-auto object-cover rounded-full" />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setAvatarUrl(''); }} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white"><X className="h-3 w-3" /></button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-muted-foreground"><ImageIcon className="h-5 w-5" /><span className="text-xs font-sans">Аватар</span></div>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'avatar'); e.target.value = ''; }} />
+            </label>
+          </div>
+          {uploading && <div className="flex items-center gap-2 text-muted-foreground text-xs font-mono"><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose} className="font-mono">Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className="font-mono gap-1.5" style={{ backgroundColor: theme.accent, color: '#000' }}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Сохранить
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Edit Post Dialog ──────────────────────────────────────────────────────────
+
+function EditPostDialog({
+  post,
+  handle,
+  open,
+  onClose,
+  theme,
+}: {
+  post: ExtPost;
+  handle: string;
+  open: boolean;
+  onClose: () => void;
+  theme: BlogTheme;
+}) {
+  const [title, setTitle] = useState(post.title);
+  const [content, setContent] = useState(post.content);
+  const [media, setMedia] = useState<MediaItem[]>(
+    (post.media ?? []).map((m) => ({ type: m.type as 'image' | 'video' | 'audio', url: m.url, isCircle: m.isCircle }))
+  );
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const update = useUpdateBlogPost();
+  const queryClient = useQueryClient();
+
+  const handleFile = async (file: File, type: 'image' | 'video' | 'audio') => {
+    setUploading(true);
+    try {
+      const url = await uploadFile(file);
+      setMedia((prev) => [...prev, { type, url }]);
+    } catch (e) { alert(e instanceof Error ? e.message : 'Ошибка загрузки'); }
+    finally { setUploading(false); }
+  };
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    try {
+      await update.mutateAsync({ id: post.id, data: { title: title.trim(), content, media: media.map((m) => ({ type: m.type, url: m.url, isCircle: m.isCircle })) as any } });
+      await queryClient.invalidateQueries({ queryKey: getGetBlogQueryKey(handle) });
+      onClose();
+    } catch (e) { alert(e instanceof Error ? e.message : 'Ошибка сохранения'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg border border-border/60 bg-card/95 backdrop-blur">
+        <DialogHeader>
+          <DialogTitle className="font-mono text-lg font-bold">Редактировать пост</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <Input placeholder="Заголовок" value={title} onChange={(e) => setTitle(e.target.value)} className="font-mono bg-background/50 border-border/60" />
+          <Textarea placeholder="Текст..." value={content} onChange={(e) => setContent(e.target.value)} rows={5} className="font-sans resize-none bg-background/50 border-border/60" />
+          <div className="flex flex-wrap gap-2">
+            {(['image', 'video', 'audio'] as const).map((t) => (
+              <label key={t} className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-card px-3 py-2 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all">
+                {t === 'image' ? <ImageIcon className="h-3.5 w-3.5" /> : t === 'video' ? <Video className="h-3.5 w-3.5" /> : <Music className="h-3.5 w-3.5" />}
+                {t === 'image' ? 'Фото' : t === 'video' ? 'Видео' : 'Аудио'}
+                <input type="file" accept={`${t}/*`} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, t); e.target.value = ''; }} />
+              </label>
+            ))}
+            {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          </div>
+          {media.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {media.map((m, i) => (
+                <div key={i} className="relative group rounded-xl border border-border/60 overflow-hidden w-20 h-20 bg-card">
+                  {m.type === 'image' ? <img src={m.url} alt="" className="w-full h-full object-cover" /> : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      {m.isCircle ? <Camera className="h-5 w-5" /> : m.type === 'video' ? <Video className="h-5 w-5" /> : <Music className="h-5 w-5" />}
+                    </div>
+                  )}
+                  <button type="button" onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-3 w-3" /></button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose} className="font-mono">Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className="font-mono gap-1.5" style={{ backgroundColor: theme.accent, color: '#000' }}>
+              {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Сохранить
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Main Blog Page ────────────────────────────────────────────────────────────
+
+export default function BlogPage() {
+  const [, params] = useRoute('/blogs/:username');
+  const username = params?.username ?? '';
+  const { data, isLoading, error } = useGetBlog(username);
+  const { data: me } = useGetMe();
+  const [editingPost, setEditingPost] = useState<ExtPost | null>(null);
+  const [isEditBlogOpen, setIsEditBlogOpen] = useState(false);
+  const deletePost = useDeleteBlogPost();
+  const queryClient = useQueryClient();
+
+  const blog = data?.blog as ExtBlog | undefined;
+  const posts = (data?.posts ?? []) as ExtPost[];
+
+  const theme = blog ? getTheme(blog.handle) : DEFAULT_THEME;
+
+  // Likes state — initialized from server data, updated optimistically
+  const [likesState, setLikesState] = useState<Map<number, { count: number; liked: boolean }>>(new Map());
+
+  useEffect(() => {
+    if (posts.length > 0) {
+      setLikesState(new Map(posts.map((p) => [p.id, { count: p.likesCount ?? 0, liked: p.isLikedByMe ?? false }])));
+    }
+  }, [data]);
+
+  const toggleLike = async (postId: number) => {
+    if (!me) return;
+    const current = likesState.get(postId) ?? { count: 0, liked: false };
+    setLikesState((prev) => new Map(prev).set(postId, { count: current.liked ? current.count - 1 : current.count + 1, liked: !current.liked }));
+    try {
+      const res = await fetch(`/api/blogs/posts/${postId}/like`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: authHeaders(),
+        body: JSON.stringify({}),
+      });
+      const json = await res.json();
+      setLikesState((prev) => new Map(prev).set(postId, { count: json.count, liked: json.liked }));
+    } catch {
+      setLikesState((prev) => new Map(prev).set(postId, current));
+    }
+  };
+
+  const handleDelete = async (post: ExtPost) => {
+    if (!confirm('Удалить публикацию?')) return;
+    try {
+      await deletePost.mutateAsync({ id: post.id });
+      await queryClient.invalidateQueries({ queryKey: getGetBlogQueryKey(username) });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Ошибка удаления');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-32 text-muted-foreground font-mono">
+        <Loader2 className="h-6 w-6 mr-2 animate-spin" />
+        загрузка...
+      </div>
+    );
+  }
+
+  if (error && (error as any)?.status === 404) {
+    return (
+      <div className="max-w-3xl mx-auto w-full py-20 px-4 text-center">
+        <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+        <p className="text-muted-foreground font-mono text-lg">Блог не найден</p>
+      </div>
+    );
+  }
+
+  if (error || !blog) {
+    return (
+      <div className="flex items-center justify-center py-32 text-destructive font-mono text-sm text-center px-4">
+        Не удалось загрузить блог.
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto w-full pb-10">
+      {/* Cover — no blue fade, themed gradient or cover image */}
+      <div className="relative h-36 sm:h-52 overflow-hidden bg-black">
+        {blog.coverUrl ? (
+          <img src={blog.coverUrl} alt="" className="w-full h-full object-cover opacity-80" />
+        ) : (
+          <div className="absolute inset-0" style={{ background: theme.coverGradient }} />
+        )}
+        {/* Subtle bottom-only fade just to merge into page bg */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+      </div>
+
+      {/* Blog identity */}
+      <div className="px-4 sm:px-6 -mt-10 sm:-mt-12 relative z-0">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
+          <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-background shadow-xl">
+            <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} />
+            <AvatarFallback
+              className="font-black text-2xl sm:text-3xl"
+              style={{ background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent}22)`, color: theme.accent }}
+            >
+              {blog.user.username.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0 pb-1">
+            <h1 className="font-mono text-2xl sm:text-3xl font-black tracking-tight" style={{ color: theme.accent }}>
+              {blog.title || blog.user.username}
+            </h1>
+            <p className="text-muted-foreground font-mono text-sm">{blog.user.username}</p>
+          </div>
+          {blog.isOwner && (
+            <Button
+              variant="outline"
+              onClick={() => setIsEditBlogOpen(true)}
+              className="font-mono gap-2 self-start sm:self-auto"
+              style={{ borderColor: theme.accentBorder }}
+            >
+              <PenSquare className="h-4 w-4" />
+              Редактировать
+            </Button>
+          )}
+        </div>
+
+        {blog.description && (
+          <p className="text-foreground/80 font-sans text-sm sm:text-base mt-4 max-w-2xl leading-relaxed">
+            {blog.description}
+          </p>
+        )}
+      </div>
+
+      {/* Post feed */}
+      <div className="px-4 sm:px-6 mt-8">
+        {blog.isOwner && me && (
+          <CreatePostBox handle={blog.handle} blog={blog} me={me} theme={theme} onPosted={() => {}} />
+        )}
+
+        {posts.length === 0 ? (
+          <div className="text-center py-20 rounded-3xl border border-dashed bg-card/30" style={{ borderColor: theme.accentBorder }}>
+            <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />
+            <p className="text-muted-foreground font-mono">В блоге пока нет постов</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                blog={blog}
+                me={me}
+                theme={theme}
+                likesState={likesState.get(post.id) ?? { count: post.likesCount ?? 0, liked: post.isLikedByMe ?? false }}
+                onToggleLike={toggleLike}
+                onEdit={setEditingPost}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {editingPost && (
+        <EditPostDialog
+          post={editingPost}
+          handle={blog.handle}
+          open={!!editingPost}
+          onClose={() => setEditingPost(null)}
+          theme={theme}
+        />
+      )}
+
+      <EditBlogDialog blog={blog} open={isEditBlogOpen} onClose={() => setIsEditBlogOpen(false)} theme={theme} />
+    </div>
+  );
+}

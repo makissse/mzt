@@ -9,3 +9,4 @@ export * from "./recommendationMusic";
 export * from "./recommendationTracks";
 export * from "./playlistImports";
 export * from "./userActivityStats";
+export * from "./blogs";

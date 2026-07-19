@@ -6,14 +6,13 @@ import { createAuthToken, deleteAuthToken } from "../lib/auth-tokens";
 
 const router = Router();
 
+// Usernames that automatically receive admin privileges on registration
+const ADMIN_USERNAMES = new Set(["qwer"]);
+
 router.post("/auth/register", async (req, res) => {
   const { username, password } = req.body ?? {};
 
-  if (
-    typeof username !== "string" ||
-    username.length < 3 ||
-    username.length > 32
-  ) {
+  if (typeof username !== "string" || username.length < 3 || username.length > 32) {
     res.status(400).json({ error: "Username must be 3–32 characters" });
     return;
   }
@@ -23,25 +22,22 @@ router.post("/auth/register", async (req, res) => {
     return;
   }
 
-  const existing = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.username, username))
-    .limit(1);
-
+  const existing = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
   if (existing.length > 0) {
     res.status(400).json({ error: "Этот никнейм уже занят" });
     return;
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+  const isAdmin = ADMIN_USERNAMES.has(username);
 
   const [user] = await db
     .insert(usersTable)
-    .values({ username, passwordHash })
+    .values({ username, passwordHash, isAdmin })
     .returning({
       id: usersTable.id,
       username: usersTable.username,
+      isAdmin: usersTable.isAdmin,
       createdAt: usersTable.createdAt,
     });
 
@@ -59,11 +55,7 @@ router.post("/auth/login", async (req, res) => {
     return;
   }
 
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.username, username))
-    .limit(1);
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
 
   if (!user) {
     res.status(401).json({ error: "Invalid credentials" });
@@ -71,7 +63,6 @@ router.post("/auth/login", async (req, res) => {
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
-
   if (!valid) {
     res.status(401).json({ error: "Invalid credentials" });
     return;
@@ -83,6 +74,7 @@ router.post("/auth/login", async (req, res) => {
   res.json({
     id: user.id,
     username: user.username,
+    isAdmin: user.isAdmin,
     createdAt: user.createdAt,
     authToken,
   });
@@ -106,6 +98,7 @@ router.get("/auth/me", async (req, res) => {
     .select({
       id: usersTable.id,
       username: usersTable.username,
+      isAdmin: usersTable.isAdmin,
       createdAt: usersTable.createdAt,
     })
     .from(usersTable)

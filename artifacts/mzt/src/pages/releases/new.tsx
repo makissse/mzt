@@ -205,7 +205,7 @@ export default function NewRelease() {
                   <FormItem>
                     <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Название</FormLabel>
                     <FormControl>
-                      <Input placeholder="напр. disss na cuckolda" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
+                      <Input placeholder="напр. diss na cuckolda" className="font-sans text-lg bg-card rounded-lg h-12 border-border focus-visible:ring-primary" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -340,3 +340,95 @@ export interface RecommendationMusicInput {
   tracks?: RecommendationTrackInput[];
 }
 
+export type BlogMediaType = typeof BlogMediaType[keyof typeof BlogMediaType];
+
+
+export const BlogMediaType = {
+  image: 'image',
+  video: 'video',
+  audio: 'audio',
+} as const;
+
+export interface BlogMedia {
+  id: number;
+  type: BlogMediaType;
+  url: string;
+  order: number;
+}
+
+export type BlogMediaInputType = typeof BlogMediaInputType[keyof typeof BlogMediaInputType];
+
+
+export const BlogMediaInputType = {
+  image: 'image',
+  video: 'video',
+  audio: 'audio',
+} as const;
+
+export interface BlogMediaInput {
+  type: BlogMediaInputType;
+  /** @minLength 1 */
+  url: string;
+}
+
+export interface BlogCreateInput {
+  /** @maxLength 120 */
+  title?: string;
+  /** @maxLength 500 */
+  description?: string;
+  /**
+     * @minLength 1
+     * @maxLength 50
+     * @pattern ^[a-zA-Z0-9_-]+$
+     */
+  handle?: string;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
+}
+
+export interface BlogUpdateInput {
+  /** @maxLength 120 */
+  title?: string;
+  /** @maxLength 500 */
+  description?: string;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
+}
+
+export interface Blog {
+  id: number;
+  title: string;
+  handle: string;
+  description: string;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user: User;
+  postCount: number;
+  isOwner: boolean;
+}
+
+export interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: User;
+  media: BlogMedia[];
+  isOwner: boolean;
+}
+
+export interface BlogFeed {
+  blog: Blog;
+  posts: BlogPost[];
+}
+
+export interface BlogPostInput {
+  /** @minLength 1 */
+  title: string;
+  content?: string;
+  media?: BlogMediaInput[];
+}
+

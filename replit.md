@@ -1,6 +1,6 @@
 # МЗТ — Media Management Platform
 
-A media management and recommendation platform for music/video releases, tracks, and statistics.
+A media management and recommendation platform for music/video releases, tracks, statistics, and user blogs.
 
 ## Stack
 

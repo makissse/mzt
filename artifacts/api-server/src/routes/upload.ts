@@ -13,44 +13,11 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
-const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  // MP3
-  "audio/mpeg",
-  "audio/mp3",
-  // AAC / M4A / ALAC (all use mp4 container or x-alac)
-  "audio/mp4",
-  "audio/aac",
-  "audio/x-aac",
-  "audio/x-alac",
-  "audio/alac",
-  // OGG (Vorbis / Opus)
-  "audio/ogg",
-  "audio/vorbis",
-  "audio/opus",
-  // WAV / WAVE
-  "audio/wav",
-  "audio/wave",
-  "audio/x-wav",
-  "audio/vnd.wave",
-  // FLAC
-  "audio/flac",
-  "audio/x-flac",
-  // WebM
-  "audio/webm",
-]);
-
+// Accept any image/*, audio/*, or video/* MIME type to avoid browser MIME inconsistencies
 const ALLOWED_EXTENSIONS = new Set([
   ".jpg", ".jpeg", ".png", ".webp", ".gif",
-  ".mp3",
-  ".m4a", ".aac", ".alac",
-  ".ogg", ".opus",
-  ".wav",
-  ".flac",
-  ".webm",
+  ".mp3", ".m4a", ".aac", ".alac", ".ogg", ".opus", ".wav", ".flac", ".webm",
+  ".mp4", ".mov", ".m4v", ".ogv", ".mkv",
 ]);
 
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -69,13 +36,20 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB (for video)
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ALLOWED_MIME_TYPES.has(file.mimetype) && ALLOWED_EXTENSIONS.has(ext)) {
+    const mime = file.mimetype;
+    const isAllowedMime =
+      mime.startsWith("image/") ||
+      mime.startsWith("audio/") ||
+      mime.startsWith("video/") ||
+      mime === "application/octet-stream"; // some browsers send this for webm
+    const isAllowedExt = ALLOWED_EXTENSIONS.has(ext) || ext === ""; // allow no-ext webm blobs
+    if (isAllowedMime && (isAllowedExt || mime.startsWith("video/"))) {
       cb(null, true);
     } else {
-      cb(new Error("Only image and audio files are allowed"));
+      cb(new Error("Only image, audio, and video files are allowed"));
     }
   },
 });
@@ -92,10 +66,8 @@ router.post("/upload", requireAuth, upload.single("file"), (req, res) => {
 
 // Serve uploaded files (public read, but safe filename validation)
 router.get("/uploads/:filename", (req, res) => {
-  // Sanitize: strip any path traversal attempts
   const filename = path.basename(req.params.filename);
-  // Only allow filenames that match our generated pattern
-  if (!/^[\d]+-[a-z0-9]+\.[a-z0-9]+$/.test(filename)) {
+  if (!/^[\d]+-[a-z0-9]+(\.[a-z0-9]+)?$/.test(filename)) {
     res.status(400).json({ error: "Invalid filename" });
     return;
   }

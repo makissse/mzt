@@ -7,6 +7,16 @@
  */
 
 export * from './authInput';
+export * from './blog';
+export * from './blogCreateInput';
+export * from './blogFeed';
+export * from './blogMedia';
+export * from './blogMediaInput';
+export * from './blogMediaInputType';
+export * from './blogMediaType';
+export * from './blogPost';
+export * from './blogPostInput';
+export * from './blogUpdateInput';
 export * from './errorResponse';
 export * from './healthStatus';
 export * from './movie';

@@ -631,3 +631,246 @@ export const GetSecretPhotoResponse = zod.object({
 })
 
 
+/**
+ * @summary List all blogs
+ */
+export const ListBlogsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "handle": zod.string(),
+  "description": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+}),
+  "postCount": zod.number(),
+  "isOwner": zod.boolean()
+})
+export const ListBlogsResponse = zod.array(ListBlogsResponseItem)
+
+
+/**
+ * @summary Create a blog for the current user
+ */
+export const createMyBlogBodyTitleMax = 120;
+
+export const createMyBlogBodyDescriptionMax = 500;
+
+export const createMyBlogBodyHandleMax = 50;
+
+
+export const createMyBlogBodyHandleRegExp = new RegExp('^[a-zA-Z0-9_-]+$');
+
+
+export const CreateMyBlogBody = zod.object({
+  "title": zod.string().max(createMyBlogBodyTitleMax).optional(),
+  "description": zod.string().max(createMyBlogBodyDescriptionMax).optional(),
+  "handle": zod.string().min(1).max(createMyBlogBodyHandleMax).regex(createMyBlogBodyHandleRegExp).optional(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish()
+})
+
+export const CreateMyBlogResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "handle": zod.string(),
+  "description": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+}),
+  "postCount": zod.number(),
+  "isOwner": zod.boolean()
+})
+
+
+/**
+ * @summary Get a blog feed by handle
+ */
+export const GetBlogParams = zod.object({
+  "handle": zod.coerce.string()
+})
+
+export const GetBlogResponse = zod.object({
+  "blog": zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "handle": zod.string(),
+  "description": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+}),
+  "postCount": zod.number(),
+  "isOwner": zod.boolean()
+}),
+  "posts": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+}),
+  "media": zod.array(zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['image', 'video', 'audio']),
+  "url": zod.string(),
+  "order": zod.number()
+})),
+  "isOwner": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Update the current user's blog
+ */
+export const UpdateMyBlogParams = zod.object({
+  "handle": zod.coerce.string()
+})
+
+export const updateMyBlogBodyTitleMax = 120;
+
+export const updateMyBlogBodyDescriptionMax = 500;
+
+
+
+export const UpdateMyBlogBody = zod.object({
+  "title": zod.string().max(updateMyBlogBodyTitleMax).optional(),
+  "description": zod.string().max(updateMyBlogBodyDescriptionMax).optional(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish()
+})
+
+export const UpdateMyBlogResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "handle": zod.string(),
+  "description": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+}),
+  "postCount": zod.number(),
+  "isOwner": zod.boolean()
+})
+
+
+/**
+ * @summary Create a new post in a blog
+ */
+export const CreateBlogPostParams = zod.object({
+  "handle": zod.coerce.string()
+})
+
+
+
+
+
+export const CreateBlogPostBody = zod.object({
+  "title": zod.string().min(1),
+  "content": zod.string().optional(),
+  "media": zod.array(zod.object({
+  "type": zod.enum(['image', 'video', 'audio']),
+  "url": zod.string().min(1)
+})).optional()
+})
+
+export const CreateBlogPostResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+}),
+  "media": zod.array(zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['image', 'video', 'audio']),
+  "url": zod.string(),
+  "order": zod.number()
+})),
+  "isOwner": zod.boolean()
+})
+
+
+/**
+ * @summary Update a blog post
+ */
+export const UpdateBlogPostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+export const UpdateBlogPostBody = zod.object({
+  "title": zod.string().min(1),
+  "content": zod.string().optional(),
+  "media": zod.array(zod.object({
+  "type": zod.enum(['image', 'video', 'audio']),
+  "url": zod.string().min(1)
+})).optional()
+})
+
+export const UpdateBlogPostResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "createdBy": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "createdAt": zod.coerce.date()
+}),
+  "media": zod.array(zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['image', 'video', 'audio']),
+  "url": zod.string(),
+  "order": zod.number()
+})),
+  "isOwner": zod.boolean()
+})
+
+
+/**
+ * @summary Delete a blog post
+ */
+export const DeleteBlogPostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteBlogPostResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+

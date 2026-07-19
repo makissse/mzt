@@ -16,7 +16,9 @@ import NewRecommendation from '@/pages/recommendations/new';
 import RecommendationMusicDetail from '@/pages/recommendations/music/[id]';
 import TimelinePage from '@/pages/timeline/index';
 import SecretPhotoPage from '@/pages/secret-photo/index';
+import BlogPage from '@/pages/blogs/[username]';
 import { AppLayout } from '@/components/layout/app-layout';
+import { BlogLayout } from '@/components/layout/blog-layout';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,6 +58,11 @@ function Router() {
       </Route>
       <Route path="/secret-photo">
         {() => <AppLayout><SecretPhotoPage /></AppLayout>}
+      </Route>
+
+      {/* Blog routes — accessible without login, but show user context when logged in */}
+      <Route path="/blogs/:username">
+        {() => <BlogLayout><BlogPage /></BlogLayout>}
       </Route>
       
       <Route component={NotFound} />

@@ -22,6 +22,8 @@ tags:
     description: Platform statistics
   - name: recommendations
     description: Recommendations mode
+  - name: blogs
+    description: User blogs
 paths:
   /healthz:
     get:
@@ -500,6 +502,261 @@ paths:
                 $ref: "#/components/schemas/SecretPhotoStatus"
         "401":
           description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blogs:
+    get:
+      operationId: listBlogs
+      tags: [blogs]
+      summary: List all blogs
+      responses:
+        "200":
+          description: List of blogs with post counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Blog"
+    post:
+      operationId: createMyBlog
+      tags: [blogs]
+      summary: Create a blog for the current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogCreateInput"
+      responses:
+        "201":
+          description: Blog created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Blog already exists or handle taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blogs/{handle}:
+    get:
+      operationId: getBlog
+      tags: [blogs]
+      summary: Get a blog feed by handle
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Blog feed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogFeed"
+        "404":
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateMyBlog
+      tags: [blogs]
+      summary: Update the current user's blog
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogUpdateInput"
+      responses:
+        "200":
+          description: Blog updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blogs/{handle}/posts:
+    post:
+      operationId: createBlogPost
+      tags: [blogs]
+      summary: Create a new post in a blog
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blogs/posts/{id}:
+    put:
+      operationId: updateBlogPost
+      tags: [blogs]
+      summary: Update a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        "200":
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteBlogPost
+      tags: [blogs]
+      summary: Delete a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Post not found
           content:
             application/json:
               schema:
@@ -1063,4 +1320,174 @@ components:
       required:
         - type
         - artist
+        - title
+
+    BlogMedia:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [image, video, audio]
+        url:
+          type: string
+        order:
+          type: integer
+      required:
+        - id
+        - type
+        - url
+        - order
+
+    BlogMediaInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [image, video, audio]
+        url:
+          type: string
+          minLength: 1
+      required:
+        - type
+        - url
+
+
+    BlogCreateInput:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 500
+        handle:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: "^[a-zA-Z0-9_-]+$"
+        avatarUrl:
+          type: string
+          nullable: true
+        coverUrl:
+          type: string
+          nullable: true
+
+    BlogUpdateInput:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 500
+        avatarUrl:
+          type: string
+          nullable: true
+        coverUrl:
+          type: string
+          nullable: true
+
+    Blog:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        handle:
+          type: string
+        description:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        coverUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        user:
+          $ref: "#/components/schemas/User"
+        postCount:
+          type: integer
+        isOwner:
+          type: boolean
+      required:
+        - id
+        - title
+        - handle
+        - description
+        - createdAt
+        - updatedAt
+        - user
+        - postCount
+        - isOwner
+
+    BlogFeed:
+      type: object
+      properties:
+        blog:
+          $ref: "#/components/schemas/Blog"
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogPost"
+      required:
+        - blog
+        - posts
+
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/User"
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogMedia"
+        isOwner:
+          type: boolean
+      required:
+        - id
+        - title
+        - content
+        - createdAt
+        - updatedAt
+        - createdBy
+        - media
+        - isOwner
+
+    BlogPostInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogMediaInput"
+      required:
         - title

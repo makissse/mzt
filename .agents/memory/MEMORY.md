@@ -1,0 +1,2 @@
+- [Public pages auth-query loop](public-auth-query-loop.md) — Avoid duplicate `useGetMe` calls across public layout and page components; centralize auth state in the layout to prevent artifact-router request loops.
+- [Vite artifact build env vars](vite-artifact-build-env.md) — Vite artifacts need `PORT` and `BASE_PATH` in their `build` script so the monorepo `pnpm run build` works without manual env injection.

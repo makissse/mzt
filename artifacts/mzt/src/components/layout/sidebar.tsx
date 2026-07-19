@@ -1,8 +1,9 @@
 import React, { useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { useGetMe, useLogout, getGetMeQueryKey, clearAuthToken, useGetSecretPhoto } from '@workspace/api-client-react';
+import { useLogout, getGetMeQueryKey, clearAuthToken, useGetSecretPhoto, type User } from '@workspace/api-client-react';
+
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
-import { Disc3, Sparkles, LogOut, User, Clock3, Image } from 'lucide-react';
+import { Disc3, Sparkles, LogOut, User as UserIcon, Clock3, Image, Cpu, Zap } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 function MztLogo() {
@@ -11,7 +12,16 @@ function MztLogo() {
   );
 }
 
-const navItems = [
+type NavItem = {
+  label: string;
+  path: string;
+  icon: React.ElementType;
+  description: string;
+  exact?: boolean;
+  accentColor?: string;
+};
+
+const navItems: NavItem[] = [
   {
     label: 'Мясо 30',
     path: '/releases',
@@ -32,9 +42,72 @@ const navItems = [
   },
 ];
 
-function SecretNavItem() {
+const blogItems: NavItem[] = [
+  {
+    label: 'pysy.exe',
+    path: '/blogs/pysy-exe',
+    icon: Cpu,
+    description: 'Блог pysy',
+    exact: true,
+    accentColor: '#00ff41',
+  },
+  {
+    label: 'putzermann core',
+    path: '/blogs/putzermann-core',
+    icon: Zap,
+    description: 'Блог host9315',
+    exact: true,
+    accentColor: '#ff6b00',
+  },
+];
+
+function NavButton({ item, pathname, onClick }: { item: NavItem; pathname: string; onClick: () => void }) {
+  const active = item.exact ? pathname === item.path : pathname.startsWith(item.path);
+  const accent = item.accentColor;
+
+  return (
+    <SidebarMenuItem>
+      <button
+        onClick={onClick}
+        style={active && accent ? { color: accent, borderColor: `${accent}33`, backgroundColor: `${accent}14` } : undefined}
+        className={`
+          w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150 text-left group
+          ${active && !accent
+            ? 'bg-primary/10 border border-primary/20 text-primary'
+            : !active
+              ? 'border border-transparent text-muted-foreground hover:bg-card hover:border-border hover:text-foreground'
+              : 'border'
+          }
+        `}
+      >
+        <div
+          style={active && accent ? { color: accent, backgroundColor: `${accent}20` } : undefined}
+          className={`
+            flex items-center justify-center h-9 w-9 rounded-lg flex-shrink-0 transition-colors
+            ${active && !accent ? 'bg-primary/15 text-primary' : 'bg-card text-muted-foreground group-hover:text-foreground group-hover:bg-card/80'}
+          `}
+        >
+          <item.icon className="h-4 w-4" />
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="font-mono text-sm font-semibold leading-tight truncate">
+            {item.label}
+          </span>
+        </div>
+        {active && (
+          <div
+            className="ml-auto h-1.5 w-1.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: accent ?? 'hsl(var(--primary))' }}
+          />
+        )}
+      </button>
+    </SidebarMenuItem>
+  );
+}
+
+function SecretNavItem({ user }: { user?: User | null }) {
   const [, setLocation] = useLocation();
-  const { data: secretData } = useGetSecretPhoto();
+  const { data: secretData } = useGetSecretPhoto({ query: { enabled: !!user, queryKey: ["secretPhoto"] } });
   const btnRef = useRef<HTMLButtonElement>(null);
   const unlocked = !!secretData?.unlocked;
 
@@ -96,10 +169,9 @@ function SecretNavItem() {
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({ user }: { user?: User | null }) {
   const [, setLocation] = useLocation();
   const [pathname] = useLocation();
-  const { data: user } = useGetMe();
   const logout = useLogout();
   const queryClient = useQueryClient();
 
@@ -115,7 +187,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-border bg-sidebar">
-      <SidebarHeader className="h-20 flex items-center px-4 border-b border-border">
+      <SidebarHeader className="hidden md:flex h-20 items-center px-4 border-b border-border">
         <div
           className="cursor-pointer select-none"
           onClick={() => setLocation('/releases')}
@@ -127,39 +199,32 @@ export function AppSidebar() {
       <SidebarContent className="px-3 py-4">
         <SidebarGroup>
           <SidebarMenu className="space-y-1">
-            {navItems.map(({ label, path, icon: Icon, description }) => {
-              const active = pathname.startsWith(path);
-              return (
-                <SidebarMenuItem key={path}>
-                  <button
-                    onClick={() => setLocation(path)}
-                    className={`
-                      w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150 text-left group
-                      ${active
-                        ? 'bg-primary/10 border border-primary/20 text-primary'
-                        : 'border border-transparent text-muted-foreground hover:bg-card hover:border-border hover:text-foreground'
-                      }
-                    `}
-                  >
-                    <div className={`
-                      flex items-center justify-center h-9 w-9 rounded-lg flex-shrink-0 transition-colors
-                      ${active ? 'bg-primary/15 text-primary' : 'bg-card text-muted-foreground group-hover:text-foreground group-hover:bg-card/80'}
-                    `}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-mono text-sm font-semibold leading-tight truncate">
-                        {label}
-                      </span>
-                    </div>
-                    {active && (
-                      <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
-                    )}
-                  </button>
-                </SidebarMenuItem>
-              );
-            })}
-            <SecretNavItem />
+            {navItems.map((item) => (
+              <NavButton
+                key={item.path}
+                item={item}
+                pathname={pathname}
+                onClick={() => setLocation(item.path)}
+              />
+            ))}
+            <SecretNavItem user={user} />
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {/* Blog channels */}
+        <SidebarGroup className="mt-4">
+          <p className="px-3 mb-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">
+            Блоги
+          </p>
+          <SidebarMenu className="space-y-1">
+            {blogItems.map((item) => (
+              <NavButton
+                key={item.path}
+                item={item}
+                pathname={pathname}
+                onClick={() => setLocation(item.path)}
+              />
+            ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
@@ -169,7 +234,7 @@ export function AppSidebar() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <div className="h-7 w-7 rounded-full bg-card border border-border flex items-center justify-center flex-shrink-0">
-                <User className="h-3.5 w-3.5 text-muted-foreground" />
+                <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <span className="text-xs font-mono text-muted-foreground truncate">
                 {user.username}

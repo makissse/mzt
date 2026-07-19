@@ -1,6 +1,5 @@
 import React from 'react';
 import { useGetSecretPhoto } from '@workspace/api-client-react';
-import { AppLayout } from '@/components/layout/app-layout';
 import { Lock, Image } from 'lucide-react';
 
 function ProgressBar({ label, current, needed }: { label: string; current: number; needed: number }) {
@@ -94,5 +93,5 @@ export default function SecretPhotoPage() {
     );
   })();
 
-  return <AppLayout>{content}</AppLayout>;
+  return <>{content}</>;
 }
