@@ -1,45 +1,36 @@
-# МЗТ — Media Management Platform
+# mzt Platform
 
-A media management and recommendation platform for music/video releases, tracks, statistics, and user blogs.
+A music/media platform for releases, reviews, recommendations, and user blogs — with a gamification layer (secret photo unlocks based on activity milestones).
 
 ## Stack
 
-- **Frontend** (`artifacts/mzt`): React 19 + Vite, TypeScript, Tailwind CSS, Radix UI, TanStack Query, Wouter
-- **Backend** (`artifacts/api-server`): Express 5, Node.js, TypeScript, Drizzle ORM, Pino logging, Multer (file uploads), express-session
-- **Database**: PostgreSQL (Replit managed), Drizzle ORM + drizzle-kit migrations
-- **Shared libs** (`lib/`): `api-spec` (OpenAPI), `api-client-react` (generated hooks), `api-zod` (Zod schemas), `db` (Drizzle schema + client)
+- **Frontend:** React + Vite, Tailwind CSS, Radix UI, Framer Motion, Wouter (routing)
+- **Backend:** Node.js + Express, esbuild bundler
+- **Database:** PostgreSQL (Replit built-in) via Drizzle ORM
+- **API layer:** OpenAPI spec → Zod schemas → Orval-generated TanStack Query hooks
+- **Monorepo:** pnpm workspaces
 
-## Running the app
+## Structure
 
-Both services are configured as Replit workflows and start automatically:
-
-| Workflow | Command |
-|---|---|
-| `artifacts/mzt: web` | `pnpm --filter @workspace/mzt run dev` |
-| `artifacts/api-server: API Server` | `pnpm --filter @workspace/api-server run dev` |
-
-## Environment variables
-
-| Variable | Source |
-|---|---|
-| `DATABASE_URL` | Replit runtime-managed (auto-injected) |
-| `SESSION_SECRET` | Replit secret |
-
-## Database schema
-
-Push schema changes to the dev database:
-
-```bash
-pnpm --filter @workspace/db run push
+```
+artifacts/mzt/          # React web app (frontend)
+artifacts/api-server/   # Express API server (backend)
+artifacts/mockup-sandbox/ # Component design preview environment
+lib/db/                 # Drizzle ORM schema + DB connection
+lib/api-spec/           # OpenAPI specification
+lib/api-zod/            # Zod schemas derived from OpenAPI
+lib/api-client/         # Generated React/TanStack Query hooks
+scripts/                # Maintenance utilities
 ```
 
-## Install dependencies
+## How to run
 
-```bash
-pnpm install
-```
+All workflows are configured. After `pnpm install`:
+
+- **Web frontend** — `artifacts/mzt: web` workflow (Vite dev server)
+- **API server** — `artifacts/api-server: API Server` workflow (builds with esbuild, then serves)
+- **Database schema** — `pnpm --filter @workspace/db run push` (Drizzle push to dev DB)
+
+The app runs on Replit's built-in PostgreSQL — `DATABASE_URL` is managed automatically.
 
 ## User preferences
-
-- Keep the existing monorepo structure (pnpm workspace with `artifacts/` and `lib/`)
-- Do not migrate or replace the database setup

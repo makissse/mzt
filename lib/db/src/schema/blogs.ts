@@ -21,6 +21,8 @@ export const blogsTable = pgTable("blogs", {
 export const blogPostsTable = pgTable("blog_posts", {
   id: serial("id").primaryKey(),
   blogId: integer("blog_id").notNull().references(() => blogsTable.id, { onDelete: "cascade" }),
+  // Nullable for backwards-compat; new posts always set this to the creator's user id
+  createdByUserId: integer("created_by_user_id").references(() => usersTable.id),
   title: text("title").notNull(),
   content: text("content").notNull().default(""),
   createdAt: timestamp("created_at").notNull().defaultNow(),

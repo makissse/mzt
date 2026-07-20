@@ -14,6 +14,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { uploadFile } from '@/lib/upload';
 import { toast } from 'sonner';
+import { ImageCropper } from '@/components/image-cropper';
+import { useImageCropper } from '@/lib/use-image-cropper';
 
 const trackSchema = z.object({
   title: z.string(),
@@ -58,7 +60,8 @@ export default function NewRelease() {
   const queryClient = useQueryClient();
   const createRelease = useCreateRelease();
   const [isUploading, setIsUploading] = useState(false);
-  
+  const { cropperProps: releaseCropper, openCropper: openReleaseCropper } = useImageCropper();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -254,14 +257,31 @@ export default function NewRelease() {
                           <div className="text-center p-6 flex flex-col items-center">
                             <Upload className="h-8 w-8 text-muted-foreground mb-4" />
                             <p className="font-mono text-sm text-muted-foreground mb-4">Загрузите квадратное изображение</p>
-                            <Input 
-                              type="file" 
-                              accept="image/*" 
-                              className="hidden" 
+                            <input
                               id="cover-upload"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
-                                if (file) handleFileUpload(file, field.onChange);
+                                if (!file) return;
+                                openReleaseCropper(file, {
+                                  aspect: 1,
+                                  title: 'Обрезать обложку релиза',
+                                  onCropped: async (cropped) => {
+                                    setIsUploading(true);
+                                    try {
+                                      const url = await uploadFile(cropped);
+                                      field.onChange(url);
+                                    } catch (e) {
+                                      const message = e instanceof Error ? e.message : 'Ошибка загрузки файла';
+                                      toast.error(message);
+                                    } finally {
+                                      setIsUploading(false);
+                                    }
+                                  },
+                                });
+                                e.target.value = '';
                               }}
                             />
                             <Button 
@@ -276,6 +296,7 @@ export default function NewRelease() {
                           </div>
                         )}
                       </div>
+                      <ImageCropper {...releaseCropper} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

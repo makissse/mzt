@@ -9,7 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AudioPlayer } from '@/components/audio-player';
 import { uploadFile } from '@/lib/upload';
+import { blogAvatarFallback, formatOwnerUsername } from '@/lib/blog-display';
+import { ImageCropper } from '@/components/image-cropper';
+import { useImageCropper } from '@/lib/use-image-cropper';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useIsBwTheme } from '@/lib/use-bw-theme';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import {
@@ -24,9 +28,12 @@ import {
   MessageCircle,
   Send,
   Camera,
+  FlipHorizontal,
   StopCircle,
   Play,
   Pause,
+  Music,
+  Video,
 } from 'lucide-react';
 import type { BlogPost } from '@workspace/api-client-react';
 
@@ -66,10 +73,10 @@ type BlogTheme = {
 
 const BLOG_THEMES: Record<string, BlogTheme> = {
   'pysy-exe': {
-    accent: '#00ff41',
-    accentBg: 'rgba(0,255,65,0.09)',
-    accentBorder: 'rgba(0,255,65,0.25)',
-    coverGradient: 'linear-gradient(135deg, #040d04 0%, #001a00 60%, #002600 100%)',
+    accent: '#000080',
+    accentBg: '#c0c0c0',
+    accentBorder: '#808080',
+    coverGradient: '#008080',
   },
   'putzermann-core': {
     accent: '#ff6b00',
@@ -103,23 +110,27 @@ function CircleVideoRecorder({
   onRecorded,
   onClose,
   theme,
+  isPysy,
 }: {
   onRecorded: (blob: Blob) => void;
   onClose: () => void;
   theme: BlogTheme;
+  isPysy?: boolean;
 }) {
   const [phase, setPhase] = useState<'idle' | 'preview' | 'recording' | 'done'>('idle');
   const [countdown, setCountdown] = useState(60);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const videoRef = useRef<HTMLVideoElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const openCamera = async () => {
+  const openCamera = useCallback(async (mode: 'user' | 'environment' = 'user') => {
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode }, audio: true });
       setStream(s);
+      setFacingMode(mode);
       setPhase('preview');
       setTimeout(() => {
         if (videoRef.current) {
@@ -130,7 +141,13 @@ function CircleVideoRecorder({
     } catch {
       alert('Не удалось получить доступ к камере');
     }
-  };
+  }, []);
+
+  const toggleFacingMode = useCallback(() => {
+    const next = facingMode === 'user' ? 'environment' : 'user';
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    openCamera(next);
+  }, [facingMode, stream, openCamera]);
 
   const startRecording = () => {
     if (!stream) return;
@@ -175,8 +192,8 @@ function CircleVideoRecorder({
   return (
     <div className="flex flex-col items-center gap-5">
       <div
-        className="relative w-56 h-56 rounded-full overflow-hidden border-4 bg-black"
-        style={{ borderColor: theme.accentBorder }}
+        className={isPysy ? "relative w-72 h-72 overflow-hidden win95-sunken bg-black" : "relative w-72 h-72 rounded-full overflow-hidden border-4 bg-black"}
+        style={!isPysy ? { borderColor: theme.accentBorder } : undefined}
       >
         {phase === 'idle' ? (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -189,8 +206,18 @@ function CircleVideoRecorder({
             muted
             playsInline
             className="w-full h-full object-cover"
-            style={{ transform: 'scaleX(-1)' }}
+            style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : undefined }}
           />
+        )}
+        {phase === 'preview' && (
+          <button
+            type="button"
+            onClick={toggleFacingMode}
+            className="absolute top-3 left-3 p-2 rounded-full bg-black/60 text-white z-10"
+            title="Переключить камеру"
+          >
+            <FlipHorizontal className="h-4 w-4" />
+          </button>
         )}
         {phase === 'recording' && (
           <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-1">
@@ -211,32 +238,32 @@ function CircleVideoRecorder({
       <div className="flex gap-3">
         {phase === 'idle' && (
           <>
-            <Button onClick={openCamera} className="font-mono gap-2" style={{ backgroundColor: theme.accent, color: '#000' }}>
+            <Button onClick={() => openCamera('user')} className={isPysy ? "win95-button gap-2" : "font-mono gap-2"} style={!isPysy ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
               <Camera className="h-4 w-4" />
               Открыть камеру
             </Button>
-            <Button variant="outline" onClick={onClose} className="font-mono">Отмена</Button>
+            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
           </>
         )}
         {phase === 'preview' && (
           <>
-            <Button onClick={startRecording} className="font-mono gap-2 bg-red-500 hover:bg-red-600 text-white">
-              <span className="w-2.5 h-2.5 rounded-full bg-white" />
+            <Button onClick={startRecording} className={isPysy ? "win95-button gap-2" : "font-mono gap-2 bg-red-500 hover:bg-red-600 text-white"}>
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
               Запись
             </Button>
-            <Button variant="outline" onClick={() => { stream?.getTracks().forEach((t) => t.stop()); setStream(null); setPhase('idle'); }} className="font-mono">Отмена</Button>
+            <Button variant="outline" onClick={() => { stream?.getTracks().forEach((t) => t.stop()); setStream(null); setPhase('idle'); }} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
           </>
         )}
         {phase === 'recording' && (
-          <Button onClick={stopRecording} variant="outline" className="font-mono gap-2">
+          <Button onClick={stopRecording} variant="outline" className={isPysy ? "win95-button gap-2" : "font-mono gap-2"}>
             <StopCircle className="h-4 w-4 text-red-500" />
             Остановить
           </Button>
         )}
         {phase === 'done' && (
           <>
-            <Button onClick={onClose} className="font-mono" style={{ backgroundColor: theme.accent, color: '#000' }}>Готово</Button>
-            <Button variant="outline" onClick={() => setPhase('idle')} className="font-mono">Ещё раз</Button>
+            <Button onClick={onClose} className={isPysy ? "win95-button" : "font-mono"} style={!isPysy ? { backgroundColor: theme.accent, color: '#000' } : undefined}>Готово</Button>
+            <Button variant="outline" onClick={() => setPhase('idle')} className={isPysy ? "win95-button" : "font-mono"}>Ещё раз</Button>
           </>
         )}
       </div>
@@ -246,11 +273,11 @@ function CircleVideoRecorder({
 
 // ─── Circle Video Player ───────────────────────────────────────────────────────
 
-const CVIDEO_PX = 176;       // w-44 in pixels
-const CVIDEO_OFFSET = 10;    // gap from video edge to container edge
-const CONTAINER_SIZE = CVIDEO_PX + CVIDEO_OFFSET * 2; // 196
-const RING_CENTER = CONTAINER_SIZE / 2;                // 98
-const RING_R = RING_CENTER - CVIDEO_OFFSET / 2 - 1;   // ~92
+const CVIDEO_PX = 230;       // ~30% larger than the original 176px
+const CVIDEO_OFFSET = 13;    // gap from video edge to container edge
+const CONTAINER_SIZE = CVIDEO_PX + CVIDEO_OFFSET * 2; // 256
+const RING_CENTER = CONTAINER_SIZE / 2;                // 128
+const RING_R = RING_CENTER - CVIDEO_OFFSET / 2 - 1;   // ~121
 const RING_STROKE = 4;
 const CIRC = 2 * Math.PI * RING_R;
 
@@ -264,50 +291,69 @@ function CircleVideoPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [phase, setPhase] = useState<'idle' | 'playing' | 'paused'>('idle');
   const [progress, setProgress] = useState(0); // 0–1
-  const rafRef = useRef<number | null>(null);
 
-  const startProgressLoop = useCallback(() => {
-    const v = videoRef.current;
-    if (!v || rafRef.current) return;
-    const tick = () => {
-      setProgress(v.currentTime / v.duration);
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-  }, []);
-
-  const stopProgressLoop = useCallback(() => {
-    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
-  }, []);
-
+  // Sync progress while the video is playing; stop on pause/end.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const onPlay  = () => { setPhase('playing'); startProgressLoop(); };
-    const onPause = () => { setPhase('paused'); stopProgressLoop(); };
-    const onEnded = () => { setPhase('idle'); stopProgressLoop(); setProgress(0); };
-    const onLoaded = () => setProgress(v.currentTime / v.duration);
-    v.addEventListener('play',        onPlay);
-    v.addEventListener('pause',       onPause);
-    v.addEventListener('ended',       onEnded);
-    v.addEventListener('loadeddata',  onLoaded);
-    v.addEventListener('loadedmetadata', onLoaded);
-    return () => {
-      v.removeEventListener('play',        onPlay);
-      v.removeEventListener('pause',       onPause);
-      v.removeEventListener('ended',       onEnded);
-      v.removeEventListener('loadeddata',  onLoaded);
-      v.removeEventListener('loadedmetadata', onLoaded);
-      stopProgressLoop();
-    };
-  }, [startProgressLoop, stopProgressLoop]);
 
-  const toggle = () => {
+    const onPlay = () => setPhase('playing');
+    const onPause = () => setPhase('paused');
+    const onEnded = () => { setPhase('idle'); setProgress(0); };
+    const onSeeked = () => {
+      if (v.duration && isFinite(v.duration)) setProgress(v.currentTime / v.duration);
+    };
+
+    v.addEventListener('play', onPlay);
+    v.addEventListener('pause', onPause);
+    v.addEventListener('ended', onEnded);
+    v.addEventListener('seeked', onSeeked);
+    v.addEventListener('loadedmetadata', onSeeked);
+
+    return () => {
+      v.removeEventListener('play', onPlay);
+      v.removeEventListener('pause', onPause);
+      v.removeEventListener('ended', onEnded);
+      v.removeEventListener('seeked', onSeeked);
+      v.removeEventListener('loadedmetadata', onSeeked);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (phase !== 'playing') return;
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) v.play();
-    else          v.pause();
-  };
+    let raf: number;
+    const tick = () => {
+      // Guard against NaN/Infinity duration (metadata not yet loaded)
+      if (v.duration && isFinite(v.duration) && v.currentTime >= 0) {
+        setProgress(v.currentTime / v.duration);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [phase]);
+
+  const playPromiseRef = useRef<Promise<void> | null>(null);
+
+  const toggle = useCallback(() => {
+    const v = videoRef.current;
+    if (!v || playPromiseRef.current) return;
+    if (v.paused) {
+      // Set phase optimistically so the ring appears immediately (don't wait for 'play' event)
+      setPhase('playing');
+      playPromiseRef.current = v
+        .play()
+        .then(() => { playPromiseRef.current = null; })
+        .catch(() => {
+          playPromiseRef.current = null;
+          setPhase('idle');
+        });
+    } else {
+      v.pause();
+    }
+  }, []);
 
   const dashOffset = CIRC * (1 - progress);
 
@@ -331,7 +377,7 @@ function CircleVideoPlayer({
           ref={videoRef}
           src={src}
           className="w-full h-full object-cover pointer-events-none"
-          preload="metadata"
+          preload="auto"
           playsInline
         />
       </div>
@@ -352,7 +398,7 @@ function CircleVideoPlayer({
           stroke="rgba(255,255,255,0.18)"
           strokeWidth={RING_STROKE}
         />
-        {/* Progress */}
+        {/* Progress — no CSS transition so it follows currentTime exactly */}
         <circle
           cx={RING_CENTER}
           cy={RING_CENTER}
@@ -363,7 +409,6 @@ function CircleVideoPlayer({
           strokeLinecap="round"
           strokeDasharray={CIRC}
           strokeDashoffset={dashOffset}
-          style={{ transition: 'stroke-dashoffset 0.15s linear' }}
         />
       </svg>
 
@@ -385,9 +430,13 @@ function CircleVideoPlayer({
 function MediaGrid({
   items,
   accentColor,
+  isPutzermann,
+  isPysy,
 }: {
   items: Array<{ type: string; url: string; isCircle?: boolean }>;
   accentColor: string;
+  isPutzermann?: boolean;
+  isPysy?: boolean;
 }) {
   if (items.length === 0) return null;
 
@@ -400,7 +449,7 @@ function MediaGrid({
       {images.length > 0 && (
         <div className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'}`}>
           {images.map((img, idx) => (
-            <div key={idx} className={`relative overflow-hidden rounded-2xl border border-border/60 bg-card ${images.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}>
+            <div key={idx} className={`relative overflow-hidden ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'rounded-xl border border-white/5 bg-[#1a1a1a]' : 'rounded-2xl border border-border/60 bg-card'} ${images.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}>
               <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" />
             </div>
           ))}
@@ -412,7 +461,7 @@ function MediaGrid({
             <CircleVideoPlayer src={vid.url} accentColor={accentColor} />
           </div>
         ) : (
-          <div key={idx} className="rounded-2xl overflow-hidden border border-border/60 bg-card">
+          <div key={idx} className={`${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'rounded-xl border border-white/5 bg-[#1a1a1a]' : 'rounded-2xl border border-border/60 bg-card'} overflow-hidden`}>
             <video src={vid.url} controls className="w-full max-h-[460px]" preload="metadata" />
           </div>
         )
@@ -428,7 +477,7 @@ function MediaGrid({
 
 type Comment = { id: number; content: string; createdAt: string; user: { username: string } };
 
-function CommentsSection({ postId, me, theme }: { postId: number; me?: { username: string } | null; theme: BlogTheme }) {
+function CommentsSection({ postId, me, theme, isPutzermann, isPysy }: { postId: number; me?: { username: string } | null; theme: BlogTheme; isPutzermann?: boolean; isPysy?: boolean }) {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const queryClient = useQueryClient();
@@ -464,19 +513,19 @@ function CommentsSection({ postId, me, theme }: { postId: number; me?: { usernam
   };
 
   return (
-    <div className="mt-3 pt-3 border-t border-border/40 space-y-3">
+    <div className={`mt-3 pt-3 space-y-3 ${isPysy ? 'border-t-2 border-white border-t-[#808080] border-b-2 border-b-[#ffffff] mb-2' : isPutzermann ? 'border-t border-white/5' : 'border-t border-border/40'}`}>
       {isLoading ? (
         <div className="flex justify-center py-2"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-muted-foreground font-mono px-1">Комментариев пока нет</p>
+        <p className={`text-xs px-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'text-white/40 font-sans' : 'text-muted-foreground font-mono'}`}>Комментариев пока нет</p>
       ) : (
         <div className="space-y-2">
           {comments.map((c) => (
             <div key={c.id} className="flex gap-2">
-              <span className="font-mono text-xs font-bold flex-shrink-0" style={{ color: theme.accent }}>
+              <span className={`text-xs font-bold flex-shrink-0 ${isPysy ? 'win95-text font-bold' : isPutzermann ? 'font-sans text-white' : 'font-mono'}`} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
                 {c.user.username}
               </span>
-              <span className="font-sans text-xs text-foreground leading-relaxed">{c.content}</span>
+              <span className={`text-xs leading-relaxed ${isPysy ? 'win95-text' : isPutzermann ? 'font-sans text-white/80' : 'font-sans text-foreground'}`}>{c.content}</span>
             </div>
           ))}
         </div>
@@ -486,16 +535,20 @@ function CommentsSection({ postId, me, theme }: { postId: number; me?: { usernam
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Написать комментарий..."
-            className="h-8 text-xs font-sans bg-background/50 border-border/60"
+            placeholder={isPysy ? 'Комментарий...' : 'Написать комментарий...'}
+            className={isPysy
+              ? "h-8 win95-sunken win95-text px-2 rounded-none"
+              : isPutzermann
+              ? "h-9 text-sm font-sans bg-[#1a1a1a] border-white/5 text-white placeholder:text-white/30 rounded-full px-4"
+              : "h-8 text-xs font-sans bg-background/50 border-border/60"}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
           />
           <Button
             size="sm"
             onClick={submit}
             disabled={submitting || !text.trim()}
-            className="h-8 px-3 font-mono"
-            style={{ backgroundColor: theme.accent, color: '#000' }}
+            className={isPysy ? "win95-button h-8 px-3" : isPutzermann ? "h-9 w-9 rounded-full p-0 flex items-center justify-center shrink-0" : "h-8 px-3 font-mono"}
+            style={!isPysy ? { backgroundColor: theme.accent, color: isPutzermann ? '#fff' : '#000' } : undefined}
           >
             {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
           </Button>
@@ -513,6 +566,7 @@ function PostCard({
   me,
   theme,
   likesState,
+  isPutzermann,
   onToggleLike,
   onEdit,
   onDelete,
@@ -522,32 +576,63 @@ function PostCard({
   me?: { username: string } | null;
   theme: BlogTheme;
   likesState: { count: number; liked: boolean };
+  isPutzermann?: boolean;
   onToggleLike: (postId: number) => void;
   onEdit: (post: ExtPost) => void;
   onDelete: (post: ExtPost) => void;
 }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const isPysy = blog.handle === 'pysy-exe';
 
   return (
     <article
-      className="bg-card border rounded-2xl p-4 sm:p-5 transition-all duration-200"
-      style={{ borderColor: commentsOpen ? theme.accentBorder : undefined }}
+      className={isPysy
+        ? "win95-window mb-6"
+        : isPutzermann
+          ? "bg-[#151515] border border-white/5 rounded-3xl p-4 sm:p-5 transition-all duration-200"
+          : "bg-card border rounded-2xl p-4 sm:p-5 transition-all duration-200"}
+      style={{ borderColor: !isPysy && !isPutzermann && commentsOpen ? theme.accentBorder : undefined }}
     >
+      {isPysy && (
+        <div className="win95-title-bar">
+          <div className="win95-title-bar-text flex items-center gap-1">
+            <span className="w-3 h-3 bg-[#c0c0c0] border-t border-l border-white border-r border-b border-[#808080] inline-block"></span>
+            POST_{post.id}.EXE
+          </div>
+          <div className="flex gap-0.5">
+            <button className="win95-button win95-button-small">_</button>
+            <button className="win95-button win95-button-small">□</button>
+            <button className="win95-button win95-button-small">X</button>
+          </div>
+        </div>
+      )}
+
+      <div className={isPysy ? "p-3 sm:p-4" : ""}>
       <div className="flex items-center gap-3 mb-3">
-        <Avatar className="h-10 w-10 border-2 border-background shadow-md flex-shrink-0">
+        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 border-0 bg-[#222]" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
           <AvatarImage src={blog.avatarUrl ?? undefined} />
           <AvatarFallback
-            className="font-bold text-sm"
-            style={{ background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent }}
+            className={isPysy ? "font-bold text-sm win95-text" : isPutzermann ? "font-bold text-sm text-white" : "font-bold text-sm"}
+            style={!isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
           >
-            {blog.user.username.slice(0, 2).toUpperCase()}
+            {blogAvatarFallback(blog.handle, blog.user.username)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-mono text-xs font-bold" style={{ color: theme.accent }}>
-            {post.createdBy?.username ?? blog.user.username}
+          <p className={isPysy ? "win95-text font-bold leading-tight" : isPutzermann ? "font-sans text-[15px] font-semibold text-white leading-tight" : "font-mono text-xs font-bold"} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
+            {isPutzermann ? (blog.title || blog.user.username) : (post.createdBy?.username ?? blog.user.username)}
           </p>
-          <p className="text-muted-foreground font-sans text-xs">
+          {isPysy && (
+            <p className="win95-text-muted">
+              {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+            </p>
+          )}
+          {isPutzermann && (
+            <p className="text-white/40 font-sans text-[13px]">
+              {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+            </p>
+          )}
+          <p className={isPysy ? "win95-text-muted mt-0.5" : isPutzermann ? "text-white/40 font-sans text-xs mt-0.5" : "text-muted-foreground font-sans text-xs"}>
             {format(new Date(post.createdAt as string), 'd MMM yyyy, HH:mm', { locale: ru })}
             {post.updatedAt !== post.createdAt && ' · изм.'}
           </p>
@@ -556,13 +641,13 @@ function PostCard({
           <div className="flex items-center gap-1">
             <button
               onClick={() => onEdit(post)}
-              className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className={isPysy ? "win95-button p-1" : isPutzermann ? "p-2 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors" : "p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"}
             >
               <PenSquare className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDelete(post)}
-              className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              className={isPysy ? "win95-button p-1" : isPutzermann ? "p-2 rounded-full text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors" : "p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -571,23 +656,23 @@ function PostCard({
       </div>
 
       {post.title && (
-        <h2 className="font-mono font-bold text-base sm:text-lg mb-1 leading-tight">{post.title}</h2>
+        <h2 className={isPysy ? "win95-text font-bold text-base sm:text-lg mb-1 leading-tight" : isPutzermann ? "font-sans font-bold text-lg text-white mb-1 leading-tight" : "font-mono font-bold text-base sm:text-lg mb-1 leading-tight"}>{post.title}</h2>
       )}
 
       {post.content && (
-        <div className="whitespace-pre-wrap font-sans text-sm sm:text-base text-foreground leading-relaxed">
+        <div className={isPysy ? "whitespace-pre-wrap win95-text leading-relaxed" : isPutzermann ? "whitespace-pre-wrap font-sans text-[15px] text-white/90 leading-relaxed" : "whitespace-pre-wrap font-sans text-sm sm:text-base text-foreground leading-relaxed"}>
           {post.content}
         </div>
       )}
 
-      <MediaGrid items={post.media ?? []} accentColor={theme.accent} />
+      <MediaGrid items={post.media ?? []} accentColor={theme.accent} isPutzermann={isPutzermann} isPysy={isPysy} />
 
       {/* Action bar */}
-      <div className="flex items-center gap-5 mt-4 text-muted-foreground">
+      <div className={isPysy ? "flex items-center gap-5 mt-4 win95-text-muted" : isPutzermann ? "flex items-center gap-5 mt-4 text-white/40" : "flex items-center gap-5 mt-4 text-muted-foreground"}>
         <button
           onClick={() => onToggleLike(post.id)}
           disabled={!me}
-          className="flex items-center gap-1.5 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "flex items-center gap-1.5 transition-colors text-[15px] font-sans disabled:opacity-50 disabled:cursor-not-allowed hover:text-white" : "flex items-center gap-1.5 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"}
           style={likesState.liked ? { color: '#ef4444' } : undefined}
           title={me ? undefined : 'Войдите чтобы поставить лайк'}
         >
@@ -596,8 +681,8 @@ function PostCard({
         </button>
         <button
           onClick={() => setCommentsOpen((o) => !o)}
-          className="flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"
-          style={commentsOpen ? { color: theme.accent } : undefined}
+          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "flex items-center gap-1.5 transition-colors text-[15px] font-sans hover:text-white" : "flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"}
+          style={commentsOpen && !isPysy ? { color: theme.accent } : undefined}
         >
           <MessageCircle className="h-4 w-4" />
           <span>{post.commentsCount + (commentsOpen ? 0 : 0)}</span>
@@ -605,8 +690,9 @@ function PostCard({
       </div>
 
       {commentsOpen && (
-        <CommentsSection postId={post.id} me={me} theme={theme} />
+        <CommentsSection postId={post.id} me={me} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} />
       )}
+      </div>
     </article>
   );
 }
@@ -618,14 +704,17 @@ function CreatePostBox({
   blog,
   me,
   theme,
+  isPutzermann,
   onPosted,
 }: {
   handle: string;
   blog: ExtBlog;
   me: { username: string };
   theme: BlogTheme;
+  isPutzermann?: boolean;
   onPosted: () => void;
 }) {
+  const isPysy = blog.handle === 'pysy-exe';
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -683,25 +772,39 @@ function CreatePostBox({
 
   return (
     <>
-      <div className="border rounded-2xl p-4 sm:p-5 mb-6" style={{ borderColor: theme.accentBorder, backgroundColor: theme.accentBg }}>
-        <div className="space-y-3">
+      <div className={isPysy ? "win95-window mb-6" : isPutzermann ? "bg-[#151515] rounded-3xl p-4 sm:p-6 mb-6" : "border rounded-2xl p-4 sm:p-5 mb-6"} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder, backgroundColor: theme.accentBg } : undefined}>
+        {isPysy && (
+          <div className="win95-title-bar">
+            <div className="win95-title-bar-text flex items-center gap-1">
+              <span className="w-3 h-3 bg-[#c0c0c0] border-t border-l border-white border-r border-b border-[#808080] inline-block"></span>
+              NEW_POST.EXE
+            </div>
+            <div className="flex gap-0.5">
+              <button className="win95-button win95-button-small">_</button>
+              <button className="win95-button win95-button-small">□</button>
+              <button className="win95-button win95-button-small">X</button>
+            </div>
+          </div>
+        )}
+        <div className={isPysy ? "space-y-3 p-3 sm:p-4" : "space-y-3"}>
           <Input
-            placeholder="Заголовок поста"
+            placeholder={isPysy ? 'Заголовок поста' : 'Заголовок поста'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="bg-background/60 border-border/60 font-mono font-semibold"
+            className={isPysy ? "win95-sunken win95-text px-2 h-8 rounded-none w-full" : isPutzermann ? "bg-transparent border-0 font-sans font-bold text-lg text-white placeholder:text-white/30 px-0 h-auto focus-visible:ring-0 shadow-none" : "bg-background/60 border-border/60 font-mono font-semibold"}
           />
           <Textarea
-            placeholder="Что нового?"
+            placeholder={isPysy ? 'Содержимое...' : 'Что нового?'}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
-            className="bg-background/60 border-border/60 font-sans resize-none"
+            className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : isPutzermann ? "bg-transparent border-0 font-sans text-[15px] text-white/90 placeholder:text-white/30 px-0 resize-none focus-visible:ring-0 shadow-none min-h-[80px]" : "bg-background/60 border-border/60 font-sans resize-none"}
           />
+          {(isPysy || isPutzermann) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : 'bg-white/5'}`} />}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1">
-              <label className="cursor-pointer p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-card transition-colors" title="Прикрепить файл">
-                <Paperclip className="h-4 w-4" />
+              <label className={`cursor-pointer p-2 rounded-none transition-colors ${isPysy ? 'win95-button' : isPutzermann ? 'text-white/40 hover:text-white hover:bg-white/10 rounded-full' : 'text-muted-foreground hover:text-foreground hover:bg-card rounded-full'}`} title="Прикрепить файл">
+                <Paperclip className="h-5 w-5" />
                 <input type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={(e) => {
                   const files = Array.from(e.target.files ?? []);
                   files.forEach((f) => {
@@ -719,8 +822,8 @@ function CreatePostBox({
                 type="button"
                 onClick={() => setCircleOpen(true)}
                 disabled={uploading}
-                className="font-mono gap-1.5"
-                style={{ backgroundColor: theme.accent, color: '#000' }}
+                className={isPysy ? "win95-button gap-1.5 h-auto py-1" : isPutzermann ? "font-sans gap-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full px-4 h-9" : "font-mono gap-1.5"}
+                style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
                 title="Снять кружок"
               >
                 <Camera className="h-4 w-4" />
@@ -729,8 +832,8 @@ function CreatePostBox({
               <Button
                 onClick={handleSubmit}
                 disabled={saving || uploading || !canSubmit}
-                className="font-mono gap-1.5"
-                style={{ backgroundColor: theme.accent, color: '#000' }}
+                className={isPysy ? "win95-button gap-1.5 h-auto py-1 font-bold" : isPutzermann ? "font-sans gap-1.5 rounded-full px-5 h-9" : "font-mono gap-1.5"}
+                style={!isPysy ? { backgroundColor: theme.accent, color: isPutzermann ? '#fff' : '#000' } : undefined}
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Опубликовать
@@ -740,17 +843,17 @@ function CreatePostBox({
           {media.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-1">
               {media.map((m, i) => (
-                <div key={i} className="relative group rounded-lg border border-border/60 overflow-hidden w-16 h-16 bg-card">
+                <div key={i} className={`relative group overflow-hidden w-16 h-16 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'rounded-xl border border-white/5 bg-[#1a1a1a]' : 'rounded-lg border border-border/60 bg-card'}`}>
                   {m.type === 'image' ? (
                     <img src={m.url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-1">
+                    <div className={`w-full h-full flex flex-col items-center justify-center gap-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'text-white/40' : 'text-muted-foreground'}`}>
                       {m.isCircle ? <Camera className="h-4 w-4" /> : m.type === 'video' ? <Video className="h-4 w-4" /> : <Music className="h-4 w-4" />}
                       {m.isCircle && <span className="text-[9px] font-mono">кружок</span>}
                     </div>
                   )}
-                  <button type="button" onClick={() => removeMedia(i)} className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                    <X className="h-3 w-3" />
+                  <button type="button" onClick={() => removeMedia(i)} className="absolute top-0.5 right-0.5 p-2 md:p-0.5 rounded-full bg-black/60 text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <X className="h-4 w-4 md:h-3 md:w-3" />
                   </button>
                 </div>
               ))}
@@ -760,14 +863,28 @@ function CreatePostBox({
       </div>
 
       <Dialog open={circleOpen} onOpenChange={setCircleOpen}>
-        <DialogContent className="max-w-sm border border-border/60 bg-card/95 backdrop-blur">
-          <DialogHeader>
-            <DialogTitle className="font-mono text-base font-bold flex items-center gap-2">
-              <Camera className="h-4 w-4" style={{ color: theme.accent }} />
-              Снять кружок
-            </DialogTitle>
-          </DialogHeader>
-          <CircleVideoRecorder onRecorded={handleCircleVideo} onClose={() => setCircleOpen(false)} theme={theme} />
+        <DialogContent className={isPysy ? "max-w-sm win95-window p-0 rounded-none border-0" : "max-w-sm border border-border/60 bg-card/95 backdrop-blur"}>
+          {isPysy && (
+            <div className="win95-title-bar">
+              <div className="win95-title-bar-text flex items-center gap-1">
+                <Camera className="h-3 w-3" /> RECORD.EXE
+              </div>
+              <div className="flex gap-0.5">
+                <button className="win95-button win95-button-small" onClick={() => setCircleOpen(false)}>X</button>
+              </div>
+            </div>
+          )}
+          {!isPysy && (
+            <DialogHeader>
+              <DialogTitle className="font-mono text-base font-bold flex items-center gap-2">
+                <Camera className="h-4 w-4" style={{ color: theme.accent }} />
+                Снять кружок
+              </DialogTitle>
+            </DialogHeader>
+          )}
+          <div className={isPysy ? "p-4" : ""}>
+            <CircleVideoRecorder onRecorded={handleCircleVideo} onClose={() => setCircleOpen(false)} theme={theme} isPysy={isPysy} />
+          </div>
         </DialogContent>
       </Dialog>
     </>
@@ -787,6 +904,7 @@ function EditBlogDialog({
   onClose: () => void;
   theme: BlogTheme;
 }) {
+  const isPysy = blog.handle === 'pysy-exe';
   const [title, setTitle] = useState(blog.title);
   const [description, setDescription] = useState(blog.description);
   const [avatarUrl, setAvatarUrl] = useState(blog.avatarUrl ?? '');
@@ -795,17 +913,42 @@ function EditBlogDialog({
   const [saving, setSaving] = useState(false);
   const update = useUpdateMyBlog();
   const queryClient = useQueryClient();
+  const { cropperProps: editCropper, openCropper: openEditCropper } = useImageCropper();
 
   const handleFile = async (file: File, type: 'avatar' | 'cover') => {
-    setUploading(true);
-    try {
-      const url = await uploadFile(file);
-      if (type === 'avatar') setAvatarUrl(url);
-      else setCoverUrl(url);
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Ошибка загрузки');
-    } finally {
-      setUploading(false);
+    if (type === 'avatar') {
+      openEditCropper(file, {
+        aspect: 1,
+        title: 'Обрезать аватар',
+        circularPreview: true,
+        onCropped: async (cropped) => {
+          setUploading(true);
+          try {
+            const url = await uploadFile(cropped);
+            setAvatarUrl(url);
+          } catch (e) {
+            alert(e instanceof Error ? e.message : 'Ошибка загрузки');
+          } finally {
+            setUploading(false);
+          }
+        },
+      });
+    } else {
+      openEditCropper(file, {
+        aspect: 2,
+        title: 'Обрезать обложку',
+        onCropped: async (cropped) => {
+          setUploading(true);
+          try {
+            const url = await uploadFile(cropped);
+            setCoverUrl(url);
+          } catch (e) {
+            alert(e instanceof Error ? e.message : 'Ошибка загрузки');
+          } finally {
+            setUploading(false);
+          }
+        },
+      });
     }
   };
 
@@ -828,50 +971,61 @@ function EditBlogDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg border border-border/60 bg-card/95 backdrop-blur">
-        <DialogHeader>
-          <DialogTitle className="font-mono text-lg font-bold flex items-center gap-2">
-            <PenSquare className="h-5 w-5" style={{ color: theme.accent }} />
-            Редактировать блог
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-2">
-          <Input placeholder="Название блога" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-background/50 border-border/60 font-mono" />
-          <Textarea placeholder="Описание" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="bg-background/50 border-border/60 font-sans resize-none" />
+      <DialogContent className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
+        {isPysy && (
+          <div className="win95-title-bar">
+            <div className="win95-title-bar-text">CONFIG.EXE</div>
+            <div className="flex gap-0.5">
+              <button className="win95-button win95-button-small" onClick={onClose}>X</button>
+            </div>
+          </div>
+        )}
+        {!isPysy && (
+          <DialogHeader>
+            <DialogTitle className="font-mono text-lg font-bold flex items-center gap-2">
+              <PenSquare className="h-5 w-5" style={{ color: theme.accent }} />
+              Редактировать блог
+            </DialogTitle>
+          </DialogHeader>
+        )}
+        <div className={isPysy ? "p-4 space-y-4" : "space-y-4 pt-2"}>
+          <Input placeholder={isPysy ? 'Название блога' : 'Название блога'} value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : "bg-background/50 border-border/60 font-mono"} />
+          <Textarea placeholder={isPysy ? 'Описание' : 'Описание'} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : "bg-background/50 border-border/60 font-sans resize-none"} />
           <div className="flex gap-3">
-            <label className="flex-1 cursor-pointer rounded-xl border border-border/60 bg-background/50 p-4 text-center hover:border-primary/50 transition-colors">
+            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
               {coverUrl ? (
                 <div className="relative">
-                  <img src={coverUrl} alt="" className="w-full h-20 object-cover rounded-lg" />
-                  <button type="button" onClick={(e) => { e.preventDefault(); setCoverUrl(''); }} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white"><X className="h-3 w-3" /></button>
+                  <img src={coverUrl} alt="" className="w-full aspect-[2/1] object-cover rounded-none win95-sunken" />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setCoverUrl(''); }} className="absolute top-1 right-1 p-1 rounded-none win95-button win95-button-small"><X className="h-3 w-3" /></button>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-1 text-muted-foreground"><ImageIcon className="h-5 w-5" /><span className="text-xs font-sans">Обложка</span></div>
+                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : 'font-sans'}`}>Обложка</span></div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'cover'); e.target.value = ''; }} />
             </label>
-            <label className="flex-1 cursor-pointer rounded-xl border border-border/60 bg-background/50 p-4 text-center hover:border-primary/50 transition-colors">
+            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
               {avatarUrl ? (
                 <div className="relative">
-                  <img src={avatarUrl} alt="" className="w-16 h-16 mx-auto object-cover rounded-full" />
-                  <button type="button" onClick={(e) => { e.preventDefault(); setAvatarUrl(''); }} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white"><X className="h-3 w-3" /></button>
+                  <img src={avatarUrl} alt="" className="w-16 h-16 mx-auto object-cover rounded-none win95-sunken" />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setAvatarUrl(''); }} className="absolute top-1 right-1 p-1 rounded-none win95-button win95-button-small"><X className="h-3 w-3" /></button>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-1 text-muted-foreground"><ImageIcon className="h-5 w-5" /><span className="text-xs font-sans">Аватар</span></div>
+                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : 'font-sans'}`}>Аватар</span></div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'avatar'); e.target.value = ''; }} />
             </label>
           </div>
-          {uploading && <div className="flex items-center gap-2 text-muted-foreground text-xs font-mono"><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
+          {uploading && <div className={`flex items-center gap-2 text-xs ${isPysy ? 'win95-text-muted' : 'text-muted-foreground font-mono'}`}><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} className="font-mono">Отмена</Button>
-            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className="font-mono gap-1.5" style={{ backgroundColor: theme.accent, color: '#000' }}>
+            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               Сохранить
             </Button>
           </div>
         </div>
       </DialogContent>
+      <ImageCropper {...editCropper} />
     </Dialog>
   );
 }
@@ -891,6 +1045,7 @@ function EditPostDialog({
   onClose: () => void;
   theme: BlogTheme;
 }) {
+  const isPysy = handle === 'pysy-exe';
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
   const [media, setMedia] = useState<MediaItem[]>(
@@ -923,40 +1078,50 @@ function EditPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg border border-border/60 bg-card/95 backdrop-blur">
-        <DialogHeader>
-          <DialogTitle className="font-mono text-lg font-bold">Редактировать пост</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <Input placeholder="Заголовок" value={title} onChange={(e) => setTitle(e.target.value)} className="font-mono bg-background/50 border-border/60" />
-          <Textarea placeholder="Текст..." value={content} onChange={(e) => setContent(e.target.value)} rows={5} className="font-sans resize-none bg-background/50 border-border/60" />
+      <DialogContent className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
+        {isPysy && (
+          <div className="win95-title-bar">
+            <div className="win95-title-bar-text">EDIT_POST.EXE</div>
+            <div className="flex gap-0.5">
+              <button className="win95-button win95-button-small" onClick={onClose}>X</button>
+            </div>
+          </div>
+        )}
+        {!isPysy && (
+          <DialogHeader>
+            <DialogTitle className="font-mono text-lg font-bold">Редактировать пост</DialogTitle>
+          </DialogHeader>
+        )}
+        <div className={isPysy ? "p-4 space-y-4" : "space-y-4"}>
+          <Input placeholder={isPysy ? 'Заголовок' : 'Заголовок'} value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : "font-mono bg-background/50 border-border/60"} />
+          <Textarea placeholder={isPysy ? 'Текст...' : 'Текст...'} value={content} onChange={(e) => setContent(e.target.value)} rows={5} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : "font-sans resize-none bg-background/50 border-border/60"} />
           <div className="flex flex-wrap gap-2">
             {(['image', 'video', 'audio'] as const).map((t) => (
-              <label key={t} className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-card px-3 py-2 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all">
+              <label key={t} className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs transition-all ${isPysy ? 'win95-button rounded-none' : 'rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:border-primary/50'}`}>
                 {t === 'image' ? <ImageIcon className="h-3.5 w-3.5" /> : t === 'video' ? <Video className="h-3.5 w-3.5" /> : <Music className="h-3.5 w-3.5" />}
                 {t === 'image' ? 'Фото' : t === 'video' ? 'Видео' : 'Аудио'}
                 <input type="file" accept={`${t}/*`} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, t); e.target.value = ''; }} />
               </label>
             ))}
-            {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            {uploading && <Loader2 className={`h-4 w-4 animate-spin ${isPysy ? 'win95-text-muted' : 'text-muted-foreground'}`} />}
           </div>
           {media.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {media.map((m, i) => (
-                <div key={i} className="relative group rounded-xl border border-border/60 overflow-hidden w-20 h-20 bg-card">
+                <div key={i} className={`relative group overflow-hidden w-20 h-20 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : 'rounded-xl border border-border/60 bg-card'}`}>
                   {m.type === 'image' ? <img src={m.url} alt="" className="w-full h-full object-cover" /> : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    <div className={`w-full h-full flex items-center justify-center ${isPysy ? 'win95-text-muted' : 'text-muted-foreground'}`}>
                       {m.isCircle ? <Camera className="h-5 w-5" /> : m.type === 'video' ? <Video className="h-5 w-5" /> : <Music className="h-5 w-5" />}
                     </div>
                   )}
-                  <button type="button" onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 p-1 rounded-none win95-button win95-button-small"><X className="h-3 w-3" /></button>
                 </div>
               ))}
             </div>
           )}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} className="font-mono">Отмена</Button>
-            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className="font-mono gap-1.5" style={{ backgroundColor: theme.accent, color: '#000' }}>
+            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Сохранить
             </Button>
@@ -972,7 +1137,7 @@ function EditPostDialog({
 export default function BlogPage() {
   const [, params] = useRoute('/blogs/:username');
   const username = params?.username ?? '';
-  const { data, isLoading, error } = useGetBlog(username);
+  const { data, isLoading, isFetching, error } = useGetBlog(username);
   const { data: me } = useGetMe();
   const [editingPost, setEditingPost] = useState<ExtPost | null>(null);
   const [isEditBlogOpen, setIsEditBlogOpen] = useState(false);
@@ -982,7 +1147,20 @@ export default function BlogPage() {
   const blog = data?.blog as ExtBlog | undefined;
   const posts = (data?.posts ?? []) as ExtPost[];
 
-  const theme = blog ? getTheme(blog.handle) : DEFAULT_THEME;
+  const isBwTheme = useIsBwTheme();
+  const theme = React.useMemo(() => {
+    if (isBwTheme && blog?.handle === 'putzermann-core') {
+      return {
+        accent: '#e5e5e5',
+        accentBg: 'rgba(255,255,255,0.10)',
+        accentBorder: 'rgba(255,255,255,0.20)',
+        coverGradient: 'linear-gradient(135deg, #0a0a0a 0%, #141414 60%, #1a1a1a 100%)',
+      };
+    }
+    return blog ? getTheme(blog.handle) : DEFAULT_THEME;
+  }, [blog, isBwTheme]);
+  const isPutzermann = blog?.handle === 'putzermann-core';
+  const isPysy = blog?.handle === 'pysy-exe';
 
   // Likes state — initialized from server data, updated optimistically
   const [likesState, setLikesState] = useState<Map<number, { count: number; liked: boolean }>>(new Map());
@@ -1021,7 +1199,9 @@ export default function BlogPage() {
     }
   };
 
-  if (isLoading) {
+  // Show loader when data is loading OR when cached data is from a different blog
+  // (stale-while-revalidate would otherwise flash the previous blog's name/content)
+  if (isLoading || (isFetching && data?.blog?.handle !== username)) {
     return (
       <div className="flex items-center justify-center py-32 text-muted-foreground font-mono">
         <Loader2 className="h-6 w-6 mr-2 animate-spin" />
@@ -1048,66 +1228,173 @@ export default function BlogPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full pb-10">
-      {/* Cover — no blue fade, themed gradient or cover image */}
-      <div className="relative h-36 sm:h-52 overflow-hidden bg-black">
-        {blog.coverUrl ? (
-          <img src={blog.coverUrl} alt="" className="w-full h-full object-cover opacity-80" />
-        ) : (
-          <div className="absolute inset-0" style={{ background: theme.coverGradient }} />
-        )}
-        {/* Subtle bottom-only fade just to merge into page bg */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
-      </div>
-
-      {/* Blog identity */}
-      <div className="px-4 sm:px-6 -mt-10 sm:-mt-12 relative z-0">
-        <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
-          <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-background shadow-xl">
-            <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} />
-            <AvatarFallback
-              className="font-black text-2xl sm:text-3xl"
-              style={{ background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent}22)`, color: theme.accent }}
-            >
-              {blog.user.username.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0 pb-1">
-            <h1 className="font-mono text-2xl sm:text-3xl font-black tracking-tight" style={{ color: theme.accent }}>
-              {blog.title || blog.user.username}
-            </h1>
-            <p className="text-muted-foreground font-mono text-sm">{blog.user.username}</p>
+    <>
+    {isPysy && <div className="fixed inset-0 win95-page -z-10" />}
+    <div className={isPysy ? "max-w-3xl mx-auto w-full pb-10 relative pt-4 sm:pt-8" : "max-w-3xl mx-auto w-full pb-10"}>
+      {isPysy ? (
+        <div className="px-4 sm:px-6 mb-6">
+          <div className="win95-window">
+            <div className="win95-title-bar">
+              <div className="win95-title-bar-text flex items-center gap-1">
+                <span className="w-3 h-3 bg-[#c0c0c0] border-t border-l border-white border-r border-b border-[#808080] inline-block"></span>
+                PYSY.EXE
+              </div>
+              <div className="flex gap-0.5">
+                <button className="win95-button win95-button-small">_</button>
+                <button className="win95-button win95-button-small">□</button>
+                <button className="win95-button win95-button-small">X</button>
+              </div>
+            </div>
+            <div className="p-4 sm:p-6">
+              {blog.coverUrl && (
+                <div className="win95-sunken mb-4 bg-[#c0c0c0] aspect-[2/1]">
+                  <img src={blog.coverUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 mb-4">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 win95-sunken rounded-none bg-[#c0c0c0]">
+                  <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" />
+                  <AvatarFallback className="font-bold text-3xl win95-text">
+                    {blogAvatarFallback(blog.handle, blog.user.username)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <h1 className="win95-text text-2xl sm:text-3xl font-bold tracking-tight">
+                    {blog.title || blog.user.username}
+                  </h1>
+                  <p className="win95-text-muted text-sm mt-1">
+                    user: {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+                  </p>
+                </div>
+                {blog.isOwner && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditBlogOpen(true)}
+                    className="win95-button px-4"
+                  >
+                    Properties...
+                  </Button>
+                )}
+              </div>
+              {blog.description && (
+                <div className="win95-sunken p-3 mt-4">
+                  <p className="win95-text text-sm max-w-2xl">
+                    {blog.description}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          {blog.isOwner && (
-            <Button
-              variant="outline"
-              onClick={() => setIsEditBlogOpen(true)}
-              className="font-mono gap-2 self-start sm:self-auto"
-              style={{ borderColor: theme.accentBorder }}
-            >
-              <PenSquare className="h-4 w-4" />
-              Редактировать
-            </Button>
-          )}
         </div>
+      ) : isPutzermann ? (
+        <div className="px-4 sm:px-6 mt-4 sm:mt-8 mb-6">
+          <div className="bg-[#151515] rounded-[32px] overflow-hidden border border-white/5">
+            <div className="relative aspect-[2/1] bg-black">
+              {blog.coverUrl ? (
+                <img src={blog.coverUrl} alt="" className="w-full h-full object-cover opacity-80" />
+              ) : (
+                <div className="absolute inset-0" style={{ background: theme.coverGradient }} />
+              )}
+            </div>
+            <div className="px-5 sm:px-8 pb-6 -mt-12 sm:-mt-16 relative z-0">
+              <div className="flex justify-between items-end mb-3 sm:mb-4">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-[6px] border-[#151515] bg-[#222]">
+                  <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" />
+                  <AvatarFallback className="font-bold text-2xl text-white">
+                    {blogAvatarFallback(blog.handle, blog.user.username)}
+                  </AvatarFallback>
+                </Avatar>
+                {blog.isOwner && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditBlogOpen(true)}
+                    className="rounded-full bg-white/10 hover:bg-white/20 text-white border-0 h-9 px-5 font-sans text-sm mb-2"
+                  >
+                    Редактировать
+                  </Button>
+                )}
+              </div>
+              <div className="mt-1">
+                <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white tracking-tight leading-none">
+                  {blog.title || blog.user.username}
+                </h1>
+                <p className="text-white/40 font-sans text-[15px] mt-1.5">
+                  {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+                </p>
+                {blog.description && (
+                  <p className="text-white/80 font-sans text-[15px] mt-5 max-w-2xl leading-relaxed">
+                    {blog.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Cover — no blue fade, themed gradient or cover image */}
+          <div className="relative h-36 sm:h-52 overflow-hidden bg-black">
+            {blog.coverUrl ? (
+              <img src={blog.coverUrl} alt="" className="w-full h-full object-cover opacity-80" />
+            ) : (
+              <div className="absolute inset-0" style={{ background: theme.coverGradient }} />
+            )}
+            {/* Subtle bottom-only fade just to merge into page bg */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+          </div>
 
-        {blog.description && (
-          <p className="text-foreground/80 font-sans text-sm sm:text-base mt-4 max-w-2xl leading-relaxed">
-            {blog.description}
-          </p>
-        )}
-      </div>
+          {/* Blog identity */}
+          <div className="px-4 sm:px-6 -mt-10 sm:-mt-12 relative z-0">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-background shadow-xl">
+                <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} />
+                <AvatarFallback
+                  className="font-black text-2xl sm:text-3xl"
+                  style={{ background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent}22)`, color: theme.accent }}
+                >
+                  {blogAvatarFallback(blog.handle, blog.user.username)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 pb-1">
+                <h1 className="font-mono text-2xl sm:text-3xl font-black tracking-tight" style={{ color: theme.accent }}>
+                  {blog.title || blog.user.username}
+                </h1>
+                <p className="text-muted-foreground font-mono text-sm">
+                  {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+                </p>
+              </div>
+              {blog.isOwner && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditBlogOpen(true)}
+                  className="font-mono gap-2 self-start sm:self-auto"
+                  style={{ borderColor: theme.accentBorder }}
+                >
+                  <PenSquare className="h-4 w-4" />
+                  Редактировать
+                </Button>
+              )}
+            </div>
+
+            {blog.description && (
+              <p className="text-foreground/80 font-sans text-sm sm:text-base mt-4 max-w-2xl leading-relaxed">
+                {blog.description}
+              </p>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Post feed */}
       <div className="px-4 sm:px-6 mt-8">
         {blog.isOwner && me && (
-          <CreatePostBox handle={blog.handle} blog={blog} me={me} theme={theme} onPosted={() => {}} />
+          <CreatePostBox handle={blog.handle} blog={blog} me={me} theme={theme} isPutzermann={isPutzermann} onPosted={() => {}} />
         )}
 
         {posts.length === 0 ? (
-          <div className="text-center py-20 rounded-3xl border border-dashed bg-card/30" style={{ borderColor: theme.accentBorder }}>
-            <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />
-            <p className="text-muted-foreground font-mono">В блоге пока нет постов</p>
+          <div className={`text-center py-20 border-dashed ${isPysy ? 'win95-sunken bg-white border-0' : isPutzermann ? 'bg-[#151515] border border-white/5 rounded-3xl' : 'border bg-card/30 rounded-3xl'}`} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder } : undefined}>
+            {!isPysy && <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />}
+            <p className={`font-mono ${isPysy ? 'win95-text-muted font-sans' : isPutzermann ? 'text-white/40' : 'text-muted-foreground'}`}>{isPysy ? 'В блоге пока нет постов' : 'В блоге пока нет постов'}</p>
           </div>
         ) : (
           <div className="space-y-5">
@@ -1119,6 +1406,7 @@ export default function BlogPage() {
                 me={me}
                 theme={theme}
                 likesState={likesState.get(post.id) ?? { count: post.likesCount ?? 0, liked: post.isLikedByMe ?? false }}
+                isPutzermann={isPutzermann}
                 onToggleLike={toggleLike}
                 onEdit={setEditingPost}
                 onDelete={handleDelete}
@@ -1140,5 +1428,6 @@ export default function BlogPage() {
 
       <EditBlogDialog blog={blog} open={isEditBlogOpen} onClose={() => setIsEditBlogOpen(false)} theme={theme} />
     </div>
+    </>
   );
 }

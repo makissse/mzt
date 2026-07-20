@@ -343,13 +343,31 @@ router.get("/blogs/:handle", async (req, res) => {
     for (const row of commentCounts) commentCountMap.set(row.postId, Number(row.c));
   }
 
-  const displayUser = user ? user : virtualUser(blog);
+  const blogDisplayUser = user ? user : virtualUser(blog);
+
+  // Batch-fetch per-post creators (users who actually created each post)
+  const creatorUserIds = Array.from(postsById.values())
+    .map((p) => p.createdByUserId)
+    .filter((id): id is number => id != null);
+  const creatorMap = new Map<number, { id: number; username: string; createdAt: Date }>();
+  if (creatorUserIds.length > 0) {
+    const uniqueIds = [...new Set(creatorUserIds)];
+    const creators = await db
+      .select({ id: usersTable.id, username: usersTable.username, createdAt: usersTable.createdAt })
+      .from(usersTable)
+      .where(inArray(usersTable.id, uniqueIds));
+    for (const u of creators) creatorMap.set(u.id, u);
+  }
 
   const posts = Array.from(postsById.entries()).map(([postId, post]) => {
     const media = (mediaByPostId.get(postId) ?? []).sort((a, b) => a.order - b.order);
+    // Use per-post creator when available; fall back to blog owner for legacy posts
+    const creator = post.createdByUserId
+      ? (creatorMap.get(post.createdByUserId) ?? formatUser(blogDisplayUser))
+      : formatUser(blogDisplayUser);
     return formatPost(
       post,
-      formatUser(displayUser),
+      creator,
       media,
       isOwner,
       likesCountMap.get(postId) ?? 0,
@@ -417,6 +435,7 @@ router.post("/blogs/:handle/posts", requireAuth, async (req, res) => {
       title: safeTitle,
       content: safeContent,
       blogId: blog.id,
+      createdByUserId: userId,
     })
     .returning();
 

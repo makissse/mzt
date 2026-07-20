@@ -7,12 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { uploadFile } from '@/lib/upload';
+import { blogAvatarFallback, formatOwnerUsername } from '@/lib/blog-display';
 import { useQueryClient } from '@tanstack/react-query';
+import { ImageCropper } from '@/components/image-cropper';
+import { useImageCropper } from '@/lib/use-image-cropper';
 import { Plus, Loader2, Sparkles, Image as ImageIcon, X, PenLine, ArrowRight } from 'lucide-react';
 import type { Blog } from '@workspace/api-client-react';
 
 function BlogAvatar({ blog }: { blog: Blog }) {
-  const initial = blog.user.username.slice(0, 2).toUpperCase();
+  const initial = blogAvatarFallback(blog.handle, blog.user.username);
   return (
     <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-background shadow-lg">
       <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} />
@@ -34,17 +37,42 @@ function CreateBlogDialog({ open, onClose }: { open: boolean; onClose: () => voi
   const create = useCreateMyBlog();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const { cropperProps: createCropper, openCropper: openCreateCropper } = useImageCropper();
 
   const handleFile = async (file: File, type: 'avatar' | 'cover') => {
-    setUploading(true);
-    try {
-      const url = await uploadFile(file);
-      if (type === 'avatar') setAvatarUrl(url);
-      else setCoverUrl(url);
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Ошибка загрузки');
-    } finally {
-      setUploading(false);
+    if (type === 'avatar') {
+      openCreateCropper(file, {
+        aspect: 1,
+        title: 'Обрезать аватар',
+        circularPreview: true,
+        onCropped: async (cropped) => {
+          setUploading(true);
+          try {
+            const url = await uploadFile(cropped);
+            setAvatarUrl(url);
+          } catch (e) {
+            alert(e instanceof Error ? e.message : 'Ошибка загрузки');
+          } finally {
+            setUploading(false);
+          }
+        },
+      });
+    } else {
+      openCreateCropper(file, {
+        aspect: 2,
+        title: 'Обрезать обложку',
+        onCropped: async (cropped) => {
+          setUploading(true);
+          try {
+            const url = await uploadFile(cropped);
+            setCoverUrl(url);
+          } catch (e) {
+            alert(e instanceof Error ? e.message : 'Ошибка загрузки');
+          } finally {
+            setUploading(false);
+          }
+        },
+      });
     }
   };
 
@@ -105,7 +133,7 @@ function CreateBlogDialog({ open, onClose }: { open: boolean; onClose: () => voi
             <label className="flex-1 cursor-pointer rounded-xl border border-border/60 bg-background/50 p-4 text-center hover:border-primary/50 transition-colors">
               {coverUrl ? (
                 <div className="relative">
-                  <img src={coverUrl} alt="" className="w-full h-20 object-cover rounded-lg" />
+                  <img src={coverUrl} alt="" className="w-full aspect-[2/1] object-cover rounded-lg" />
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); setCoverUrl(''); }}
@@ -176,6 +204,7 @@ function CreateBlogDialog({ open, onClose }: { open: boolean; onClose: () => voi
           </div>
         </div>
       </DialogContent>
+      <ImageCropper {...createCropper} />
     </Dialog>
   );
 }
@@ -268,7 +297,9 @@ export default function BlogsListPage() {
                     <h3 className="font-sans text-lg font-bold truncate group-hover:text-primary transition-colors">
                       {blog.title || blog.user.username}
                     </h3>
-                    <p className="text-muted-foreground font-sans text-sm">@{blog.handle}</p>
+                    <p className="text-muted-foreground font-sans text-sm">
+                      {formatOwnerUsername(blog.handle, (blog as any).ownerUsername)}
+                    </p>
                   </div>
                 </div>
                 <p className="text-muted-foreground font-sans text-sm line-clamp-2 mb-4 min-h-[2.5rem]">
@@ -276,9 +307,6 @@ export default function BlogsListPage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-sm font-sans text-muted-foreground">
-                    <span className="bg-secondary/50 px-2.5 py-1 rounded-full">
-                      {blog.postCount} {blog.postCount === 1 ? 'пост' : blog.postCount < 5 ? 'поста' : 'постов'}
-                    </span>
                     {blog.isOwner && (
                       <span className="text-primary text-xs font-semibold">твой блог</span>
                     )}
