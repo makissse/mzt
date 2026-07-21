@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Russo+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Russo+One&family=VT323&family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -103,49 +103,49 @@
   --radius: 0.625rem;
 }
 
-:root.bw-theme,
-.dark.bw-theme {
-  /* Black-white-gray theme for putzermann-core */
-  --background: 0 0% 4%;
-  --foreground: 0 0% 94%;
+:root.putzermann-noir-theme,
+.dark.putzermann-noir-theme {
+  /* Pixel-noir theme for putzermann-core blog */
+  --background: 0 0% 2%;
+  --foreground: 0 0% 80%;
 
-  --card: 0 0% 8%;
-  --card-foreground: 0 0% 94%;
-  --card-border: 0 0% 14%;
+  --card: 0 0% 6%;
+  --card-foreground: 0 0% 80%;
+  --card-border: 0 0% 20%;
 
-  --popover: 0 0% 8%;
-  --popover-foreground: 0 0% 94%;
-  --popover-border: 0 0% 14%;
+  --popover: 0 0% 6%;
+  --popover-foreground: 0 0% 80%;
+  --popover-border: 0 0% 20%;
 
-  --primary: 0 0% 92%;
-  --primary-foreground: 0 0% 6%;
+  --primary: 0 0% 80%;
+  --primary-foreground: 0 0% 2%;
 
-  --secondary: 0 0% 13%;
-  --secondary-foreground: 0 0% 92%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 80%;
 
-  --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 50%;
+  --muted: 0 0% 8%;
+  --muted-foreground: 0 0% 40%;
 
-  --accent: 0 0% 92%;
-  --accent-foreground: 0 0% 6%;
+  --accent: 0 0% 80%;
+  --accent-foreground: 0 0% 2%;
 
-  --destructive: 0 70% 55%;
+  --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 0% 14%;
-  --input: 0 0% 13%;
+  --border: 0 0% 20%;
+  --input: 0 0% 10%;
   --ring: 0 0% 80%;
 
-  --sidebar: 0 0% 6%;
-  --sidebar-foreground: 0 0% 94%;
-  --sidebar-primary: 0 0% 92%;
-  --sidebar-primary-foreground: 0 0% 6%;
-  --sidebar-accent: 0 0% 13%;
-  --sidebar-accent-foreground: 0 0% 92%;
-  --sidebar-border: 0 0% 14%;
+  --sidebar: 0 0% 4%;
+  --sidebar-foreground: 0 0% 80%;
+  --sidebar-primary: 0 0% 80%;
+  --sidebar-primary-foreground: 0 0% 2%;
+  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent-foreground: 0 0% 80%;
+  --sidebar-border: 0 0% 20%;
   --sidebar-ring: 0 0% 80%;
 
-  --app-font-sans: 'Plus Jakarta Sans', sans-serif;
+  --app-font-sans: 'VT323', 'Pixelify Sans', 'Space Mono', monospace;
   --app-font-mono: 'Space Mono', monospace;
 }
 
@@ -429,6 +429,284 @@
   border-bottom: 2px solid #808080;
 }
 
+/* Pixel-noir aesthetic for putzermann-core blog
+   1-bit / retro CRT monochrome with pixel fonts, hard edges, scanlines,
+   pixel shadows and a red accent for danger/love. */
+
+@keyframes pixel-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes pixel-flicker {
+  0%, 100% { opacity: 0.97; }
+  92% { opacity: 0.97; }
+  93% { opacity: 0.92; }
+  94% { opacity: 0.97; }
+  96% { opacity: 0.94; }
+  97% { opacity: 0.97; }
+}
+
+@keyframes pixel-glitch {
+  0% { transform: translate(0); filter: none; }
+  20% { transform: translate(-2px, 1px); filter: drop-shadow(2px 0 0 rgba(255,0,0,0.4)); }
+  40% { transform: translate(2px, -1px); filter: drop-shadow(-2px 0 0 rgba(0,255,255,0.3)); }
+  60% { transform: translate(-1px, 1px); filter: none; }
+  80% { transform: translate(1px, -1px); filter: drop-shadow(1px 0 0 rgba(255,0,0,0.4)); }
+  100% { transform: translate(0); filter: none; }
+}
+
+.noir-page {
+  background-color: #020202;
+  background-image:
+    /* pixel grid */
+    linear-gradient(0deg, rgba(192,192,192,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192,192,192,0.04) 1px, transparent 1px),
+    /* vignette */
+    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.7) 100%);
+  background-size: 24px 24px, 24px 24px, 100% 100%;
+  font-family: 'VT323', 'Pixelify Sans', 'Space Mono', monospace;
+  color: #c0c0c0;
+  image-rendering: pixelated;
+  animation: pixel-flicker 5s infinite;
+}
+
+.noir-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -9;
+  background: repeating-linear-gradient(
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.35) 2px,
+    rgba(0,0,0,0.35) 4px
+  );
+  opacity: 0.25;
+}
+
+.noir-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -8;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  opacity: 0.03;
+}
+
+.noir-window {
+  background-color: #050505;
+  border: 2px solid #c0c0c0;
+  box-shadow:
+    4px 4px 0 #000000,
+    6px 6px 0 rgba(192,192,192,0.25);
+}
+
+.noir-card {
+  background-color: #050505;
+  border: 2px solid #c0c0c0;
+  padding: 1rem;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.9);
+}
+
+.noir-card-dashed {
+  background-color: #050505;
+  border: 2px dashed #c0c0c0;
+  padding: 1rem;
+}
+
+.noir-title-bar {
+  display: none;
+}
+
+.noir-header {
+  border-bottom: 2px solid #c0c0c0;
+  padding: 1rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.noir-rule {
+  border: 0;
+  border-top: 2px dashed #555555;
+  margin: 1rem 0;
+}
+
+.noir-button {
+  background-color: #c0c0c0;
+  color: #020202;
+  font-family: 'Press Start 2P', 'VT323', monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  padding: 8px 12px;
+  border: 2px solid #c0c0c0;
+  cursor: pointer;
+  transition: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 3px 3px 0 #000000;
+}
+
+.noir-button:hover {
+  background-color: #ffffff;
+  color: #000000;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #000000;
+}
+
+.noir-button:active {
+  background-color: #808080;
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #000000;
+}
+
+.noir-button-small {
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.noir-sunken {
+  background-color: #020202;
+  border: 2px solid #555555;
+  box-shadow: inset 2px 2px 0 #000000;
+}
+
+.noir-raised {
+  background-color: #0a0a0a;
+  border: 2px solid #c0c0c0;
+  box-shadow: 2px 2px 0 #000000;
+}
+
+.noir-panel {
+  background-color: #030303;
+  border-bottom: 2px solid #555555;
+}
+
+.noir-sidebar {
+  background-color: #020202;
+  border-right: 2px solid #555555;
+}
+
+.noir-text {
+  color: #c0c0c0;
+  font-family: 'VT323', 'Pixelify Sans', 'Space Mono', monospace;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.noir-text-muted {
+  color: #555555;
+  font-family: 'VT323', 'Pixelify Sans', 'Space Mono', monospace;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.noir-label {
+  color: #555555;
+  font-family: 'Press Start 2P', 'VT323', monospace;
+  font-size: 8px;
+  line-height: 1.6;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.noir-link {
+  color: #c0c0c0;
+  text-decoration: none;
+  border-bottom: 2px solid #555555;
+  font-family: 'VT323', 'Pixelify Sans', 'Space Mono', monospace;
+  font-size: 20px;
+  transition: none;
+}
+
+.noir-link:hover {
+  color: #ffffff;
+  border-bottom-color: #c0c0c0;
+  animation: pixel-glitch 0.3s steps(2) both;
+}
+
+.noir-dither {
+  position: relative;
+}
+
+.noir-dither::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 3px,
+      rgba(192,192,192,0.06) 3px,
+      rgba(192,192,192,0.06) 6px
+    );
+}
+
+.noir-scanlines {
+  background: repeating-linear-gradient(
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.5) 3px,
+    rgba(0,0,0,0.5) 6px
+  );
+  pointer-events: none;
+}
+
+.noir-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  background: #020202;
+}
+
+.noir-scrollbar::-webkit-scrollbar-thumb {
+  background: #555555;
+  border: 2px solid #020202;
+  border-radius: 0;
+}
+
+.noir-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #c0c0c0;
+}
+
+/* Global pixel-noir icon treatment */
+.putzermann-noir-theme svg,
+.putzermann-noir-theme [data-slot="icon"],
+.noir-icon {
+  stroke-width: 2.5px;
+  image-rendering: pixelated;
+}
+
+/* Slider overrides for the pixel-noir theme */
+:root.putzermann-noir-theme [data-slot="slider-range"],
+.dark.putzermann-noir-theme [data-slot="slider-range"] {
+  background: #c0c0c0;
+}
+:root.putzermann-noir-theme [data-slot="slider-thumb"],
+.dark.putzermann-noir-theme [data-slot="slider-thumb"] {
+  border-color: #c0c0c0 !important;
+  background: #020202 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  border-radius: 0 !important;
+}
+:root.putzermann-noir-theme [data-slot="slider-thumb"]:hover,
+.dark.putzermann-noir-theme [data-slot="slider-thumb"]:hover {
+  background: #ffffff !important;
+}
+:root.putzermann-noir-theme [data-slot="slider-track"],
+.dark.putzermann-noir-theme [data-slot="slider-track"] {
+  background: #222222 !important;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -476,21 +754,3 @@
   background: hsl(222 18% 18%) !important;
 }
 
-:root.bw-theme [data-slot="slider-range"],
-.dark.bw-theme [data-slot="slider-range"] {
-  background: linear-gradient(90deg, hsl(0 0% 55%), hsl(0 0% 85%));
-}
-:root.bw-theme [data-slot="slider-thumb"],
-.dark.bw-theme [data-slot="slider-thumb"] {
-  border-color: hsl(0 0% 80%) !important;
-  background: hsl(0 0% 10%) !important;
-  box-shadow: 0 0 8px hsl(0 0% 80% / 0.4), inset 0 0 4px hsl(0 0% 80% / 0.2) !important;
-}
-:root.bw-theme [data-slot="slider-thumb"]:hover,
-.dark.bw-theme [data-slot="slider-thumb"]:hover {
-  box-shadow: 0 0 14px hsl(0 0% 80% / 0.6), inset 0 0 6px hsl(0 0% 80% / 0.3) !important;
-}
-:root.bw-theme [data-slot="slider-track"],
-.dark.bw-theme [data-slot="slider-track"] {
-  background: hsl(0 0% 16%) !important;
-}

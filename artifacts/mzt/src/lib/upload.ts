@@ -1,26 +1,30 @@
 import { getStoredAuthToken } from '@workspace/api-client-react';
 
 export async function uploadFile(file: File): Promise<string> {
-  const fd = new FormData();
-  fd.append('file', file);
-
-  const headers: HeadersInit = {};
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
   const token = getStoredAuthToken();
   if (token) {
     headers['x-auth-token'] = token;
   }
 
-  const res = await fetch('/api/upload', {
+  // 1) Request a presigned URL from the API server
+  const metaRes = await fetch('/api/storage/uploads/request-url', {
     method: 'POST',
-    body: fd,
     credentials: 'include',
     headers,
+    body: JSON.stringify({
+      name: file.name,
+      size: file.size,
+      contentType: file.type || 'application/octet-stream',
+    }),
   });
 
-  if (!res.ok) {
+  if (!metaRes.ok) {
     let message = 'Ошибка загрузки файла';
     try {
-      const json = await res.json();
+      const json = await metaRes.json();
       if (json?.error) message = json.error;
     } catch {
       // ignore parse error
@@ -28,6 +32,24 @@ export async function uploadFile(file: File): Promise<string> {
     throw new Error(message);
   }
 
-  const json = await res.json();
-  return json.url as string;
+  const { uploadURL, objectPath } = await metaRes.json() as {
+    uploadURL: string;
+    objectPath: string;
+  };
+
+  // 2) Upload the file directly to the presigned GCS URL
+  const uploadRes = await fetch(uploadURL, {
+    method: 'PUT',
+    body: file,
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+    },
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error('Ошибка загрузки файла в хранилище');
+  }
+
+  // 3) Return the local serving URL (objectPath already starts with /objects/)
+  return `/api/storage${objectPath}`;
 }

@@ -5,8 +5,8 @@ import { Toaster as Sonner } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
-import { useIsBwTheme } from '@/lib/use-bw-theme';
 import { useIsPysyTheme } from '@/lib/use-pysy-theme';
+import { useIsPutzermannNoirTheme } from '@/lib/use-putzermann-noir-theme';
 
 import Login from '@/pages/login';
 import Register from '@/pages/register';
@@ -73,21 +73,21 @@ function Router() {
 }
 
 function ThemeEffect() {
-  const isBwTheme = useIsBwTheme();
   const isPysyTheme = useIsPysyTheme();
+  const isPutzermannNoir = useIsPutzermannNoirTheme();
   useEffect(() => {
     document.documentElement.classList.add('dark');
-    if (isBwTheme) {
-      document.documentElement.classList.add('bw-theme');
-    } else {
-      document.documentElement.classList.remove('bw-theme');
-    }
     if (isPysyTheme) {
       document.documentElement.classList.add('pysy-theme');
     } else {
       document.documentElement.classList.remove('pysy-theme');
     }
-  }, [isBwTheme, isPysyTheme]);
+    if (isPutzermannNoir) {
+      document.documentElement.classList.add('putzermann-noir-theme');
+    } else {
+      document.documentElement.classList.remove('putzermann-noir-theme');
+    }
+  }, [isPysyTheme, isPutzermannNoir]);
   return null;
 }
 

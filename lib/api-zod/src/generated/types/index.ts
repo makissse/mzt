@@ -46,6 +46,8 @@ export * from './stats';
 export * from './track';
 export * from './trackInput';
 export * from './uploadResult';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';
 export * from './user';
 export * from './video';
 export * from './videoInput';

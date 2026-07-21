@@ -1,8 +1,8 @@
 import React, { useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useLogout, getGetMeQueryKey, clearAuthToken, useGetSecretPhoto, type User } from '@workspace/api-client-react';
-import { useIsBwTheme } from '@/lib/use-bw-theme';
 import { useIsPysyTheme } from '@/lib/use-pysy-theme';
+import { useIsPutzermannNoirTheme } from '@/lib/use-putzermann-noir-theme';
 
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Disc3, Sparkles, LogOut, User as UserIcon, Clock3, Image } from 'lucide-react';
@@ -61,9 +61,37 @@ const blogItems: NavItem[] = [
   },
 ];
 
-function NavButton({ item, pathname, onClick, isBwTheme, isPysyTheme }: { item: NavItem; pathname: string; onClick: () => void; isBwTheme?: boolean; isPysyTheme?: boolean }) {
+function NavButton({ item, pathname, onClick, isPysyTheme, isPutzermannNoir }: { item: NavItem; pathname: string; onClick: () => void; isPysyTheme?: boolean; isPutzermannNoir?: boolean }) {
   const active = item.exact ? pathname === item.path : pathname.startsWith(item.path);
-  const accent = isBwTheme ? (active ? '#e5e5e5' : undefined) : item.accentColor;
+  const accent = isPutzermannNoir ? undefined : item.accentColor;
+
+  if (isPutzermannNoir) {
+    return (
+      <SidebarMenuItem>
+        <button
+          onClick={onClick}
+          className={`
+            w-full flex items-center gap-3 px-2 py-3 text-left group
+            ${active ? 'noir-raised' : 'hover:noir-raised'}
+          `}
+        >
+          {item.icon && (
+            <div className="flex items-center justify-center h-6 w-6 flex-shrink-0">
+              <item.icon className="h-4 w-4 noir-icon" />
+            </div>
+          )}
+          <div className="flex flex-col min-w-0">
+            <span className={`noir-text text-base leading-tight truncate ${active ? 'text-white' : ''}`}>
+              {item.label}
+            </span>
+          </div>
+          {active && (
+            <div className="ml-auto h-2 w-2 flex-shrink-0 bg-[#c0c0c0]" />
+          )}
+        </button>
+      </SidebarMenuItem>
+    );
+  }
 
   if (isPysyTheme) {
     return (
@@ -138,8 +166,9 @@ function NavButton({ item, pathname, onClick, isBwTheme, isPysyTheme }: { item: 
   );
 }
 
-function SecretNavItem({ user, isPysyTheme }: { user?: User | null; isPysyTheme?: boolean }) {
+function SecretNavItem({ user, isPysyTheme, isPutzermannNoir }: { user?: User | null; isPysyTheme?: boolean; isPutzermannNoir?: boolean }) {
   const [, setLocation] = useLocation();
+  const [pathname] = useLocation();
   const { data: secretData } = useGetSecretPhoto({ query: { enabled: !!user, queryKey: ["secretPhoto"] } });
   const btnRef = useRef<HTMLButtonElement>(null);
   const unlocked = !!secretData?.unlocked;
@@ -158,46 +187,15 @@ function SecretNavItem({ user, isPysyTheme }: { user?: User | null; isPysyTheme?
     btnRef.current.style.transform = 'translateX(0)';
   }, []);
 
+  const item: NavItem = { label: 'Секретное фото', path: '/secret-photo', icon: Image, description: 'Секретное фото', exact: true };
+
   if (unlocked) {
-    return (
-      <SidebarMenuItem>
-        <button
-          onClick={() => setLocation('/secret-photo')}
-          className={`w-full flex items-center gap-3 px-3 py-3 text-left ${isPysyTheme ? 'win95-button' : 'rounded-xl text-muted-foreground hover:bg-card hover:border-border hover:text-foreground border border-transparent transition-all duration-150'}`}
-        >
-          <div className={`flex items-center justify-center h-7 w-7 flex-shrink-0 ${isPysyTheme ? 'win95-text' : 'rounded-lg bg-card text-muted-foreground'}`}>
-            <Image className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className={`font-semibold leading-tight truncate ${isPysyTheme ? 'win95-text' : 'font-mono text-sm'}`}>
-              Секретное фото
-            </span>
-          </div>
-        </button>
-      </SidebarMenuItem>
-    );
+    return <NavButton item={item} pathname={pathname} onClick={() => setLocation('/secret-photo')} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />;
   }
 
   return (
     <div onMouseLeave={restore}>
-      <SidebarMenuItem>
-        <button
-          ref={btnRef}
-          onMouseEnter={vanish}
-          onMouseMove={vanish}
-          className={`w-full flex items-center gap-3 px-3 py-3 text-left ${isPysyTheme ? 'win95-button' : 'rounded-xl text-muted-foreground transition-all duration-75'}`}
-          style={{ opacity: 1, pointerEvents: 'auto', transform: 'translateX(0)' }}
-        >
-          <div className={`flex items-center justify-center h-7 w-7 flex-shrink-0 ${isPysyTheme ? 'win95-text' : 'rounded-lg bg-card text-muted-foreground'}`}>
-            <Image className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className={`font-semibold leading-tight truncate ${isPysyTheme ? 'win95-text' : 'font-mono text-sm'}`}>
-              Секретное фото
-            </span>
-          </div>
-        </button>
-      </SidebarMenuItem>
+      <NavButton item={item} pathname={pathname} onClick={() => {}} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />
     </div>
   );
 }
@@ -205,8 +203,8 @@ function SecretNavItem({ user, isPysyTheme }: { user?: User | null; isPysyTheme?
 export function AppSidebar({ user }: { user?: User | null }) {
   const [, setLocation] = useLocation();
   const [pathname] = useLocation();
-  const isBwTheme = useIsBwTheme();
   const isPysyTheme = useIsPysyTheme();
+  const isPutzermannNoir = useIsPutzermannNoirTheme();
   const logout = useLogout();
   const queryClient = useQueryClient();
 
@@ -221,8 +219,8 @@ export function AppSidebar({ user }: { user?: User | null }) {
   };
 
   return (
-    <Sidebar className={`${isPysyTheme ? 'win95-panel rounded-none border-0' : 'border-r border-border bg-sidebar'}`}>
-      <SidebarHeader className={`hidden md:flex h-20 items-center px-4 ${isPysyTheme ? 'border-b-2 border-b-[#808080]' : 'border-b border-border'}`}>
+    <Sidebar className={`${isPysyTheme ? 'win95-panel rounded-none border-0' : isPutzermannNoir ? 'noir-sidebar border-r border-white/20' : 'border-r border-border bg-sidebar'}`}>
+      <SidebarHeader className={`hidden md:flex h-20 items-center px-4 ${isPysyTheme ? 'border-b-2 border-b-[#808080]' : isPutzermannNoir ? 'border-b border-white/20' : 'border-b border-border'}`}>
         <div
           className="cursor-pointer select-none"
           onClick={() => setLocation('/releases')}
@@ -231,57 +229,57 @@ export function AppSidebar({ user }: { user?: User | null }) {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className={isPysyTheme ? 'px-2 py-3' : 'px-3 py-4'}>
+      <SidebarContent className={isPysyTheme ? 'px-2 py-3' : isPutzermannNoir ? 'px-3 py-4' : 'px-3 py-4'}>
         <SidebarGroup>
-          <SidebarMenu className="space-y-1.5">
+          <SidebarMenu className="space-y-1">
             {navItems.map((item) => (
               <NavButton
                 key={item.path}
                 item={item}
                 pathname={pathname}
                 onClick={() => setLocation(item.path)}
-                isBwTheme={isBwTheme}
                 isPysyTheme={isPysyTheme}
+                isPutzermannNoir={isPutzermannNoir}
               />
             ))}
-            <SecretNavItem user={user} isPysyTheme={isPysyTheme} />
+            <SecretNavItem user={user} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />
           </SidebarMenu>
         </SidebarGroup>
 
         {/* Blog channels */}
         <SidebarGroup className="mt-4">
-          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/50 ${isPysyTheme ? 'win95-text' : 'font-mono'}`}>
+          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/50 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-label' : 'font-mono'}`}>
             Блоги
           </p>
-          <SidebarMenu className="space-y-1.5">
+          <SidebarMenu className="space-y-1">
             {blogItems.map((item) => (
               <NavButton
                 key={item.path}
                 item={item}
                 pathname={pathname}
                 onClick={() => setLocation(item.path)}
-                isBwTheme={isBwTheme}
                 isPysyTheme={isPysyTheme}
+                isPutzermannNoir={isPutzermannNoir}
               />
             ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className={`${isPysyTheme ? 'border-t-2 border-t-[#808080] p-3' : 'border-t border-border p-4'}`}>
+      <SidebarFooter className={`${isPysyTheme ? 'border-t-2 border-t-[#808080] p-3' : isPutzermannNoir ? 'border-t border-white/20 p-3' : 'border-t border-border p-4'}`}>
         {user && (
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <div className={`h-7 w-7 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : 'rounded-full bg-card border border-border'}`}>
-                <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : 'text-muted-foreground'}`} />
+              <div className={`h-6 w-6 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : isPutzermannNoir ? 'noir-sunken' : 'rounded-full bg-card border border-border'}`}>
+                <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : 'text-muted-foreground'}`} />
               </div>
-              <span className={`text-xs truncate ${isPysyTheme ? 'win95-text' : 'font-mono text-muted-foreground'}`}>
+              <span className={`text-xs truncate ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : 'font-mono text-muted-foreground'}`}>
                 {user.username}
               </span>
             </div>
             <button
               onClick={handleLogout}
-              className={isPysyTheme ? 'win95-button p-1' : 'flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10'}
+              className={isPysyTheme ? 'win95-button p-1' : isPutzermannNoir ? 'noir-button p-1' : 'flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10'}
               title="Выйти"
             >
               <LogOut className="h-4 w-4" />

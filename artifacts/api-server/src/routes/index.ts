@@ -8,6 +8,7 @@ import statsRouter from "./stats";
 import recommendationsRouter from "./recommendations";
 import secretPhotoRouter from "./secretPhoto";
 import blogsRouter from "./blogs";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(statsRouter);
 router.use(recommendationsRouter);
 router.use(secretPhotoRouter);
 router.use(blogsRouter);
+router.use(storageRouter);
 
 export default router;

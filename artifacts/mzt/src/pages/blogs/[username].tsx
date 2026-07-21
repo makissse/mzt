@@ -13,7 +13,6 @@ import { blogAvatarFallback, formatOwnerUsername } from '@/lib/blog-display';
 import { ImageCropper } from '@/components/image-cropper';
 import { useImageCropper } from '@/lib/use-image-cropper';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { useIsBwTheme } from '@/lib/use-bw-theme';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import {
@@ -79,10 +78,10 @@ const BLOG_THEMES: Record<string, BlogTheme> = {
     coverGradient: '#008080',
   },
   'putzermann-core': {
-    accent: '#ff6b00',
-    accentBg: 'rgba(255,107,0,0.09)',
-    accentBorder: 'rgba(255,107,0,0.25)',
-    coverGradient: 'linear-gradient(135deg, #100500 0%, #1f0900 60%, #2a0c00 100%)',
+    accent: '#e8e4dc',
+    accentBg: 'rgba(232,228,220,0.08)',
+    accentBorder: 'rgba(232,228,220,0.22)',
+    coverGradient: 'linear-gradient(135deg, #050505 0%, #0a0a0a 60%, #0f0f0f 100%)',
   },
 };
 
@@ -192,7 +191,7 @@ function CircleVideoRecorder({
   return (
     <div className="flex flex-col items-center gap-5">
       <div
-        className={isPysy ? "relative w-72 h-72 overflow-hidden win95-sunken bg-black" : "relative w-72 h-72 rounded-full overflow-hidden border-4 bg-black"}
+        className={isPysy ? "relative w-72 h-72 rounded-full overflow-hidden win95-sunken bg-black" : "relative w-72 h-72 rounded-full overflow-hidden border-4 bg-black"}
         style={!isPysy ? { borderColor: theme.accentBorder } : undefined}
       >
         {phase === 'idle' ? (
@@ -290,6 +289,7 @@ function CircleVideoPlayer({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [phase, setPhase] = useState<'idle' | 'playing' | 'paused'>('idle');
+  const [loaded, setLoaded] = useState(false);
   const [progress, setProgress] = useState(0); // 0–1
 
   // Sync progress while the video is playing; stop on pause/end.
@@ -303,12 +303,14 @@ function CircleVideoPlayer({
     const onSeeked = () => {
       if (v.duration && isFinite(v.duration)) setProgress(v.currentTime / v.duration);
     };
+    const onCanPlay = () => setLoaded(true);
 
     v.addEventListener('play', onPlay);
     v.addEventListener('pause', onPause);
     v.addEventListener('ended', onEnded);
     v.addEventListener('seeked', onSeeked);
     v.addEventListener('loadedmetadata', onSeeked);
+    v.addEventListener('canplay', onCanPlay);
 
     return () => {
       v.removeEventListener('play', onPlay);
@@ -316,8 +318,13 @@ function CircleVideoPlayer({
       v.removeEventListener('ended', onEnded);
       v.removeEventListener('seeked', onSeeked);
       v.removeEventListener('loadedmetadata', onSeeked);
+      v.removeEventListener('canplay', onCanPlay);
     };
   }, []);
+
+  useEffect(() => {
+    setLoaded(false);
+  }, [src]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -379,6 +386,7 @@ function CircleVideoPlayer({
           className="w-full h-full object-cover pointer-events-none"
           preload="auto"
           playsInline
+          style={{ transform: 'scaleX(-1)' }}
         />
       </div>
 
@@ -411,6 +419,16 @@ function CircleVideoPlayer({
           strokeDashoffset={dashOffset}
         />
       </svg>
+
+      {/* Loading overlay */}
+      {!loaded && (
+        <div
+          className="absolute flex items-center justify-center"
+          style={{ top: CVIDEO_OFFSET, left: CVIDEO_OFFSET, width: CVIDEO_PX, height: CVIDEO_PX, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)' }}
+        >
+          <Loader2 className="h-8 w-8 text-white animate-spin" />
+        </div>
+      )}
 
       {/* Icon overlay — only when paused (play icon = "resume") */}
       {phase === 'paused' && (
@@ -449,7 +467,7 @@ function MediaGrid({
       {images.length > 0 && (
         <div className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'}`}>
           {images.map((img, idx) => (
-            <div key={idx} className={`relative overflow-hidden ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'rounded-xl border border-white/5 bg-[#1a1a1a]' : 'rounded-2xl border border-border/60 bg-card'} ${images.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}>
+            <div key={idx} className={`relative overflow-hidden ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} ${images.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}>
               <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" />
             </div>
           ))}
@@ -461,7 +479,7 @@ function MediaGrid({
             <CircleVideoPlayer src={vid.url} accentColor={accentColor} />
           </div>
         ) : (
-          <div key={idx} className={`${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'rounded-xl border border-white/5 bg-[#1a1a1a]' : 'rounded-2xl border border-border/60 bg-card'} overflow-hidden`}>
+          <div key={idx} className={`${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} overflow-hidden`}>
             <video src={vid.url} controls className="w-full max-h-[460px]" preload="metadata" />
           </div>
         )
@@ -513,19 +531,19 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy }: { postId: 
   };
 
   return (
-    <div className={`mt-3 pt-3 space-y-3 ${isPysy ? 'border-t-2 border-white border-t-[#808080] border-b-2 border-b-[#ffffff] mb-2' : isPutzermann ? 'border-t border-white/5' : 'border-t border-border/40'}`}>
+    <div className={`mt-3 pt-3 space-y-3 ${isPysy ? 'border-t-2 border-white border-t-[#808080] border-b-2 border-b-[#ffffff] mb-2' : isPutzermann ? 'border-t-2 border-white mt-3 pt-3' : 'border-t border-border/40'}`}>
       {isLoading ? (
         <div className="flex justify-center py-2"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
       ) : comments.length === 0 ? (
-        <p className={`text-xs px-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'text-white/40 font-sans' : 'text-muted-foreground font-mono'}`}>Комментариев пока нет</p>
+        <p className={`text-xs px-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground font-mono'}`}>Комментариев пока нет</p>
       ) : (
         <div className="space-y-2">
           {comments.map((c) => (
             <div key={c.id} className="flex gap-2">
-              <span className={`text-xs font-bold flex-shrink-0 ${isPysy ? 'win95-text font-bold' : isPutzermann ? 'font-sans text-white' : 'font-mono'}`} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
+              <span className={`text-xs font-bold flex-shrink-0 ${isPysy ? 'win95-text font-bold' : isPutzermann ? 'noir-text' : 'font-mono'}`} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
                 {c.user.username}
               </span>
-              <span className={`text-xs leading-relaxed ${isPysy ? 'win95-text' : isPutzermann ? 'font-sans text-white/80' : 'font-sans text-foreground'}`}>{c.content}</span>
+              <span className={`text-xs leading-relaxed ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text opacity-80' : 'font-sans text-foreground'}`}>{c.content}</span>
             </div>
           ))}
         </div>
@@ -535,11 +553,11 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy }: { postId: 
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={isPysy ? 'Комментарий...' : 'Написать комментарий...'}
+            placeholder="Комментарий..."
             className={isPysy
               ? "h-8 win95-sunken win95-text px-2 rounded-none"
               : isPutzermann
-              ? "h-9 text-sm font-sans bg-[#1a1a1a] border-white/5 text-white placeholder:text-white/30 rounded-full px-4"
+              ? "h-8 noir-sunken noir-text px-2 rounded-none text-sm"
               : "h-8 text-xs font-sans bg-background/50 border-border/60"}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
           />
@@ -547,8 +565,8 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy }: { postId: 
             size="sm"
             onClick={submit}
             disabled={submitting || !text.trim()}
-            className={isPysy ? "win95-button h-8 px-3" : isPutzermann ? "h-9 w-9 rounded-full p-0 flex items-center justify-center shrink-0" : "h-8 px-3 font-mono"}
-            style={!isPysy ? { backgroundColor: theme.accent, color: isPutzermann ? '#fff' : '#000' } : undefined}
+            className={isPysy ? "win95-button h-8 px-3" : isPutzermann ? "noir-button h-8 px-3" : "h-8 px-3 font-mono"}
+            style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
           >
             {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
           </Button>
@@ -589,7 +607,7 @@ function PostCard({
       className={isPysy
         ? "win95-window mb-6"
         : isPutzermann
-          ? "bg-[#151515] border border-white/5 rounded-3xl p-4 sm:p-5 transition-all duration-200"
+          ? "noir-window mb-4"
           : "bg-card border rounded-2xl p-4 sm:p-5 transition-all duration-200"}
       style={{ borderColor: !isPysy && !isPutzermann && commentsOpen ? theme.accentBorder : undefined }}
     >
@@ -602,24 +620,22 @@ function PostCard({
           <div className="flex gap-0.5">
             <button className="win95-button win95-button-small">_</button>
             <button className="win95-button win95-button-small">□</button>
-            <button className="win95-button win95-button-small">X</button>
           </div>
         </div>
       )}
-
-      <div className={isPysy ? "p-3 sm:p-4" : ""}>
+      <div className={isPysy ? "p-3 sm:p-4" : isPutzermann ? "" : ""}>
       <div className="flex items-center gap-3 mb-3">
-        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 border-0 bg-[#222]" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
+        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
           <AvatarImage src={blog.avatarUrl ?? undefined} />
           <AvatarFallback
-            className={isPysy ? "font-bold text-sm win95-text" : isPutzermann ? "font-bold text-sm text-white" : "font-bold text-sm"}
+            className={isPysy ? "font-bold text-sm win95-text" : isPutzermann ? "font-bold text-sm noir-text" : "font-bold text-sm"}
             style={!isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
           >
             {blogAvatarFallback(blog.handle, blog.user.username)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className={isPysy ? "win95-text font-bold leading-tight" : isPutzermann ? "font-sans text-[15px] font-semibold text-white leading-tight" : "font-mono text-xs font-bold"} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
+          <p className={isPysy ? "win95-text font-bold leading-tight" : isPutzermann ? "noir-text font-bold leading-tight tracking-wide" : "font-mono text-xs font-bold"} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
             {isPutzermann ? (blog.title || blog.user.username) : (post.createdBy?.username ?? blog.user.username)}
           </p>
           {isPysy && (
@@ -628,26 +644,26 @@ function PostCard({
             </p>
           )}
           {isPutzermann && (
-            <p className="text-white/40 font-sans text-[13px]">
+            <p className="noir-text-muted text-sm">
               {formatOwnerUsername(blog.handle, blog.ownerUsername)}
             </p>
           )}
-          <p className={isPysy ? "win95-text-muted mt-0.5" : isPutzermann ? "text-white/40 font-sans text-xs mt-0.5" : "text-muted-foreground font-sans text-xs"}>
+          <p className={isPysy ? "win95-text-muted mt-0.5" : isPutzermann ? "noir-text-muted text-xs mt-0.5" : "text-muted-foreground font-sans text-xs"}>
             {format(new Date(post.createdAt as string), 'd MMM yyyy, HH:mm', { locale: ru })}
             {post.updatedAt !== post.createdAt && ' · изм.'}
           </p>
         </div>
-        {post.isOwner && (
+        {post.isOwner && !isPutzermann && (
           <div className="flex items-center gap-1">
             <button
               onClick={() => onEdit(post)}
-              className={isPysy ? "win95-button p-1" : isPutzermann ? "p-2 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors" : "p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"}
+              className={isPysy ? "win95-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"}
             >
               <PenSquare className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDelete(post)}
-              className={isPysy ? "win95-button p-1" : isPutzermann ? "p-2 rounded-full text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors" : "p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"}
+              className={isPysy ? "win95-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -656,11 +672,11 @@ function PostCard({
       </div>
 
       {post.title && (
-        <h2 className={isPysy ? "win95-text font-bold text-base sm:text-lg mb-1 leading-tight" : isPutzermann ? "font-sans font-bold text-lg text-white mb-1 leading-tight" : "font-mono font-bold text-base sm:text-lg mb-1 leading-tight"}>{post.title}</h2>
+        <h2 className={isPysy ? "win95-text font-bold text-base sm:text-lg mb-1 leading-tight" : isPutzermann ? "noir-text font-bold text-lg mb-1 leading-tight tracking-widest uppercase" : "font-mono font-bold text-base sm:text-lg mb-1 leading-tight"}>{post.title}</h2>
       )}
 
       {post.content && (
-        <div className={isPysy ? "whitespace-pre-wrap win95-text leading-relaxed" : isPutzermann ? "whitespace-pre-wrap font-sans text-[15px] text-white/90 leading-relaxed" : "whitespace-pre-wrap font-sans text-sm sm:text-base text-foreground leading-relaxed"}>
+        <div className={isPysy ? "whitespace-pre-wrap win95-text leading-relaxed" : isPutzermann ? "whitespace-pre-wrap noir-text text-base leading-relaxed" : "whitespace-pre-wrap font-sans text-sm sm:text-base text-foreground leading-relaxed"}>
           {post.content}
         </div>
       )}
@@ -668,12 +684,12 @@ function PostCard({
       <MediaGrid items={post.media ?? []} accentColor={theme.accent} isPutzermann={isPutzermann} isPysy={isPysy} />
 
       {/* Action bar */}
-      <div className={isPysy ? "flex items-center gap-5 mt-4 win95-text-muted" : isPutzermann ? "flex items-center gap-5 mt-4 text-white/40" : "flex items-center gap-5 mt-4 text-muted-foreground"}>
+      <div className={isPysy ? "flex items-center gap-5 mt-4 win95-text-muted" : isPutzermann ? "flex items-center gap-5 mt-4 noir-text-muted" : "flex items-center gap-5 mt-4 text-muted-foreground"}>
         <button
           onClick={() => onToggleLike(post.id)}
           disabled={!me}
-          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "flex items-center gap-1.5 transition-colors text-[15px] font-sans disabled:opacity-50 disabled:cursor-not-allowed hover:text-white" : "flex items-center gap-1.5 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"}
-          style={likesState.liked ? { color: '#ef4444' } : undefined}
+          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed" : "flex items-center gap-1.5 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"}
+          style={likesState.liked ? { color: '#ef4444', borderColor: '#ef4444' } : undefined}
           title={me ? undefined : 'Войдите чтобы поставить лайк'}
         >
           <Heart className="h-4 w-4" fill={likesState.liked ? '#ef4444' : 'none'} />
@@ -681,8 +697,8 @@ function PostCard({
         </button>
         <button
           onClick={() => setCommentsOpen((o) => !o)}
-          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "flex items-center gap-1.5 transition-colors text-[15px] font-sans hover:text-white" : "flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"}
-          style={commentsOpen && !isPysy ? { color: theme.accent } : undefined}
+          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5" : "flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"}
+          style={commentsOpen && !isPysy && !isPutzermann ? { color: theme.accent } : undefined}
         >
           <MessageCircle className="h-4 w-4" />
           <span>{post.commentsCount + (commentsOpen ? 0 : 0)}</span>
@@ -772,7 +788,7 @@ function CreatePostBox({
 
   return (
     <>
-      <div className={isPysy ? "win95-window mb-6" : isPutzermann ? "bg-[#151515] rounded-3xl p-4 sm:p-6 mb-6" : "border rounded-2xl p-4 sm:p-5 mb-6"} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder, backgroundColor: theme.accentBg } : undefined}>
+      <div className={isPysy ? "win95-window mb-6" : isPutzermann ? "noir-card mb-4" : "border rounded-2xl p-4 sm:p-5 mb-6"} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder, backgroundColor: theme.accentBg } : undefined}>
         {isPysy && (
           <div className="win95-title-bar">
             <div className="win95-title-bar-text flex items-center gap-1">
@@ -782,28 +798,27 @@ function CreatePostBox({
             <div className="flex gap-0.5">
               <button className="win95-button win95-button-small">_</button>
               <button className="win95-button win95-button-small">□</button>
-              <button className="win95-button win95-button-small">X</button>
             </div>
           </div>
         )}
-        <div className={isPysy ? "space-y-3 p-3 sm:p-4" : "space-y-3"}>
+        <div className={isPysy ? "space-y-3 p-3 sm:p-4" : isPutzermann ? "space-y-3" : "space-y-3"}>
           <Input
-            placeholder={isPysy ? 'Заголовок поста' : 'Заголовок поста'}
+            placeholder="Заголовок поста"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={isPysy ? "win95-sunken win95-text px-2 h-8 rounded-none w-full" : isPutzermann ? "bg-transparent border-0 font-sans font-bold text-lg text-white placeholder:text-white/30 px-0 h-auto focus-visible:ring-0 shadow-none" : "bg-background/60 border-border/60 font-mono font-semibold"}
+            className={isPysy ? "win95-sunken win95-text px-2 h-8 rounded-none w-full" : isPutzermann ? "noir-sunken noir-text px-2 h-8 rounded-none w-full border-white" : "bg-background/60 border-border/60 font-mono font-semibold"}
           />
           <Textarea
-            placeholder={isPysy ? 'Содержимое...' : 'Что нового?'}
+            placeholder="Что нового?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
-            className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : isPutzermann ? "bg-transparent border-0 font-sans text-[15px] text-white/90 placeholder:text-white/30 px-0 resize-none focus-visible:ring-0 shadow-none min-h-[80px]" : "bg-background/60 border-border/60 font-sans resize-none"}
+            className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none w-full min-h-[80px] border-white" : "bg-background/60 border-border/60 font-sans resize-none"}
           />
-          {(isPysy || isPutzermann) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : 'bg-white/5'}`} />}
+          {(isPysy || isPutzermann) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : 'border-t border-dashed border-white/30'}`} />}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1">
-              <label className={`cursor-pointer p-2 rounded-none transition-colors ${isPysy ? 'win95-button' : isPutzermann ? 'text-white/40 hover:text-white hover:bg-white/10 rounded-full' : 'text-muted-foreground hover:text-foreground hover:bg-card rounded-full'}`} title="Прикрепить файл">
+              <label className={`cursor-pointer p-2 rounded-none transition-colors ${isPysy ? 'win95-button' : isPutzermann ? 'noir-button' : 'text-muted-foreground hover:text-foreground hover:bg-card rounded-full'}`} title="Прикрепить файл">
                 <Paperclip className="h-5 w-5" />
                 <input type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={(e) => {
                   const files = Array.from(e.target.files ?? []);
@@ -822,7 +837,7 @@ function CreatePostBox({
                 type="button"
                 onClick={() => setCircleOpen(true)}
                 disabled={uploading}
-                className={isPysy ? "win95-button gap-1.5 h-auto py-1" : isPutzermann ? "font-sans gap-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full px-4 h-9" : "font-mono gap-1.5"}
+                className={isPysy ? "win95-button gap-1.5 h-auto py-1" : isPutzermann ? "noir-button gap-1.5" : "font-mono gap-1.5"}
                 style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
                 title="Снять кружок"
               >
@@ -832,8 +847,8 @@ function CreatePostBox({
               <Button
                 onClick={handleSubmit}
                 disabled={saving || uploading || !canSubmit}
-                className={isPysy ? "win95-button gap-1.5 h-auto py-1 font-bold" : isPutzermann ? "font-sans gap-1.5 rounded-full px-5 h-9" : "font-mono gap-1.5"}
-                style={!isPysy ? { backgroundColor: theme.accent, color: isPutzermann ? '#fff' : '#000' } : undefined}
+                className={isPysy ? "win95-button gap-1.5 h-auto py-1 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : "font-mono gap-1.5"}
+                style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Опубликовать
@@ -843,11 +858,11 @@ function CreatePostBox({
           {media.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-1">
               {media.map((m, i) => (
-                <div key={i} className={`relative group overflow-hidden w-16 h-16 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'rounded-xl border border-white/5 bg-[#1a1a1a]' : 'rounded-lg border border-border/60 bg-card'}`}>
+                <div key={i} className={`relative group overflow-hidden w-16 h-16 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none border-white' : 'rounded-lg border border-border/60 bg-card'}`}>
                   {m.type === 'image' ? (
                     <img src={m.url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className={`w-full h-full flex flex-col items-center justify-center gap-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'text-white/40' : 'text-muted-foreground'}`}>
+                    <div className={`w-full h-full flex flex-col items-center justify-center gap-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}>
                       {m.isCircle ? <Camera className="h-4 w-4" /> : m.type === 'video' ? <Video className="h-4 w-4" /> : <Music className="h-4 w-4" />}
                       {m.isCircle && <span className="text-[9px] font-mono">кружок</span>}
                     </div>
@@ -863,7 +878,7 @@ function CreatePostBox({
       </div>
 
       <Dialog open={circleOpen} onOpenChange={setCircleOpen}>
-        <DialogContent className={isPysy ? "max-w-sm win95-window p-0 rounded-none border-0" : "max-w-sm border border-border/60 bg-card/95 backdrop-blur"}>
+        <DialogContent hideClose={isPysy || isPutzermann} className={isPysy ? "max-w-sm win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-sm noir-card p-0 rounded-none border-0" : "max-w-sm border border-border/60 bg-card/95 backdrop-blur"}>
           {isPysy && (
             <div className="win95-title-bar">
               <div className="win95-title-bar-text flex items-center gap-1">
@@ -874,7 +889,13 @@ function CreatePostBox({
               </div>
             </div>
           )}
-          {!isPysy && (
+          {isPutzermann && (
+            <div className="flex items-center justify-between px-3 py-2 border-b border-white/30">
+              <span className="noir-label">RECORD</span>
+              <button className="noir-button noir-button-small" onClick={() => setCircleOpen(false)}>X</button>
+            </div>
+          )}
+          {!isPysy && !isPutzermann && (
             <DialogHeader>
               <DialogTitle className="font-mono text-base font-bold flex items-center gap-2">
                 <Camera className="h-4 w-4" style={{ color: theme.accent }} />
@@ -882,7 +903,7 @@ function CreatePostBox({
               </DialogTitle>
             </DialogHeader>
           )}
-          <div className={isPysy ? "p-4" : ""}>
+          <div className={isPysy || isPutzermann ? "p-4" : ""}>
             <CircleVideoRecorder onRecorded={handleCircleVideo} onClose={() => setCircleOpen(false)} theme={theme} isPysy={isPysy} />
           </div>
         </DialogContent>
@@ -969,9 +990,11 @@ function EditBlogDialog({
     }
   };
 
+  const isPutzermann = blog.handle === 'putzermann-core';
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
+      <DialogContent hideClose={isPysy || isPutzermann} className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-lg noir-card p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
         {isPysy && (
           <div className="win95-title-bar">
             <div className="win95-title-bar-text">CONFIG.EXE</div>
@@ -980,7 +1003,13 @@ function EditBlogDialog({
             </div>
           </div>
         )}
-        {!isPysy && (
+        {isPutzermann && (
+          <div className="flex items-center justify-between px-3 py-2 border-b border-white/30">
+            <span className="noir-label">EDIT BLOG</span>
+            <button className="noir-button noir-button-small" onClick={onClose}>X</button>
+          </div>
+        )}
+        {!isPysy && !isPutzermann && (
           <DialogHeader>
             <DialogTitle className="font-mono text-lg font-bold flex items-center gap-2">
               <PenSquare className="h-5 w-5" style={{ color: theme.accent }} />
@@ -988,37 +1017,37 @@ function EditBlogDialog({
             </DialogTitle>
           </DialogHeader>
         )}
-        <div className={isPysy ? "p-4 space-y-4" : "space-y-4 pt-2"}>
-          <Input placeholder={isPysy ? 'Название блога' : 'Название блога'} value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : "bg-background/50 border-border/60 font-mono"} />
-          <Textarea placeholder={isPysy ? 'Описание' : 'Описание'} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : "bg-background/50 border-border/60 font-sans resize-none"} />
+        <div className={isPysy ? "p-4 space-y-4" : isPutzermann ? "p-4 space-y-4" : "space-y-4 pt-2"}>
+          <Input placeholder={isPysy ? 'Название блога' : 'Название блога'} value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 rounded-none border-white" : "bg-background/50 border-border/60 font-mono"} />
+          <Textarea placeholder={isPysy ? 'Описание' : 'Описание'} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none border-white" : "bg-background/50 border-border/60 font-sans resize-none"} />
           <div className="flex gap-3">
-            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
+            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-sunken' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
               {coverUrl ? (
                 <div className="relative">
-                  <img src={coverUrl} alt="" className="w-full aspect-[2/1] object-cover rounded-none win95-sunken" />
-                  <button type="button" onClick={(e) => { e.preventDefault(); setCoverUrl(''); }} className="absolute top-1 right-1 p-1 rounded-none win95-button win95-button-small"><X className="h-3 w-3" /></button>
+                  <img src={coverUrl} alt="" className={`w-full aspect-[2/1] object-cover ${isPysy ? 'rounded-none win95-sunken' : isPutzermann ? 'rounded-none noir-sunken border-white' : 'rounded-lg'}`} />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setCoverUrl(''); }} className={`absolute top-1 right-1 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
                 </div>
               ) : (
-                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : 'font-sans'}`}>Обложка</span></div>
+                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : isPutzermann ? 'noir-label' : 'font-sans'}`}>Обложка</span></div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'cover'); e.target.value = ''; }} />
             </label>
-            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
+            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-sunken' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
               {avatarUrl ? (
                 <div className="relative">
-                  <img src={avatarUrl} alt="" className="w-16 h-16 mx-auto object-cover rounded-none win95-sunken" />
-                  <button type="button" onClick={(e) => { e.preventDefault(); setAvatarUrl(''); }} className="absolute top-1 right-1 p-1 rounded-none win95-button win95-button-small"><X className="h-3 w-3" /></button>
+                  <img src={avatarUrl} alt="" className={`w-16 h-16 mx-auto object-cover ${isPysy ? 'rounded-none win95-sunken' : isPutzermann ? 'rounded-none noir-sunken border-white' : 'rounded-lg'}`} />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setAvatarUrl(''); }} className={`absolute top-1 right-1 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
                 </div>
               ) : (
-                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : 'font-sans'}`}>Аватар</span></div>
+                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : isPutzermann ? 'noir-label' : 'font-sans'}`}>Аватар</span></div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'avatar'); e.target.value = ''; }} />
             </label>
           </div>
-          {uploading && <div className={`flex items-center gap-2 text-xs ${isPysy ? 'win95-text-muted' : 'text-muted-foreground font-mono'}`}><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
+          {uploading && <div className={`flex items-center gap-2 text-xs ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground font-mono'}`}><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
-            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
+            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : isPutzermann ? "noir-button" : "font-mono"}>Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               Сохранить
             </Button>
@@ -1046,10 +1075,11 @@ function EditPostDialog({
   theme: BlogTheme;
 }) {
   const isPysy = handle === 'pysy-exe';
+  const isPutzermann = handle === 'putzermann-core';
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
   const [media, setMedia] = useState<MediaItem[]>(
-    (post.media ?? []).map((m) => ({ type: m.type as 'image' | 'video' | 'audio', url: m.url, isCircle: m.isCircle }))
+    (post.media ?? []).map((m) => ({ type: m.type as 'image' | 'video' | 'audio', url: m.url, isCircle: (m as any).isCircle as boolean | undefined }))
   );
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1078,7 +1108,7 @@ function EditPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
+      <DialogContent hideClose={isPysy || isPutzermann} className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-lg noir-card p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
         {isPysy && (
           <div className="win95-title-bar">
             <div className="win95-title-bar-text">EDIT_POST.EXE</div>
@@ -1087,41 +1117,47 @@ function EditPostDialog({
             </div>
           </div>
         )}
-        {!isPysy && (
+        {isPutzermann && (
+          <div className="flex items-center justify-between px-3 py-2 border-b border-white/30">
+            <span className="noir-label">EDIT POST</span>
+            <button className="noir-button noir-button-small" onClick={onClose}>X</button>
+          </div>
+        )}
+        {!isPysy && !isPutzermann && (
           <DialogHeader>
             <DialogTitle className="font-mono text-lg font-bold">Редактировать пост</DialogTitle>
           </DialogHeader>
         )}
-        <div className={isPysy ? "p-4 space-y-4" : "space-y-4"}>
-          <Input placeholder={isPysy ? 'Заголовок' : 'Заголовок'} value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : "font-mono bg-background/50 border-border/60"} />
-          <Textarea placeholder={isPysy ? 'Текст...' : 'Текст...'} value={content} onChange={(e) => setContent(e.target.value)} rows={5} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : "font-sans resize-none bg-background/50 border-border/60"} />
+        <div className={isPysy ? "p-4 space-y-4" : isPutzermann ? "p-4 space-y-4" : "space-y-4"}>
+          <Input placeholder='Заголовок' value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 rounded-none border-white" : "font-mono bg-background/50 border-border/60"} />
+          <Textarea placeholder='Текст...' value={content} onChange={(e) => setContent(e.target.value)} rows={5} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none border-white" : "font-sans resize-none bg-background/50 border-border/60"} />
           <div className="flex flex-wrap gap-2">
             {(['image', 'video', 'audio'] as const).map((t) => (
-              <label key={t} className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs transition-all ${isPysy ? 'win95-button rounded-none' : 'rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:border-primary/50'}`}>
+              <label key={t} className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs transition-all ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-button' : 'rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:border-primary/50'}`}>
                 {t === 'image' ? <ImageIcon className="h-3.5 w-3.5" /> : t === 'video' ? <Video className="h-3.5 w-3.5" /> : <Music className="h-3.5 w-3.5" />}
                 {t === 'image' ? 'Фото' : t === 'video' ? 'Видео' : 'Аудио'}
                 <input type="file" accept={`${t}/*`} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, t); e.target.value = ''; }} />
               </label>
             ))}
-            {uploading && <Loader2 className={`h-4 w-4 animate-spin ${isPysy ? 'win95-text-muted' : 'text-muted-foreground'}`} />}
+            {uploading && <Loader2 className={`h-4 w-4 animate-spin ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`} />}
           </div>
           {media.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {media.map((m, i) => (
-                <div key={i} className={`relative group overflow-hidden w-20 h-20 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : 'rounded-xl border border-border/60 bg-card'}`}>
+                <div key={i} className={`relative group overflow-hidden w-20 h-20 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none border-white' : 'rounded-xl border border-border/60 bg-card'}`}>
                   {m.type === 'image' ? <img src={m.url} alt="" className="w-full h-full object-cover" /> : (
-                    <div className={`w-full h-full flex items-center justify-center ${isPysy ? 'win95-text-muted' : 'text-muted-foreground'}`}>
+                    <div className={`w-full h-full flex items-center justify-center ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}>
                       {m.isCircle ? <Camera className="h-5 w-5" /> : m.type === 'video' ? <Video className="h-5 w-5" /> : <Music className="h-5 w-5" />}
                     </div>
                   )}
-                  <button type="button" onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 p-1 rounded-none win95-button win95-button-small"><X className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))} className={`absolute top-0.5 right-0.5 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
                 </div>
               ))}
             </div>
           )}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
-            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
+            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : isPutzermann ? "noir-button" : "font-mono"}>Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Сохранить
             </Button>
@@ -1147,18 +1183,9 @@ export default function BlogPage() {
   const blog = data?.blog as ExtBlog | undefined;
   const posts = (data?.posts ?? []) as ExtPost[];
 
-  const isBwTheme = useIsBwTheme();
   const theme = React.useMemo(() => {
-    if (isBwTheme && blog?.handle === 'putzermann-core') {
-      return {
-        accent: '#e5e5e5',
-        accentBg: 'rgba(255,255,255,0.10)',
-        accentBorder: 'rgba(255,255,255,0.20)',
-        coverGradient: 'linear-gradient(135deg, #0a0a0a 0%, #141414 60%, #1a1a1a 100%)',
-      };
-    }
     return blog ? getTheme(blog.handle) : DEFAULT_THEME;
-  }, [blog, isBwTheme]);
+  }, [blog]);
   const isPutzermann = blog?.handle === 'putzermann-core';
   const isPysy = blog?.handle === 'pysy-exe';
 
@@ -1230,7 +1257,8 @@ export default function BlogPage() {
   return (
     <>
     {isPysy && <div className="fixed inset-0 win95-page -z-10" />}
-    <div className={isPysy ? "max-w-3xl mx-auto w-full pb-10 relative pt-4 sm:pt-8" : "max-w-3xl mx-auto w-full pb-10"}>
+    {isPutzermann && <div className="fixed inset-0 noir-page -z-10" />}
+    <div className={isPysy ? "max-w-3xl mx-auto w-full pb-10 relative pt-4 sm:pt-8" : isPutzermann ? "max-w-3xl mx-auto w-full pb-10 relative" : "max-w-3xl mx-auto w-full pb-10"}>
       {isPysy ? (
         <div className="px-4 sm:px-6 mb-6">
           <div className="win95-window">
@@ -1242,7 +1270,6 @@ export default function BlogPage() {
               <div className="flex gap-0.5">
                 <button className="win95-button win95-button-small">_</button>
                 <button className="win95-button win95-button-small">□</button>
-                <button className="win95-button win95-button-small">X</button>
               </div>
             </div>
             <div className="p-4 sm:p-6">
@@ -1288,45 +1315,46 @@ export default function BlogPage() {
         </div>
       ) : isPutzermann ? (
         <div className="px-4 sm:px-6 mt-4 sm:mt-8 mb-6">
-          <div className="bg-[#151515] rounded-[32px] overflow-hidden border border-white/5">
-            <div className="relative aspect-[2/1] bg-black">
+          <div className="noir-card">
+            <div className="relative aspect-[2/1] bg-black overflow-hidden mb-4 noir-dither">
+              <div className="noir-scanlines absolute inset-0 z-10" />
               {blog.coverUrl ? (
-                <img src={blog.coverUrl} alt="" className="w-full h-full object-cover opacity-80" />
+                <img src={blog.coverUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-75" style={{ imageRendering: 'pixelated' }} />
               ) : (
-                <div className="absolute inset-0" style={{ background: theme.coverGradient }} />
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <span className="noir-text text-4xl sm:text-5xl font-bold tracking-[0.3em] uppercase opacity-20">PUTZERMANN</span>
+                </div>
               )}
             </div>
-            <div className="px-5 sm:px-8 pb-6 -mt-12 sm:-mt-16 relative z-0">
-              <div className="flex justify-between items-end mb-3 sm:mb-4">
-                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-[6px] border-[#151515] bg-[#222]">
-                  <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" />
-                  <AvatarFallback className="font-bold text-2xl text-white">
-                    {blogAvatarFallback(blog.handle, blog.user.username)}
-                  </AvatarFallback>
-                </Avatar>
-                {blog.isOwner && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditBlogOpen(true)}
-                    className="rounded-full bg-white/10 hover:bg-white/20 text-white border-0 h-9 px-5 font-sans text-sm mb-2"
-                  >
-                    Редактировать
-                  </Button>
-                )}
-              </div>
-              <div className="mt-1">
-                <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white tracking-tight leading-none">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
+              <Avatar className="h-24 w-24 sm:h-32 sm:w-32 noir-sunken rounded-none bg-black">
+                <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" style={{ imageRendering: 'pixelated' }} />
+                <AvatarFallback className="font-bold text-3xl noir-text" style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '1.25rem' }}>
+                  {blogAvatarFallback(blog.handle, blog.user.username)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <h1 className="noir-text text-xl sm:text-2xl font-bold tracking-[0.15em] uppercase leading-none" style={{ fontFamily: "'Press Start 2P', 'VT323', monospace" }}>
                   {blog.title || blog.user.username}
                 </h1>
-                <p className="text-white/40 font-sans text-[15px] mt-1.5">
+                <p className="noir-text-muted mt-2 tracking-widest">
                   {formatOwnerUsername(blog.handle, blog.ownerUsername)}
                 </p>
                 {blog.description && (
-                  <p className="text-white/80 font-sans text-[15px] mt-5 max-w-2xl leading-relaxed">
+                  <p className="noir-text mt-3 max-w-2xl opacity-80">
                     {blog.description}
                   </p>
                 )}
               </div>
+              {blog.isOwner && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditBlogOpen(true)}
+                  className="noir-button px-4 self-start sm:self-auto"
+                >
+                  EDIT
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -1392,9 +1420,9 @@ export default function BlogPage() {
         )}
 
         {posts.length === 0 ? (
-          <div className={`text-center py-20 border-dashed ${isPysy ? 'win95-sunken bg-white border-0' : isPutzermann ? 'bg-[#151515] border border-white/5 rounded-3xl' : 'border bg-card/30 rounded-3xl'}`} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder } : undefined}>
-            {!isPysy && <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />}
-            <p className={`font-mono ${isPysy ? 'win95-text-muted font-sans' : isPutzermann ? 'text-white/40' : 'text-muted-foreground'}`}>{isPysy ? 'В блоге пока нет постов' : 'В блоге пока нет постов'}</p>
+          <div className={`text-center py-20 ${isPysy ? 'win95-sunken bg-white border-0' : isPutzermann ? 'noir-panel' : 'border border-dashed bg-card/30 rounded-3xl'}`} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder } : undefined}>
+            {!isPysy && !isPutzermann && <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />}
+            <p className={`${isPysy ? 'win95-text-muted font-sans' : isPutzermann ? 'noir-text-muted tracking-widest uppercase' : 'text-muted-foreground font-mono'}`}>В блоге пока нет постов</p>
           </div>
         ) : (
           <div className="space-y-5">
