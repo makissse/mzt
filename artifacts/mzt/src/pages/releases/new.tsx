@@ -296,8 +296,8 @@ export default function NewRelease() {
                           </div>
                         )}
                       </div>
-                      <ImageCropper {...releaseCropper} />
                     </FormControl>
+                    <ImageCropper {...releaseCropper} />
                     <FormMessage />
                   </FormItem>
                 )}

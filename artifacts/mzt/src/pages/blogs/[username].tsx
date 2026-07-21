@@ -15,6 +15,15 @@ import { useImageCropper } from '@/lib/use-image-cropper';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+
+const _W1 = ['COLD','DARK','DEAD','DEEP','FAST','FLAT','GREY','HARD','IRON','LATE','LOST','LOUD','MUTE','NEON','NULL','PALE','PURE','ROGUE','RUST','SLOW','SOFT','VOID','WIDE','WIRE','WORN'];
+const _W2 = ['BLADE','CHAIN','CHROME','CIPHER','CLOCK','CORE','CRASH','DAWN','DRIFT','ECHO','FLAME','GHOST','GRID','HAZE','LOOP','NERVE','NOISE','PATCH','PULSE','RADAR','RIFT','SHADE','SHIFT','SIGNAL','SMOKE','SPIKE','STATIC','SURGE','TRACE','VALE','WAVE'];
+
+function postFileName(id: number): string {
+  const w1 = _W1[id % _W1.length];
+  const w2 = _W2[Math.floor(id * 17 + 5) % _W2.length];
+  return `${w1}${w2}`;
+}
 import {
   Loader2,
   PenSquare,
@@ -615,7 +624,7 @@ function PostCard({
         <div className="win95-title-bar">
           <div className="win95-title-bar-text flex items-center gap-1">
             <span className="w-3 h-3 bg-[#c0c0c0] border-t border-l border-white border-r border-b border-[#808080] inline-block"></span>
-            POST_{post.id}.EXE
+            {postFileName(post.id)}.EXE
           </div>
           <div className="flex gap-0.5">
             <button className="win95-button win95-button-small">_</button>
@@ -623,12 +632,12 @@ function PostCard({
           </div>
         </div>
       )}
-      <div className={isPysy ? "p-3 sm:p-4" : isPutzermann ? "" : ""}>
+      <div className={isPysy ? "p-3 sm:p-4" : isPutzermann ? "p-4 sm:p-5" : ""}>
       <div className="flex items-center gap-3 mb-3">
-        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
-          <AvatarImage src={blog.avatarUrl ?? undefined} />
+        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black border border-white" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
+          <AvatarImage src={blog.avatarUrl ?? undefined} className={isPutzermann ? "rounded-none" : ""} />
           <AvatarFallback
-            className={isPysy ? "font-bold text-sm win95-text" : isPutzermann ? "font-bold text-sm noir-text" : "font-bold text-sm"}
+            className={isPysy ? "font-bold text-sm win95-text rounded-none" : isPutzermann ? "font-bold text-sm noir-text rounded-none" : "font-bold text-sm"}
             style={!isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
           >
             {blogAvatarFallback(blog.handle, blog.user.username)}
@@ -653,17 +662,17 @@ function PostCard({
             {post.updatedAt !== post.createdAt && ' · изм.'}
           </p>
         </div>
-        {post.isOwner && !isPutzermann && (
+        {post.isOwner && (
           <div className="flex items-center gap-1">
             <button
               onClick={() => onEdit(post)}
-              className={isPysy ? "win95-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"}
+              className={isPysy ? "win95-button p-1" : isPutzermann ? "noir-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"}
             >
               <PenSquare className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDelete(post)}
-              className={isPysy ? "win95-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"}
+              className={isPysy ? "win95-button p-1" : isPutzermann ? "noir-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -816,7 +825,7 @@ function CreatePostBox({
             className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none w-full min-h-[80px] border-white" : "bg-background/60 border-border/60 font-sans resize-none"}
           />
           {(isPysy || isPutzermann) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : 'border-t border-dashed border-white/30'}`} />}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1">
               <label className={`cursor-pointer p-2 rounded-none transition-colors ${isPysy ? 'win95-button' : isPutzermann ? 'noir-button' : 'text-muted-foreground hover:text-foreground hover:bg-card rounded-full'}`} title="Прикрепить файл">
                 <Paperclip className="h-5 w-5" />
@@ -930,6 +939,16 @@ function EditBlogDialog({
   const [description, setDescription] = useState(blog.description);
   const [avatarUrl, setAvatarUrl] = useState(blog.avatarUrl ?? '');
   const [coverUrl, setCoverUrl] = useState(blog.coverUrl ?? '');
+
+  // Reset form fields to current blog data every time the dialog opens
+  useEffect(() => {
+    if (open) {
+      setTitle(blog.title);
+      setDescription(blog.description);
+      setAvatarUrl(blog.avatarUrl ?? '');
+      setCoverUrl(blog.coverUrl ?? '');
+    }
+  }, [open, blog.title, blog.description, blog.avatarUrl, blog.coverUrl]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const update = useUpdateMyBlog();
@@ -1327,9 +1346,9 @@ export default function BlogPage() {
               )}
             </div>
             <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
-              <Avatar className="h-24 w-24 sm:h-32 sm:w-32 noir-sunken rounded-none bg-black">
-                <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" style={{ imageRendering: 'pixelated' }} />
-                <AvatarFallback className="font-bold text-3xl noir-text" style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '1.25rem' }}>
+              <Avatar className="h-24 w-24 sm:h-32 sm:w-32 noir-sunken rounded-none bg-black border border-white">
+                <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover rounded-none" style={{ imageRendering: 'pixelated' }} />
+                <AvatarFallback className="font-bold text-3xl noir-text rounded-none" style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '1.25rem' }}>
                   {blogAvatarFallback(blog.handle, blog.user.username)}
                 </AvatarFallback>
               </Avatar>

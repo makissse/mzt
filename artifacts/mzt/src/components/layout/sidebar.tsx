@@ -72,16 +72,17 @@ function NavButton({ item, pathname, onClick, isPysyTheme, isPutzermannNoir }: {
           onClick={onClick}
           className={`
             w-full flex items-center gap-3 px-2 py-3 text-left group
-            ${active ? 'noir-raised' : 'hover:noir-raised'}
+            transition-all duration-150 ease-out
+            ${active ? 'noir-raised text-white' : 'hover:noir-raised hover:text-white'}
           `}
         >
           {item.icon && (
             <div className="flex items-center justify-center h-6 w-6 flex-shrink-0">
-              <item.icon className="h-4 w-4 noir-icon" />
+              <item.icon className="h-4 w-4 noir-icon transition-all duration-150 group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]" />
             </div>
           )}
           <div className="flex flex-col min-w-0">
-            <span className={`noir-text text-base leading-tight truncate ${active ? 'text-white' : ''}`}>
+            <span className="noir-text text-base leading-tight truncate">
               {item.label}
             </span>
           </div>
@@ -170,22 +171,8 @@ function SecretNavItem({ user, isPysyTheme, isPutzermannNoir }: { user?: User | 
   const [, setLocation] = useLocation();
   const [pathname] = useLocation();
   const { data: secretData } = useGetSecretPhoto({ query: { enabled: !!user, queryKey: ["secretPhoto"] } });
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const unlocked = !!secretData?.unlocked;
-
-  const vanish = useCallback(() => {
-    if (!btnRef.current) return;
-    btnRef.current.style.opacity = '0';
-    btnRef.current.style.pointerEvents = 'none';
-    btnRef.current.style.transform = 'translateX(-12px)';
-  }, []);
-
-  const restore = useCallback(() => {
-    if (!btnRef.current) return;
-    btnRef.current.style.opacity = '1';
-    btnRef.current.style.pointerEvents = 'auto';
-    btnRef.current.style.transform = 'translateX(0)';
-  }, []);
 
   const item: NavItem = { label: 'Секретное фото', path: '/secret-photo', icon: Image, description: 'Секретное фото', exact: true };
 
@@ -194,8 +181,13 @@ function SecretNavItem({ user, isPysyTheme, isPutzermannNoir }: { user?: User | 
   }
 
   return (
-    <div onMouseLeave={restore}>
-      <NavButton item={item} pathname={pathname} onClick={() => {}} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />
+    <div ref={wrapRef} className="group/secret">
+      <div
+        className="opacity-100 transition-all duration-150 ease-out group-hover/secret:opacity-0 group-hover/secret:pointer-events-none group-hover/secret:-translate-x-3"
+        style={{ willChange: 'opacity, transform' }}
+      >
+        <NavButton item={item} pathname={pathname} onClick={() => {}} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />
+      </div>
     </div>
   );
 }

@@ -1,45 +1,35 @@
-# MZT
+# МЗТ — Music Tracking App
 
-A personal media platform (music releases, recommendations, timeline, blogs) built on a pnpm monorepo.
+A personal music tracking platform with releases, recommendations, a timeline, and user blogs. Built as a pnpm monorepo with a React frontend and Express API backend.
 
 ## Stack
 
-- **Frontend:** React 19 + Vite + Tailwind CSS + shadcn/ui, served at `/`
-- **Backend:** Express 5 API server, served at `/api`
-- **Database:** Replit PostgreSQL (Drizzle ORM + Zod validation)
-- **File storage:** Replit Object Storage (GCS-backed presigned URL uploads) — persists across republishes
+- **Frontend**: React 19 + Vite + Tailwind CSS + shadcn/ui (`artifacts/mzt`)
+- **Backend**: Express 5 + Drizzle ORM + PostgreSQL (`artifacts/api-server`)
+- **Shared libs**: `lib/db` (schema + queries), `lib/api-spec` (OpenAPI), `lib/api-zod` (validation), `lib/api-client-react` (typed hooks)
 
-## How to run
+## Running the project
 
 Both workflows start automatically:
 
-| Workflow | Command |
-|---|---|
-| `artifacts/mzt: web` | `PORT=19721 BASE_PATH=/ pnpm --filter @workspace/mzt run dev` |
-| `artifacts/api-server: API Server` | `PORT=8080 BASE_PATH=/api pnpm --filter @workspace/api-server run dev` |
+| Workflow | Command | Port |
+|---|---|---|
+| `artifacts/mzt: web` | `pnpm --filter @workspace/mzt run dev` | 19721 |
+| `artifacts/api-server: API Server` | `pnpm --filter @workspace/api-server run dev` | 8080 |
 
-## Key facts
+## Environment
 
-- **Data persistence:** The database and object storage both survive Replit republishes. The `uploads/` folder inside the API server does NOT persist — all media goes through object storage presigned URLs.
-- **Schema changes:** Run `pnpm --filter @workspace/db run push` after editing `lib/db/src/schema/`. On publish, Replit auto-migrates the production database.
-- **Seeded blogs:** Two blogs (`pysy-exe`, `putzermann-core`) are seeded idempotently on every server start from `artifacts/api-server/src/lib/seed-blogs.ts`.
-- **Session secret:** `SESSION_SECRET` env var required (already set).
-- **Object storage env vars:** `DEFAULT_OBJECT_STORAGE_BUCKET_ID`, `PUBLIC_OBJECT_SEARCH_PATHS`, `PRIVATE_OBJECT_DIR` (set automatically by Replit).
+- `DATABASE_URL` — Replit-managed PostgreSQL (set automatically)
+- `SESSION_SECRET` — stored as a Replit secret
 
-## Monorepo layout
+## Database
 
-```
-artifacts/
-  mzt/              # React + Vite frontend
-  api-server/       # Express API server
-lib/
-  db/               # Drizzle schema + client
-  api-spec/         # OpenAPI spec + codegen
-  api-zod/          # Generated Zod schemas
-  api-client-react/ # Generated React Query hooks
-  object-storage-web/ # Uppy upload client library
+Schema is managed with Drizzle ORM. To push schema changes:
+
+```sh
+pnpm --filter @workspace/db exec drizzle-kit push
 ```
 
 ## User preferences
 
-- Keep existing project structure — do not restructure or migrate.
+- Keep the existing monorepo structure (artifacts/*, lib/*)

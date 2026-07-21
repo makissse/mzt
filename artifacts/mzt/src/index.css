@@ -151,8 +151,8 @@
 
 :root.pysy-theme,
 .dark.pysy-theme {
-  /* Classic Windows 95 / webcore theme for pysy.exe — teal, white, navy */
-  --background: 180 100% 25%;
+  /* Classic Windows 95 / webcore theme for pysy.exe — navy, white, grey */
+  --background: 220 52% 25%;
   --foreground: 0 0% 10%;
 
   --card: 0 0% 100%;
@@ -307,7 +307,7 @@
 
 /* Windows 95 / 98 classic style for pysy.exe */
 .win95-page {
-  background-color: #008080;
+  background-color: #1e3461;
   font-family: Tahoma, "MS Sans Serif", sans-serif;
 }
 

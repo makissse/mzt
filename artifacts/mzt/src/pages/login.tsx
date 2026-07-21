@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLogin, getGetMeQueryKey, useGetMe, storeAuthToken } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -18,6 +19,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const login = useLogin();
+  const [apiError, setApiError] = React.useState<string | null>(null);
   
   const { data: user, isLoading: isAuthLoading } = useGetMe();
 
@@ -36,6 +38,7 @@ export default function Login() {
   });
 
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
+    setApiError(null);
     login.mutate({ data }, {
       onSuccess: (userData) => {
         // Store the server-issued token so customFetch can send it as
@@ -48,7 +51,11 @@ export default function Login() {
         // without waiting for a /api/auth/me round-trip.
         queryClient.setQueryData(getGetMeQueryKey(), userData);
         setLocation('/releases');
-      }
+      },
+      onError: (err) => {
+        const message = (err as any)?.data?.error ?? (err as Error)?.message ?? 'Не удалось войти';
+        setApiError(message);
+      },
     });
   };
 
@@ -109,6 +116,13 @@ export default function Login() {
               </Button>
             </form>
           </Form>
+
+          {apiError && (
+            <div className="flex items-center justify-center gap-2 font-mono text-xs text-destructive text-center bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>{apiError}</span>
+            </div>
+          )}
           
           <div className="text-center">
             <Link href="/register" className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors">

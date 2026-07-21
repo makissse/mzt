@@ -58,13 +58,13 @@ router.post("/auth/login", async (req, res) => {
   const [user] = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
 
   if (!user) {
-    res.status(401).json({ error: "Invalid credentials" });
+    res.status(401).json({ error: "Неверный никнейм или пароль" });
     return;
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    res.status(401).json({ error: "Invalid credentials" });
+    res.status(401).json({ error: "Неверный никнейм или пароль" });
     return;
   }
 
