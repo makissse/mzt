@@ -39,6 +39,8 @@ export * from './review';
 export * from './reviewInput';
 export * from './secretPhotoStatus';
 export * from './secretPhotoStatusProgress';
+export * from './secretPhotoStatusProgressComments';
+export * from './secretPhotoStatusProgressPosts';
 export * from './secretPhotoStatusProgressRecommendations';
 export * from './secretPhotoStatusProgressReviews';
 export * from './secretPhotoStatusProgressTracks';

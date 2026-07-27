@@ -71,6 +71,16 @@ export default function SecretPhotoPage() {
               current={data.progress.tracks.current}
               needed={data.progress.tracks.needed}
             />
+            <ProgressBar
+              label="Комментарии"
+              current={data.progress.comments.current}
+              needed={data.progress.comments.needed}
+            />
+            <ProgressBar
+              label="Посты в блогах"
+              current={data.progress.posts.current}
+              needed={data.progress.posts.needed}
+            />
           </div>
         </div>
       );

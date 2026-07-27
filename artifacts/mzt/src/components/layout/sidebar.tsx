@@ -71,18 +71,18 @@ function NavButton({ item, pathname, onClick, isPysyTheme, isPutzermannNoir }: {
         <button
           onClick={onClick}
           className={`
-            w-full flex items-center gap-3 px-2 py-3 text-left group
+            w-full flex items-center gap-3 px-2 py-3 text-left group/btn
             transition-all duration-150 ease-out
-            ${active ? 'noir-raised text-white' : 'hover:noir-raised hover:text-white'}
+            ${active ? 'noir-raised' : 'hover:noir-raised'}
           `}
         >
           {item.icon && (
             <div className="flex items-center justify-center h-6 w-6 flex-shrink-0">
-              <item.icon className="h-4 w-4 noir-icon transition-all duration-150 group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]" />
+              <item.icon className={`h-4 w-4 noir-icon transition-all duration-150 group-hover/btn:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)] ${active ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]' : ''}`} />
             </div>
           )}
           <div className="flex flex-col min-w-0">
-            <span className="noir-text text-base leading-tight truncate">
+            <span className={`noir-text text-base leading-tight truncate transition-all duration-150 group-hover/btn:text-white group-hover/btn:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)] ${active ? 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]' : ''}`}>
               {item.label}
             </span>
           </div>

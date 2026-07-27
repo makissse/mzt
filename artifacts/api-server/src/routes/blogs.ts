@@ -9,6 +9,7 @@ import {
   blogCommentsTable,
 } from "@workspace/db";
 import { eq, desc, count, and, inArray, sql } from "drizzle-orm";
+import { sendPushToAll } from "../lib/push";
 
 const router = Router();
 
@@ -466,6 +467,14 @@ router.post("/blogs/:handle/posts", requireAuth, async (req, res) => {
   res.status(201).json(
     formatPost(post, formatUser(owner ?? virtualUser(blog)), postMedia, true, 0, false, 0),
   );
+
+  // Fire-and-forget push notification for new post
+  sendPushToAll({
+    title: blog.title || blog.ownerUsername || "Новый пост",
+    body: (safeTitle || safeContent || "Новая публикация").slice(0, 100),
+    url: `/blogs/${blog.handle}`,
+    tag: `new-post-${blog.handle}`,
+  }).catch(() => {});
 });
 
 // ─── Update post ──────────────────────────────────────────────────────────────
@@ -591,12 +600,34 @@ router.get("/blogs/posts/:id/comments", async (req, res) => {
     .where(eq(blogCommentsTable.postId, postId))
     .orderBy(blogCommentsTable.createdAt);
 
+  // Batch-resolve replyTo usernames
+  const replyIds = rows.map((r) => r.comment.replyToId).filter((id): id is number => id != null);
+  const replyToMap = new Map<number, { id: number; username: string }>();
+  if (replyIds.length > 0) {
+    const parents = await db
+      .select({ id: blogCommentsTable.id, userId: blogCommentsTable.userId })
+      .from(blogCommentsTable)
+      .where(inArray(blogCommentsTable.id, replyIds));
+    const parentUserIds = parents.map((p) => p.userId).filter((id): id is number => id != null);
+    const parentUsers = parentUserIds.length > 0
+      ? await db.select({ id: usersTable.id, username: usersTable.username })
+          .from(usersTable).where(inArray(usersTable.id, parentUserIds))
+      : [];
+    const userMap = new Map(parentUsers.map((u) => [u.id, u.username]));
+    for (const p of parents) {
+      const username = p.userId != null ? userMap.get(p.userId) : undefined;
+      if (username) replyToMap.set(p.id, { id: p.id, username });
+    }
+  }
+
   res.json(
     rows.map((r) => ({
       id: r.comment.id,
       content: r.comment.content,
+      attachments: (r.comment.attachments as Array<{ type: string; url: string }> | null) ?? [],
       createdAt: r.comment.createdAt,
       user: formatUser(r.user),
+      replyTo: r.comment.replyToId != null ? (replyToMap.get(r.comment.replyToId) ?? null) : null,
     })),
   );
 });
@@ -608,27 +639,63 @@ router.post("/blogs/posts/:id/comments", requireAuth, async (req, res) => {
   if (isNaN(postId)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const userId = getCurrentUserId(req);
-  const { content } = req.body ?? {};
+  const { content, attachments, replyToId } = req.body ?? {};
 
-  if (!content || typeof content !== "string" || content.trim().length === 0) {
-    res.status(400).json({ error: "content is required" }); return;
+  const safeContent = typeof content === "string" ? content.trim() : "";
+  const safeAttachments: Array<{ type: string; url: string }> = Array.isArray(attachments)
+    ? attachments
+        .filter((a: unknown) => {
+          if (typeof a !== "object" || a === null) return false;
+          const { type, url } = a as Record<string, unknown>;
+          return (type === "video" || type === "image") && typeof url === "string" && url.length > 0;
+        })
+        .map((a: Record<string, unknown>) => ({ type: a.type as string, url: a.url as string }))
+    : [];
+  const safeReplyToId = typeof replyToId === "number" ? replyToId : null;
+
+  if (safeContent.length === 0 && safeAttachments.length === 0) {
+    res.status(400).json({ error: "Комментарий не может быть пустым" }); return;
   }
 
   const [post] = await db.select().from(blogPostsTable).where(eq(blogPostsTable.id, postId)).limit(1);
   if (!post) { res.status(404).json({ error: "Post not found" }); return; }
 
+  // Validate replyToId belongs to the same post
+  if (safeReplyToId !== null) {
+    const [parent] = await db.select({ id: blogCommentsTable.id })
+      .from(blogCommentsTable)
+      .where(and(eq(blogCommentsTable.id, safeReplyToId), eq(blogCommentsTable.postId, postId)))
+      .limit(1);
+    if (!parent) { res.status(400).json({ error: "Invalid replyToId" }); return; }
+  }
+
   const [comment] = await db
     .insert(blogCommentsTable)
-    .values({ postId, userId, content: content.trim() })
+    .values({ postId, userId, content: safeContent, attachments: safeAttachments, replyToId: safeReplyToId })
     .returning();
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
+  // Resolve replyTo for response
+  let replyTo: { id: number; username: string } | null = null;
+  if (safeReplyToId !== null) {
+    const [parentRow] = await db
+      .select({ id: blogCommentsTable.id, userId: blogCommentsTable.userId })
+      .from(blogCommentsTable).where(eq(blogCommentsTable.id, safeReplyToId)).limit(1);
+    if (parentRow) {
+      const [parentUser] = await db.select({ username: usersTable.username })
+        .from(usersTable).where(eq(usersTable.id, parentRow.userId)).limit(1);
+      if (parentUser) replyTo = { id: safeReplyToId, username: parentUser.username };
+    }
+  }
+
   res.status(201).json({
     id: comment.id,
     content: comment.content,
+    attachments: comment.attachments ?? [],
     createdAt: comment.createdAt,
     user: formatUser(user),
+    replyTo,
   });
 });
 

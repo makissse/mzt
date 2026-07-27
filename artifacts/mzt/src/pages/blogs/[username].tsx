@@ -36,12 +36,15 @@ import {
   MessageCircle,
   Send,
   Camera,
-  FlipHorizontal,
+  SwitchCamera,
   StopCircle,
   Play,
   Pause,
   Music,
   Video,
+  Bell,
+  BellOff,
+  Reply,
 } from 'lucide-react';
 import type { BlogPost } from '@workspace/api-client-react';
 
@@ -127,17 +130,35 @@ function CircleVideoRecorder({
 }) {
   const [phase, setPhase] = useState<'idle' | 'preview' | 'recording' | 'done'>('idle');
   const [countdown, setCountdown] = useState(60);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [isSwitching, setIsSwitching] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Persists across camera switches during recording
+  const audioTrackRef = useRef<MediaStreamTrack | null>(null);
+  const videoStreamRef = useRef<MediaStream | null>(null);
+  const facingModeRef = useRef<'user' | 'environment'>('user');
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const stopAllTracks = useCallback(() => {
+    videoStreamRef.current?.getTracks().forEach((t) => t.stop());
+    audioTrackRef.current?.stop();
+    videoStreamRef.current = null;
+    audioTrackRef.current = null;
+  }, []);
 
   const openCamera = useCallback(async (mode: 'user' | 'environment' = 'user') => {
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode }, audio: true });
-      setStream(s);
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode, width: { ideal: 512 }, height: { ideal: 512 } },
+        audio: true,
+      });
+      audioTrackRef.current = s.getAudioTracks()[0] ?? null;
+      videoStreamRef.current = s;
+      facingModeRef.current = mode;
       setFacingMode(mode);
       setPhase('preview');
       setTimeout(() => {
@@ -151,19 +172,74 @@ function CircleVideoRecorder({
     }
   }, []);
 
-  const toggleFacingMode = useCallback(() => {
-    const next = facingMode === 'user' ? 'environment' : 'user';
-    if (stream) stream.getTracks().forEach((t) => t.stop());
-    openCamera(next);
-  }, [facingMode, stream, openCamera]);
+  // Switch camera without interrupting recording.
+  // During preview: full stream swap.
+  // During recording: only video track swapped; audio + recorder continue uninterrupted.
+  const toggleFacingMode = useCallback(async () => {
+    if (isSwitching) return;
+    setIsSwitching(true);
+    const next = facingModeRef.current === 'user' ? 'environment' : 'user';
+    try {
+      if (phase === 'recording') {
+        // Stop only the current video tracks, keep audio alive
+        videoStreamRef.current?.getVideoTracks().forEach((t) => t.stop());
+        const newVidStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: next, width: { ideal: 512 }, height: { ideal: 512 } },
+          audio: false,
+        });
+        videoStreamRef.current = newVidStream;
+        facingModeRef.current = next;
+        setFacingMode(next);
+        if (videoRef.current) {
+          videoRef.current.srcObject = newVidStream;
+          videoRef.current.play().catch(() => {});
+        }
+        // RAF loop picks up the new video element source automatically
+      } else {
+        videoStreamRef.current?.getTracks().forEach((t) => t.stop());
+        audioTrackRef.current?.stop();
+        await openCamera(next);
+      }
+    } catch {
+      // If switching fails, stay on current camera
+    } finally {
+      setIsSwitching(false);
+    }
+  }, [isSwitching, phase, openCamera]);
 
-  const startRecording = () => {
-    if (!stream) return;
+  const startRecording = useCallback(() => {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    if (!canvas || !video) return;
+
+    // RAF loop: draws the live video element to the canvas every frame.
+    // Mirroring for front camera is applied here (not via CSS) so the
+    // recording itself is correctly oriented.
+    const drawFrame = () => {
+      const ctx = canvas.getContext('2d');
+      if (!ctx || !videoRef.current) return;
+      ctx.save();
+      if (facingModeRef.current === 'user') {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+      rafRef.current = requestAnimationFrame(drawFrame);
+    };
+    rafRef.current = requestAnimationFrame(drawFrame);
+
+    // Record canvas video + original audio together
+    const canvasStream = canvas.captureStream(30);
+    const tracks: MediaStreamTrack[] = [...canvasStream.getVideoTracks()];
+    if (audioTrackRef.current) tracks.push(audioTrackRef.current);
+    const recordStream = new MediaStream(tracks);
+
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
       ? 'video/webm;codecs=vp9,opus'
       : 'video/webm';
-    const recorder = new MediaRecorder(stream, { mimeType });
+    const recorder = new MediaRecorder(recordStream, { mimeType });
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: 'video/webm' });
@@ -175,30 +251,31 @@ function CircleVideoRecorder({
     setCountdown(60);
     timerRef.current = setInterval(() => {
       setCountdown((c) => {
-        if (c <= 1) {
-          stopRecording();
-          return 0;
-        }
+        if (c <= 1) { stopRecording(); return 0; }
         return c - 1;
       });
     }, 1000);
-  };
+  }, []);  // stopRecording defined below via ref to avoid stale closure
 
   const stopRecording = useCallback(() => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
-    stream?.getTracks().forEach((t) => t.stop());
-    setStream(null);
+    stopAllTracks();
     setPhase('done');
-  }, [stream]);
+  }, [stopAllTracks]);
 
   useEffect(() => () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    stream?.getTracks().forEach((t) => t.stop());
-  }, [stream]);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    stopAllTracks();
+  }, [stopAllTracks]);
 
   return (
     <div className="flex flex-col items-center gap-5">
+      {/* Hidden canvas used as the MediaRecorder source */}
+      <canvas ref={canvasRef} width={512} height={512} className="hidden" />
+
       <div
         className={isPysy ? "relative w-72 h-72 rounded-full overflow-hidden win95-sunken bg-black" : "relative w-72 h-72 rounded-full overflow-hidden border-4 bg-black"}
         style={!isPysy ? { borderColor: theme.accentBorder } : undefined}
@@ -214,18 +291,10 @@ function CircleVideoRecorder({
             muted
             playsInline
             className="w-full h-full object-cover"
+            // Mirror front camera for preview display; the canvas applies the same
+            // transform so the saved recording matches what was seen.
             style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : undefined }}
           />
-        )}
-        {phase === 'preview' && (
-          <button
-            type="button"
-            onClick={toggleFacingMode}
-            className="absolute top-3 left-3 p-2 rounded-full bg-black/60 text-white z-10"
-            title="Переключить камеру"
-          >
-            <FlipHorizontal className="h-4 w-4" />
-          </button>
         )}
         {phase === 'recording' && (
           <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-1">
@@ -259,14 +328,22 @@ function CircleVideoRecorder({
               <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
               Запись
             </Button>
-            <Button variant="outline" onClick={() => { stream?.getTracks().forEach((t) => t.stop()); setStream(null); setPhase('idle'); }} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
+            <Button variant="outline" onClick={toggleFacingMode} disabled={isSwitching} className={isPysy ? "win95-button gap-2" : "font-mono gap-2"} title="Переключить камеру">
+              <SwitchCamera className={`h-4 w-4 ${isSwitching ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button variant="outline" onClick={() => { stopAllTracks(); setPhase('idle'); }} className={isPysy ? "win95-button" : "font-mono"}>Отмена</Button>
           </>
         )}
         {phase === 'recording' && (
-          <Button onClick={stopRecording} variant="outline" className={isPysy ? "win95-button gap-2" : "font-mono gap-2"}>
-            <StopCircle className="h-4 w-4 text-red-500" />
-            Остановить
-          </Button>
+          <>
+            <Button onClick={stopRecording} variant="outline" className={isPysy ? "win95-button gap-2" : "font-mono gap-2"}>
+              <StopCircle className="h-4 w-4 text-red-500" />
+              Остановить
+            </Button>
+            <Button variant="outline" onClick={toggleFacingMode} disabled={isSwitching} className={isPysy ? "win95-button gap-2" : "font-mono gap-2"} title="Переключить камеру">
+              <SwitchCamera className={`h-4 w-4 ${isSwitching ? 'animate-spin' : ''}`} />
+            </Button>
+          </>
         )}
         {phase === 'done' && (
           <>
@@ -281,21 +358,23 @@ function CircleVideoRecorder({
 
 // ─── Circle Video Player ───────────────────────────────────────────────────────
 
-const CVIDEO_PX = 230;       // ~30% larger than the original 176px
-const CVIDEO_OFFSET = 13;    // gap from video edge to container edge
-const CONTAINER_SIZE = CVIDEO_PX + CVIDEO_OFFSET * 2; // 256
-const RING_CENTER = CONTAINER_SIZE / 2;                // 128
-const RING_R = RING_CENTER - CVIDEO_OFFSET / 2 - 1;   // ~121
-const RING_STROKE = 4;
-const CIRC = 2 * Math.PI * RING_R;
-
 function CircleVideoPlayer({
   src,
   accentColor,
+  sizePx = 230,
 }: {
   src: string;
   accentColor: string;
+  sizePx?: number;
 }) {
+  const CVIDEO_PX = sizePx;
+  const CVIDEO_OFFSET = Math.max(6, Math.round(sizePx * 13 / 230));
+  const CONTAINER_SIZE = CVIDEO_PX + CVIDEO_OFFSET * 2;
+  const RING_CENTER = CONTAINER_SIZE / 2;
+  const RING_R = RING_CENTER - CVIDEO_OFFSET / 2 - 1;
+  const RING_STROKE = Math.max(2, Math.round(4 * sizePx / 230));
+  const CIRC = 2 * Math.PI * RING_R;
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [phase, setPhase] = useState<'idle' | 'playing' | 'paused'>('idle');
   const [loaded, setLoaded] = useState(false);
@@ -395,7 +474,6 @@ function CircleVideoPlayer({
           className="w-full h-full object-cover pointer-events-none"
           preload="auto"
           playsInline
-          style={{ transform: 'scaleX(-1)' }}
         />
       </div>
 
@@ -476,8 +554,8 @@ function MediaGrid({
       {images.length > 0 && (
         <div className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'}`}>
           {images.map((img, idx) => (
-            <div key={idx} className={`relative overflow-hidden ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} ${images.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}>
-              <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <div key={idx} className={`overflow-hidden ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} ${images.length !== 1 ? 'aspect-square flex items-center justify-center' : ''}`}>
+              <img src={img.url} alt="" className={images.length === 1 ? 'w-full h-auto' : 'w-full h-full object-contain'} loading="lazy" />
             </div>
           ))}
         </div>
@@ -500,13 +578,162 @@ function MediaGrid({
   );
 }
 
+// ─── Push notifications ────────────────────────────────────────────────────────
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = window.atob(base64);
+  return Uint8Array.from({ length: raw.length }, (_, i) => raw.charCodeAt(i));
+}
+
+function usePushSubscription() {
+  const key = 'mzt-push-subscribed';
+  const [subscribed, setSubscribed] = useState(() => localStorage.getItem(key) === '1');
+  const [loading, setLoading] = useState(false);
+
+  const toggle = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert('Ваш браузер не поддерживает уведомления');
+      return;
+    }
+    setLoading(true);
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      const vapidRes = await fetch('/api/push/vapid-public-key');
+      if (!vapidRes.ok) { alert('Push не настроен на сервере'); return; }
+      const { publicKey } = await vapidRes.json();
+
+      if (!subscribed) {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
+        });
+        const j = sub.toJSON();
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-auth-token': getStoredAuthToken() ?? '' },
+          credentials: 'include',
+          body: JSON.stringify({ endpoint: j.endpoint, keys: j.keys }),
+        });
+        localStorage.setItem(key, '1');
+        setSubscribed(true);
+      } else {
+        const ready = await navigator.serviceWorker.ready;
+        const sub = await ready.pushManager.getSubscription();
+        if (sub) {
+          await fetch('/api/push/unsubscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-auth-token': getStoredAuthToken() ?? '' },
+            credentials: 'include',
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          });
+          await sub.unsubscribe();
+        }
+        localStorage.removeItem(key);
+        setSubscribed(false);
+      }
+    } catch (e) {
+      console.error('[push]', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { subscribed, loading, toggle };
+}
+
+function PushBellButton({ isPutzermann, isPysy, theme }: { isPutzermann?: boolean; isPysy?: boolean; theme: BlogTheme }) {
+  const { subscribed, loading, toggle } = usePushSubscription();
+  return (
+    <button
+      onClick={toggle}
+      disabled={loading}
+      title={subscribed ? 'Отписаться от уведомлений' : 'Получать уведомления о новых постах'}
+      className={
+        isPysy
+          ? 'win95-button flex items-center gap-1.5 text-xs px-2 py-1'
+          : isPutzermann
+          ? 'noir-button flex items-center gap-1.5 text-xs px-2 py-1'
+          : 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-mono transition-colors'
+      }
+      style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder, color: subscribed ? theme.accent : undefined } : undefined}
+    >
+      {subscribed ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
+      {subscribed ? 'Уведомления вкл.' : 'Уведомления'}
+    </button>
+  );
+}
+
 // ─── Comments section ──────────────────────────────────────────────────────────
 
-type Comment = { id: number; content: string; createdAt: string; user: { username: string } };
+type CommentAttachment = { type: 'video' | 'image'; url: string };
+type Comment = { id: number; content: string; createdAt: string; user: { username: string }; attachments?: CommentAttachment[]; replyTo?: { id: number; username: string } | null };
 
-function CommentsSection({ postId, me, theme, isPutzermann, isPysy }: { postId: number; me?: { username: string } | null; theme: BlogTheme; isPutzermann?: boolean; isPysy?: boolean }) {
+/** Resize an image File to maxPx on its longest side, returns a JPEG File. */
+async function resizeImage(file: File, maxPx = 800): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const { naturalWidth: w, naturalHeight: h } = img;
+      const scale = Math.min(1, maxPx / Math.max(w, h));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        (blob) => resolve(new File([blob!], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })),
+        'image/jpeg',
+        0.85,
+      );
+    };
+    img.src = objectUrl;
+  });
+}
+
+/** Small attachment strip rendered inside a comment bubble. */
+function CommentAttachments({ attachments, theme, isPutzermann, isPysy }: {
+  attachments: CommentAttachment[];
+  theme: BlogTheme;
+  isPutzermann?: boolean;
+  isPysy?: boolean;
+}) {
+  const videos = attachments.filter((a) => a.type === 'video');
+  const images = attachments.filter((a) => a.type === 'image');
+  return (
+    <div className="space-y-2 mt-1">
+      {videos.map((v, i) => (
+        <CircleVideoPlayer key={i} src={v.url} accentColor={theme.accent} sizePx={160} />
+      ))}
+      {images.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {images.map((img, i) => (
+            <a key={i} href={img.url} target="_blank" rel="noopener noreferrer" className="block">
+              <div className={`w-20 h-20 overflow-hidden ${isPysy ? 'win95-sunken rounded-none' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded border border-border/40'}`}>
+                <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type PendingAttachment = CommentAttachment & { localPreview?: string };
+
+function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChange }: { postId: number; me?: { username: string } | null; theme: BlogTheme; isPutzermann?: boolean; isPysy?: boolean; onCountChange?: (n: number) => void }) {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [pending, setPending] = useState<PendingAttachment[]>([]);
+  const [showRecorder, setShowRecorder] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const { data: comments = [], isLoading } = useQuery<Comment[]>({
@@ -520,17 +747,69 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy }: { postId: 
     },
   });
 
+  useEffect(() => { onCountChange?.(comments.length); }, [comments.length, onCountChange]);
+
+  const handleVideoRecorded = async (blob: Blob) => {
+    setShowRecorder(false);
+    setUploadingMedia(true);
+    try {
+      const file = new File([blob], 'circle.webm', { type: 'video/webm' });
+      const url = await uploadFile(file);
+      const localPreview = URL.createObjectURL(blob);
+      setPending((prev) => [...prev, { type: 'video', url, localPreview }]);
+    } catch {
+      alert('Ошибка загрузки видео');
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingMedia(true);
+    try {
+      const resized = await resizeImage(file, 800);
+      const localPreview = URL.createObjectURL(resized);
+      const url = await uploadFile(resized);
+      setPending((prev) => [...prev, { type: 'image', url, localPreview }]);
+    } catch {
+      alert('Ошибка загрузки фото');
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const removePending = (idx: number) => {
+    setPending((prev) => {
+      const next = [...prev];
+      const removed = next.splice(idx, 1)[0];
+      if (removed.localPreview) URL.revokeObjectURL(removed.localPreview);
+      return next;
+    });
+  };
+
+  const canSend = !submitting && !uploadingMedia && (text.trim().length > 0 || pending.length > 0);
+
   const submit = async () => {
-    if (!text.trim()) return;
+    if (!canSend) return;
     setSubmitting(true);
     try {
       await fetch(`/api/blogs/posts/${postId}/comments`, {
         method: 'POST',
         credentials: 'include',
         headers: authHeaders(),
-        body: JSON.stringify({ content: text.trim() }),
+        body: JSON.stringify({
+          content: text.trim(),
+          attachments: pending.map(({ type, url }) => ({ type, url })),
+          ...(replyingTo ? { replyToId: replyingTo.id } : {}),
+        }),
       });
       setText('');
+      pending.forEach((a) => { if (a.localPreview) URL.revokeObjectURL(a.localPreview); });
+      setPending([]);
+      setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['blog-comments', postId] });
     } catch {
       alert('Ошибка отправки комментария');
@@ -546,39 +825,140 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy }: { postId: 
       ) : comments.length === 0 ? (
         <p className={`text-xs px-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground font-mono'}`}>Комментариев пока нет</p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {comments.map((c) => (
-            <div key={c.id} className="flex gap-2">
-              <span className={`text-xs font-bold flex-shrink-0 ${isPysy ? 'win95-text font-bold' : isPutzermann ? 'noir-text' : 'font-mono'}`} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
-                {c.user.username}
-              </span>
-              <span className={`text-xs leading-relaxed ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text opacity-80' : 'font-sans text-foreground'}`}>{c.content}</span>
+            <div key={c.id} className="space-y-0.5 group">
+              {c.replyTo && (
+                <div className={`text-[10px] flex items-center gap-1 mb-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground font-mono'}`}>
+                  <Reply className="h-2.5 w-2.5 shrink-0" />
+                  <span>@{c.replyTo.username}</span>
+                </div>
+              )}
+              <div className="flex gap-2 flex-wrap items-start">
+                <div className="flex-1 min-w-0">
+                  <div className="flex gap-2 flex-wrap">
+                    <span className={`text-xs font-bold flex-shrink-0 ${isPysy ? 'win95-text font-bold' : isPutzermann ? 'noir-text' : 'font-mono'}`} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
+                      {c.user.username}
+                    </span>
+                    {c.content && (
+                      <span className={`text-xs leading-relaxed ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text opacity-80' : 'font-sans text-foreground'}`}>{c.content}</span>
+                    )}
+                  </div>
+                  {c.attachments && c.attachments.length > 0 && (
+                    <CommentAttachments attachments={c.attachments} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} />
+                  )}
+                </div>
+                {me && (
+                  <button
+                    onClick={() => setReplyingTo(replyingTo?.id === c.id ? null : c)}
+                    className={`opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity text-[10px] flex items-center gap-0.5 mt-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground hover:text-foreground font-mono'}`}
+                    style={replyingTo?.id === c.id && !isPysy && !isPutzermann ? { color: theme.accent, opacity: 1 } : undefined}
+                  >
+                    <Reply className="h-3 w-3" /> ответить
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
       )}
       {me && (
-        <div className="flex gap-2">
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Комментарий..."
-            className={isPysy
-              ? "h-8 win95-sunken win95-text px-2 rounded-none"
-              : isPutzermann
-              ? "h-8 noir-sunken noir-text px-2 rounded-none text-sm"
-              : "h-8 text-xs font-sans bg-background/50 border-border/60"}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
-          />
-          <Button
-            size="sm"
-            onClick={submit}
-            disabled={submitting || !text.trim()}
-            className={isPysy ? "win95-button h-8 px-3" : isPutzermann ? "noir-button h-8 px-3" : "h-8 px-3 font-mono"}
-            style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
-          >
-            {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-          </Button>
+        <div className="space-y-2">
+          {/* Inline circle recorder */}
+          {showRecorder && (
+            <div className="py-2 flex justify-center">
+              <CircleVideoRecorder
+                onRecorded={handleVideoRecorded}
+                onClose={() => setShowRecorder(false)}
+                theme={theme}
+                isPysy={isPysy}
+              />
+            </div>
+          )}
+
+          {/* Pending attachment previews */}
+          {(pending.length > 0 || uploadingMedia) && (
+            <div className="flex flex-wrap gap-2 items-center">
+              {pending.map((att, idx) => (
+                <div key={idx} className="relative flex-shrink-0">
+                  {att.type === 'video' ? (
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-black border border-border/60">
+                      <video src={att.localPreview ?? att.url} className="w-full h-full object-cover" muted playsInline />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded overflow-hidden border border-border/60">
+                      <img src={att.localPreview ?? att.url} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <button
+                    onClick={() => removePending(idx)}
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-background border border-border flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              ))}
+              {uploadingMedia && (
+                <div className="w-12 h-12 flex items-center justify-center border border-border/40 rounded">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Reply chip */}
+          {replyingTo && (
+            <div className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded ${isPysy ? 'win95-sunken win95-text-muted' : isPutzermann ? 'noir-sunken noir-text-muted' : 'bg-muted/40 text-muted-foreground font-mono border border-border/50'}`}>
+              <Reply className="h-3 w-3 shrink-0" />
+              <span className="flex-1 truncate">Ответ → @{replyingTo.user.username}</span>
+              <button onClick={() => setReplyingTo(null)} className="shrink-0 hover:opacity-70"><X className="h-3 w-3" /></button>
+            </div>
+          )}
+
+          {/* Input row */}
+          <div className="flex gap-1.5">
+            <Input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Комментарий..."
+              className={isPysy
+                ? "h-8 win95-sunken win95-text px-2 rounded-none"
+                : isPutzermann
+                ? "h-8 noir-sunken noir-text px-2 rounded-none text-sm"
+                : "h-8 text-xs font-sans bg-background/50 border-border/60"}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowRecorder((v) => !v)}
+              disabled={uploadingMedia}
+              title="Записать кружок"
+              className={`flex-shrink-0 ${isPysy ? "win95-button h-8 px-2" : isPutzermann ? "noir-button h-8 px-2" : "h-8 px-2"}`}
+            >
+              <Video className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => photoInputRef.current?.click()}
+              disabled={uploadingMedia}
+              title="Прикрепить фото"
+              className={`flex-shrink-0 ${isPysy ? "win95-button h-8 px-2" : isPutzermann ? "noir-button h-8 px-2" : "h-8 px-2"}`}
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="sm"
+              onClick={submit}
+              disabled={!canSend}
+              className={isPysy ? "win95-button h-8 px-3" : isPutzermann ? "noir-button h-8 px-3" : "h-8 px-3 font-mono"}
+              style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
+            >
+              {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+            </Button>
+            <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelected} />
+          </div>
         </div>
       )}
     </div>
@@ -609,6 +989,7 @@ function PostCard({
   onDelete: (post: ExtPost) => void;
 }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [liveCommentsCount, setLiveCommentsCount] = useState<number | null>(null);
   const isPysy = blog.handle === 'pysy-exe';
 
   return (
@@ -685,7 +1066,7 @@ function PostCard({
       )}
 
       {post.content && (
-        <div className={isPysy ? "whitespace-pre-wrap win95-text leading-relaxed" : isPutzermann ? "whitespace-pre-wrap noir-text text-base leading-relaxed" : "whitespace-pre-wrap font-sans text-sm sm:text-base text-foreground leading-relaxed"}>
+        <div className={`${isPysy ? "win95-text leading-relaxed" : isPutzermann ? "noir-text text-base leading-relaxed" : "font-sans text-sm sm:text-base text-foreground leading-relaxed"} min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere]`}>
           {post.content}
         </div>
       )}
@@ -710,12 +1091,12 @@ function PostCard({
           style={commentsOpen && !isPysy && !isPutzermann ? { color: theme.accent } : undefined}
         >
           <MessageCircle className="h-4 w-4" />
-          <span>{post.commentsCount + (commentsOpen ? 0 : 0)}</span>
+          <span>{liveCommentsCount !== null ? liveCommentsCount : post.commentsCount}</span>
         </button>
       </div>
 
       {commentsOpen && (
-        <CommentsSection postId={post.id} me={me} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} />
+        <CommentsSection postId={post.id} me={me} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} onCountChange={setLiveCommentsCount} />
       )}
       </div>
     </article>
@@ -1434,6 +1815,9 @@ export default function BlogPage() {
 
       {/* Post feed */}
       <div className="px-4 sm:px-6 mt-8">
+        <div className="flex justify-end mb-3">
+          <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} theme={theme} />
+        </div>
         {blog.isOwner && me && (
           <CreatePostBox handle={blog.handle} blog={blog} me={me} theme={theme} isPutzermann={isPutzermann} onPosted={() => {}} />
         )}

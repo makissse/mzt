@@ -12,7 +12,7 @@ import {
   useGetMe
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2, Disc, ExternalLink, Download } from 'lucide-react';
+import { ArrowLeft, Trash2, Disc, ExternalLink, Download, ChevronDown } from 'lucide-react';
 import { AudioPlayer } from '@/components/audio-player';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -42,12 +42,15 @@ function isYouTubeUrl(url: string): boolean {
 }
 
 function isUploadedFile(url: string): boolean {
-  return !!url && url.startsWith('/api/uploads/');
+  if (!url) return false;
+  return url.startsWith('/api/uploads/') || url.startsWith('/api/storage/objects/');
 }
 
 function isAudioFileUrl(url: string): boolean {
   if (!url) return false;
+  // Object Storage and legacy disk uploads are always audio
   if (url.startsWith('/api/uploads/')) return true;
+  if (url.startsWith('/api/storage/objects/')) return true;
   try {
     const u = new URL(url);
     const pathname = u.pathname.toLowerCase();
@@ -167,14 +170,35 @@ function ScoreDisplay({ score, label }: { score: number | null | undefined; labe
 }
 
 function ReviewSlider({ field, label }: { field: any; label: string }) {
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const description = REVIEW_CRITERIA.find((criterion) => criterion.label === label)?.description;
+
   return (
     <FormItem className="space-y-2 bg-card/60 px-5 py-4 border border-border rounded-xl">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-2">
         <FormLabel className="font-mono text-xs uppercase tracking-wider text-foreground/80">{label}</FormLabel>
         <div className="text-2xl font-bold font-mono text-primary w-8 text-right tabular-nums">
           {field.value}
         </div>
       </div>
+      {description && (
+        <div className="border-b border-border/60 pb-1">
+          <button
+            type="button"
+            aria-expanded={isDescriptionOpen}
+            onClick={() => setIsDescriptionOpen((open) => !open)}
+            className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70 hover:text-primary transition-colors"
+          >
+            Что оценивается
+            <ChevronDown className={`h-3 w-3 transition-transform ${isDescriptionOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {isDescriptionOpen && (
+            <p className="mt-2 max-w-prose font-sans text-xs leading-relaxed text-muted-foreground">
+              {description}
+            </p>
+          )}
+        </div>
+      )}
       <FormControl>
         <Slider
           min={1}
@@ -189,6 +213,71 @@ function ReviewSlider({ field, label }: { field: any; label: string }) {
     </FormItem>
   );
 }
+
+function ReviewCriterionInfo({
+  criterion,
+  value,
+  compact = false,
+}: {
+  criterion: (typeof REVIEW_CRITERIA)[number];
+  value: number;
+  compact?: boolean;
+}) {
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+
+  return (
+    <div className={compact ? "text-center" : "text-center bg-background border border-border p-2 md:p-3 rounded-lg"}>
+      <div className="text-lg md:text-xl font-bold font-mono mb-1">{value}</div>
+      <div className="flex items-center justify-center gap-0.5">
+        <span className="font-mono text-[8px] md:text-[9px] uppercase tracking-wider text-muted-foreground">
+          {criterion.shortLabel}
+        </span>
+        <button
+          type="button"
+          aria-label={`Что означает критерий «${criterion.shortLabel}»`}
+          aria-expanded={isDescriptionOpen}
+          onClick={() => setIsDescriptionOpen((open) => !open)}
+          className="inline-flex items-center justify-center rounded-full p-0.5 text-muted-foreground/70 hover:text-primary transition-colors"
+        >
+          <ChevronDown className={`h-3 w-3 transition-transform ${isDescriptionOpen ? "rotate-180" : ""}`} />
+        </button>
+      </div>
+      {isDescriptionOpen && (
+        <p className="mt-2 text-left font-sans text-[10px] leading-relaxed text-muted-foreground">
+          {criterion.description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+const REVIEW_CRITERIA = [
+  {
+    label: "Рифмы / Образы",
+    shortLabel: "Рифмы",
+    description: "Качество рифм, образов и смысловых сочетаний с учётом жанра и его особенностей.",
+  },
+  {
+    label: "Структура / Ритмика",
+    shortLabel: "Структура",
+    description: "Насколько ритм, куплеты, припевы и другие части песни звучат гармонично и складываются в цельную композицию.",
+  },
+  {
+    label: "Реализация стиля",
+    shortLabel: "Стиль",
+    description: "Насколько убедительно исполнитель работает с вокалом или речитативом, мелодией и битом, а звук и сведение поддерживают выбранный стиль.",
+  },
+  {
+    label: "Индивидуальность / Харизма",
+    shortLabel: "Индивид.",
+    description: "Насколько артист узнаваем, самобытен и способен передать эмоцию так, чтобы ему хотелось верить.",
+  },
+  {
+    label: "Атмосфера / Вайб",
+    shortLabel: "Атмос.",
+    description: "Общее субъективное впечатление: насколько песня передаёт настроение и погружает в свою атмосферу.",
+  },
+];
 
 export default function ReleaseDetail() {
   const [, setLocation] = useLocation();
@@ -286,7 +375,10 @@ export default function ReleaseDetail() {
 
               <div className="flex items-center gap-3 font-mono text-sm text-muted-foreground flex-wrap">
                 <span className="bg-secondary px-2 py-1 uppercase tracking-wider rounded-md">{release.type === 'album' ? 'Альбом' : 'Сингл'}</span>
-                <span>Добавил {release.createdBy.username}</span>
+                <span>
+                  Добавил {release.createdBy.username}
+                  {release.isFromSanyaPlaylist && " из плейлиста Санька"}
+                </span>
               </div>
 
               {release.description && (
@@ -399,16 +491,13 @@ export default function ReleaseDetail() {
                 <div className="flex-1 space-y-6">
                   <div className="grid grid-cols-5 gap-2 md:gap-3">
                     {[
-                      { label: "Рифмы", val: release.userReview.rhymes },
-                      { label: "Структура", val: release.userReview.structure },
-                      { label: "Стиль", val: release.userReview.styleExecution },
-                      { label: "Индивид.", val: release.userReview.individuality },
-                      { label: "Атмос.", val: release.userReview.atmosphere }
-                    ].map(m => (
-                      <div key={m.label} className="text-center bg-background border border-border p-2 md:p-3 rounded-lg">
-                        <div className="text-lg md:text-xl font-bold font-mono mb-1">{m.val}</div>
-                        <div className="font-mono text-[8px] md:text-[9px] uppercase tracking-wider text-muted-foreground">{m.label}</div>
-                      </div>
+                      { criterion: REVIEW_CRITERIA[0], value: release.userReview.rhymes },
+                      { criterion: REVIEW_CRITERIA[1], value: release.userReview.structure },
+                      { criterion: REVIEW_CRITERIA[2], value: release.userReview.styleExecution },
+                      { criterion: REVIEW_CRITERIA[3], value: release.userReview.individuality },
+                      { criterion: REVIEW_CRITERIA[4], value: release.userReview.atmosphere },
+                    ].map((metric) => (
+                      <ReviewCriterionInfo key={metric.criterion.label} criterion={metric.criterion} value={metric.value} />
                     ))}
                   </div>
                   <div className="pt-4 border-t border-border">

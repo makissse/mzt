@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, boolean, unique } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, boolean, unique, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
@@ -51,7 +51,9 @@ export const blogCommentsTable = pgTable("blog_comments", {
   id: serial("id").primaryKey(),
   postId: integer("post_id").notNull().references(() => blogPostsTable.id, { onDelete: "cascade" }),
   userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
-  content: text("content").notNull(),
+  content: text("content").notNull().default(""),
+  attachments: json("attachments").$type<Array<{ type: string; url: string }>>().default([]),
+  replyToId: integer("reply_to_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

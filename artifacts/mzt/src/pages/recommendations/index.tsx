@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
+import { LatestBlogPost } from "@/components/latest-blog-post";
 
 type VideoWithVotes = Video & { voteCount: number; userVote: number };
 
@@ -306,6 +307,10 @@ export default function RecommendationsDashboard() {
           </div>
         </header>
 
+        <div className="md:hidden">
+          <LatestBlogPost />
+        </div>
+
         {loading ? (
           <div className="space-y-8">
             {[...Array(3)].map((_, sectionIndex) => (
@@ -323,7 +328,8 @@ export default function RecommendationsDashboard() {
             ))}
           </div>
         ) : (
-          <div className="space-y-14">
+          <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_clamp(190px,20vw,270px)]">
+            <div className="space-y-14">
             {/* VIDEOS */}
             <section className="space-y-5">
               <SectionHeading title="Видео" icon={PlayCircle} />
@@ -512,6 +518,10 @@ export default function RecommendationsDashboard() {
                 </div>
               )}
             </section>
+            </div>
+            <div className="sticky top-4 hidden md:block">
+              <LatestBlogPost />
+            </div>
           </div>
         )}
       </div>

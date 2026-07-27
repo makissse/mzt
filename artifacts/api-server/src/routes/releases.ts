@@ -32,6 +32,7 @@ async function formatRelease(release: typeof releasesTable.$inferSelect, created
     coverUrl: release.coverUrl,
     audioUrl: release.audioUrl,
     isOurTrack: release.isOurTrack,
+    isFromSanyaPlaylist: release.isFromSanyaPlaylist,
     createdAt: release.createdAt,
     createdBy: {
       id: createdBy.id,
@@ -194,6 +195,7 @@ router.get("/releases/:id", async (req, res) => {
     coverUrl: row.release.coverUrl,
     audioUrl: row.release.audioUrl,
     isOurTrack: row.release.isOurTrack,
+    isFromSanyaPlaylist: row.release.isFromSanyaPlaylist,
     createdAt: row.release.createdAt,
     createdBy: row.user,
     averageScore: avgScore,
@@ -332,6 +334,7 @@ router.post("/releases/from-playlist", requireAuth, async (req, res) => {
         coverUrl: track.coverUrl,
         audioUrl: null,
         isOurTrack: false,
+        isFromSanyaPlaylist: true,
         createdById: req.session.userId!,
       })
       .returning();

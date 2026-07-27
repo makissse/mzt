@@ -2,3 +2,4 @@
 - [Vite artifact build env vars](vite-artifact-build-env.md) — Vite artifacts need `PORT` and `BASE_PATH` in their `build` script so the monorepo `pnpm run build` works without manual env injection.
 - [Per-blog custom themes](per-blog-themes.md) — Each blog can have a full-page theme: a `useIs*Theme()` hook (wouter pathname check), a CSS class block in index.css, and a ThemeEffect in App.tsx that toggles a root class. Sidebar and BlogLayout must both branch on the theme flag.
 - [Object storage migration](object-storage-migration.md) — Uploads migrated from local disk to Replit Object Storage presigned URLs. Old `/api/uploads/...` URLs break after republish; new URLs are `/api/storage/objects/...`. Storage router must be registered in routes/index.ts.
+- [Circle media orientation](circle-media-orientation.md) — Record front-camera mirroring once into the canvas output; playback must not mirror the saved circle again.

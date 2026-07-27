@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Download, AlertCircle } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Download, AlertCircle, Disc } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 
 function formatTime(seconds: number): string {
@@ -81,12 +81,15 @@ function DownloadFallback({ src, mime }: { src: string; mime: string }) {
 
 export function AudioPlayer({ src }: { src: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const isSeekingRef = useRef(false);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackError, setPlaybackError] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const mime = getMimeType(src);
   const browserSupported = canBrowserPlay(mime);
@@ -112,11 +115,19 @@ export function AudioPlayer({ src }: { src: string }) {
     }
   };
 
-  const seek = (vals: number[]) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = vals[0];
+  // onValueChange: update UI immediately while dragging, but don't reset from onTimeUpdate
+  const onSeekChange = (vals: number[]) => {
+    isSeekingRef.current = true;
     setCurrentTime(vals[0]);
+  };
+
+  // onValueCommit: actually seek the audio when the user releases the thumb
+  const onSeekCommit = (vals: number[]) => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = vals[0];
+    }
+    isSeekingRef.current = false;
   };
 
   const changeVolume = (vals: number[]) => {
@@ -141,13 +152,39 @@ export function AudioPlayer({ src }: { src: string }) {
     }
   };
 
+  const handleDownload = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = obj;
+      a.download = src.split('/').pop() ?? 'audio';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(obj);
+    } catch {
+      window.open(src, '_blank');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3 w-full">
       <audio
         ref={audioRef}
         src={src}
         preload="metadata"
-        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
+        onTimeUpdate={() => {
+          // Don't override slider position while user is dragging
+          if (!isSeekingRef.current) {
+            setCurrentTime(audioRef.current?.currentTime ?? 0);
+          }
+        }}
         onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
@@ -157,6 +194,7 @@ export function AudioPlayer({ src }: { src: string }) {
 
       {/* Controls row */}
       <div className="flex items-center gap-3">
+        {/* Play/pause */}
         <button
           type="button"
           onClick={toggle}
@@ -165,6 +203,7 @@ export function AudioPlayer({ src }: { src: string }) {
           {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 translate-x-px" />}
         </button>
 
+        {/* Time */}
         <span className="flex-shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
           {formatTime(currentTime)}
           <span className="mx-1 opacity-40">/</span>
@@ -173,6 +212,21 @@ export function AudioPlayer({ src }: { src: string }) {
 
         <div className="flex-1" />
 
+        {/* Download */}
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={downloading}
+          title="Скачать"
+          className="flex-shrink-0 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+        >
+          {downloading
+            ? <Disc className="h-4 w-4 animate-spin" style={{ animationDuration: '1s' }} />
+            : <Download className="h-4 w-4" />
+          }
+        </button>
+
+        {/* Mute toggle */}
         <button
           type="button"
           onClick={toggleMute}
@@ -185,6 +239,7 @@ export function AudioPlayer({ src }: { src: string }) {
           )}
         </button>
 
+        {/* Volume slider */}
         <div className="w-20 flex-shrink-0">
           <Slider
             min={0}
@@ -202,7 +257,8 @@ export function AudioPlayer({ src }: { src: string }) {
         max={duration || 1}
         step={0.1}
         value={[currentTime]}
-        onValueChange={seek}
+        onValueChange={onSeekChange}
+        onValueCommit={onSeekCommit}
         className="w-full mt-1.5"
       />
     </div>

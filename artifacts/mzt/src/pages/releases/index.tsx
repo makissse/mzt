@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { LatestBlogPost } from '@/components/latest-blog-post';
 
 type AnyRelease = Release;
 
@@ -113,7 +114,8 @@ export default function ReleasesDashboard() {
   );
 
   return (
-    <div className="min-h-screen p-8 max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-4 sm:p-8 max-w-7xl mx-auto">
+      <div className="space-y-8">
       <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end border-b border-border pb-6 gap-4">
         <div>
           <h1 className="text-4xl font-bold font-sans tracking-tight mb-2">Мясо 30</h1>
@@ -142,6 +144,10 @@ export default function ReleasesDashboard() {
           </Link>
         </div>
       </header>
+
+      <div className="mt-6 md:hidden">
+        <LatestBlogPost />
+      </div>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -187,7 +193,8 @@ export default function ReleasesDashboard() {
           </div>
         </div>
       ) : (
-        <div className="space-y-10">
+        <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_clamp(190px,20vw,270px)]">
+          <div className="space-y-10">
           {/* OUR TRACKS section */}
           {ourTracks.length > 0 && (
             <div className="space-y-4">
@@ -216,8 +223,13 @@ export default function ReleasesDashboard() {
               </div>
             </div>
           )}
+          </div>
+          <div className="sticky top-4 hidden md:block">
+            <LatestBlogPost />
+          </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

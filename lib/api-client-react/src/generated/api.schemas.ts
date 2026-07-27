@@ -38,10 +38,22 @@ export type SecretPhotoStatusProgressTracks = {
   needed: number;
 };
 
+export type SecretPhotoStatusProgressComments = {
+  current: number;
+  needed: number;
+};
+
+export type SecretPhotoStatusProgressPosts = {
+  current: number;
+  needed: number;
+};
+
 export type SecretPhotoStatusProgress = {
   recommendations: SecretPhotoStatusProgressRecommendations;
   reviews: SecretPhotoStatusProgressReviews;
   tracks: SecretPhotoStatusProgressTracks;
+  comments: SecretPhotoStatusProgressComments;
+  posts: SecretPhotoStatusProgressPosts;
 };
 
 export interface SecretPhotoStatus {
@@ -95,6 +107,7 @@ export interface Release {
   coverUrl: string;
   /** @nullable */
   audioUrl?: string | null;
+  isFromSanyaPlaylist?: boolean;
   createdAt: string;
   createdBy: User;
   /** @nullable */
@@ -154,6 +167,7 @@ export interface ReleaseDetail {
   coverUrl: string;
   /** @nullable */
   audioUrl?: string | null;
+  isFromSanyaPlaylist?: boolean;
   createdAt: string;
   createdBy: User;
   /** @nullable */

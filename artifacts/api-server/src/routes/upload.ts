@@ -1,71 +1,15 @@
 import { Router } from "express";
-import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { ObjectNotFoundError, ObjectStorageService } from "../lib/objectStorage";
 
 const router = Router();
-
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-  next();
-}
-
-// Accept any image/*, audio/*, or video/* MIME type to avoid browser MIME inconsistencies
-const ALLOWED_EXTENSIONS = new Set([
-  ".jpg", ".jpeg", ".png", ".webp", ".gif",
-  ".mp3", ".m4a", ".aac", ".alac", ".ogg", ".opus", ".wav", ".flac", ".webm",
-  ".mp4", ".mov", ".m4v", ".ogv", ".mkv",
-]);
+const objectStorageService = new ObjectStorageService();
 
 const uploadsDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadsDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    cb(null, name);
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB (for video)
-  fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const mime = file.mimetype;
-    const isAllowedMime =
-      mime.startsWith("image/") ||
-      mime.startsWith("audio/") ||
-      mime.startsWith("video/") ||
-      mime === "application/octet-stream"; // some browsers send this for webm
-    const isAllowedExt = ALLOWED_EXTENSIONS.has(ext) || ext === ""; // allow no-ext webm blobs
-    if (isAllowedMime && (isAllowedExt || mime.startsWith("video/"))) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image, audio, and video files are allowed"));
-    }
-  },
-});
-
-router.post("/upload", requireAuth, upload.single("file"), (req, res) => {
-  if (!req.file) {
-    res.status(400).json({ error: "No file provided" });
-    return;
-  }
-
-  const url = `/api/uploads/${req.file.filename}`;
-  res.json({ url });
-});
 
 // Serve uploaded files (public read, but safe filename validation)
-router.get("/uploads/:filename", (req, res) => {
+router.get("/uploads/:filename", async (req, res) => {
   const filename = path.basename(req.params.filename);
   if (!/^[\d]+-[a-z0-9]+(\.[a-z0-9]+)?$/.test(filename)) {
     res.status(400).json({ error: "Invalid filename" });
@@ -74,12 +18,48 @@ router.get("/uploads/:filename", (req, res) => {
 
   const filePath = path.join(uploadsDir, filename);
 
-  if (!fs.existsSync(filePath)) {
-    res.status(404).json({ error: "File not found" });
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
     return;
   }
 
-  res.sendFile(filePath);
+  // Legacy URLs remain readable after republish. Migrated files live in
+  // Object Storage under /objects/legacy/<filename>.
+  try {
+    const objectFile = await objectStorageService.getObjectEntityFile(`/objects/legacy/${filename}`);
+    const [metadata] = await objectFile.getMetadata();
+    const totalSize = Number(metadata.size || 0);
+    const rangeHeader = req.headers.range;
+    const contentType = (metadata.contentType as string) || "application/octet-stream";
+
+    res.setHeader("Accept-Ranges", "bytes");
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "private, max-age=3600");
+
+    if (rangeHeader && totalSize > 0) {
+      const match = rangeHeader.match(/bytes=(\d+)-(\d*)/);
+      if (match) {
+        const start = parseInt(match[1], 10);
+        const end = match[2] ? Math.min(parseInt(match[2], 10), totalSize - 1) : totalSize - 1;
+        if (start <= end) {
+          res.status(206);
+          res.setHeader("Content-Range", `bytes ${start}-${end}/${totalSize}`);
+          res.setHeader("Content-Length", String(end - start + 1));
+          objectFile.createReadStream({ start, end }).pipe(res);
+          return;
+        }
+      }
+    }
+
+    if (totalSize > 0) res.setHeader("Content-Length", String(totalSize));
+    objectFile.createReadStream().pipe(res);
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "File not found" });
+      return;
+    }
+    res.status(500).json({ error: "Failed to serve file" });
+  }
 });
 
 export default router;

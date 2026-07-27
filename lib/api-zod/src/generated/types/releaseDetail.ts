@@ -20,6 +20,7 @@ export interface ReleaseDetail {
   coverUrl: string;
   /** @nullable */
   audioUrl?: string | null;
+  isFromSanyaPlaylist?: boolean;
   createdAt: Date;
   createdBy: User;
   /** @nullable */

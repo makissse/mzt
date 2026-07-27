@@ -90,6 +90,7 @@ export const ListReleasesResponseItem = zod.object({
   "description": zod.string().nullish(),
   "coverUrl": zod.string(),
   "audioUrl": zod.string().nullish(),
+  "isFromSanyaPlaylist": zod.boolean().optional(),
   "createdAt": zod.coerce.date(),
   "createdBy": zod.object({
   "id": zod.number(),
@@ -130,6 +131,7 @@ export const CreateReleaseResponse = zod.object({
   "description": zod.string().nullish(),
   "coverUrl": zod.string(),
   "audioUrl": zod.string().nullish(),
+  "isFromSanyaPlaylist": zod.boolean().optional(),
   "createdAt": zod.coerce.date(),
   "createdBy": zod.object({
   "id": zod.number(),
@@ -178,6 +180,7 @@ export const GetReleaseResponse = zod.object({
   "description": zod.string().nullish(),
   "coverUrl": zod.string(),
   "audioUrl": zod.string().nullish(),
+  "isFromSanyaPlaylist": zod.boolean().optional(),
   "createdAt": zod.coerce.date(),
   "createdBy": zod.object({
   "id": zod.number(),
@@ -329,6 +332,7 @@ export const GetStatsResponse = zod.object({
   "description": zod.string().nullish(),
   "coverUrl": zod.string(),
   "audioUrl": zod.string().nullish(),
+  "isFromSanyaPlaylist": zod.boolean().optional(),
   "createdAt": zod.coerce.date(),
   "createdBy": zod.object({
   "id": zod.number(),
@@ -346,6 +350,7 @@ export const GetStatsResponse = zod.object({
   "description": zod.string().nullish(),
   "coverUrl": zod.string(),
   "audioUrl": zod.string().nullish(),
+  "isFromSanyaPlaylist": zod.boolean().optional(),
   "createdAt": zod.coerce.date(),
   "createdBy": zod.object({
   "id": zod.number(),
@@ -624,6 +629,14 @@ export const GetSecretPhotoResponse = zod.object({
   "needed": zod.number()
 }),
   "tracks": zod.object({
+  "current": zod.number(),
+  "needed": zod.number()
+}),
+  "comments": zod.object({
+  "current": zod.number(),
+  "needed": zod.number()
+}),
+  "posts": zod.object({
   "current": zod.number(),
   "needed": zod.number()
 })

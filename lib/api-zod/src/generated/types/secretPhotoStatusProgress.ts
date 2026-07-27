@@ -5,6 +5,8 @@
  * mzt platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { SecretPhotoStatusProgressComments } from './secretPhotoStatusProgressComments';
+import type { SecretPhotoStatusProgressPosts } from './secretPhotoStatusProgressPosts';
 import type { SecretPhotoStatusProgressRecommendations } from './secretPhotoStatusProgressRecommendations';
 import type { SecretPhotoStatusProgressReviews } from './secretPhotoStatusProgressReviews';
 import type { SecretPhotoStatusProgressTracks } from './secretPhotoStatusProgressTracks';
@@ -13,4 +15,6 @@ export type SecretPhotoStatusProgress = {
   recommendations: SecretPhotoStatusProgressRecommendations;
   reviews: SecretPhotoStatusProgressReviews;
   tracks: SecretPhotoStatusProgressTracks;
+  comments: SecretPhotoStatusProgressComments;
+  posts: SecretPhotoStatusProgressPosts;
 };

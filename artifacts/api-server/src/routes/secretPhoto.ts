@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, userActivityStatsTable, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, userActivityStatsTable, usersTable, blogCommentsTable, blogPostsTable } from "@workspace/db";
+import { eq, count } from "drizzle-orm";
 
 const router = Router();
 
@@ -9,6 +9,8 @@ const SECRET_PHOTO_URL = "/secret-photo.jpg";
 const RECOMMENDATIONS_THRESHOLD = 322;
 const REVIEWS_THRESHOLD = 88;
 const TRACKS_THRESHOLD = 175;
+const COMMENTS_THRESHOLD = 500;
+const POSTS_THRESHOLD = 111;
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.session.userId) {
@@ -48,14 +50,28 @@ router.get("/secret-photo", requireAuth, async (req, res) => {
     .where(eq(userActivityStatsTable.userId, userId))
     .limit(1);
 
+  const [commentsCountRow] = await db
+    .select({ c: count(blogCommentsTable.id) })
+    .from(blogCommentsTable)
+    .where(eq(blogCommentsTable.userId, userId));
+
+  const [postsCountRow] = await db
+    .select({ c: count(blogPostsTable.id) })
+    .from(blogPostsTable)
+    .where(eq(blogPostsTable.createdByUserId, userId));
+
   const recommendations = stats?.lifetimeRecommendations ?? 0;
   const reviews = stats?.lifetimeReviews ?? 0;
   const tracks = stats?.lifetimeTracks ?? 0;
+  const commentsCount = Number(commentsCountRow?.c ?? 0);
+  const postsCount = Number(postsCountRow?.c ?? 0);
 
   const unlocked =
     recommendations > RECOMMENDATIONS_THRESHOLD ||
     reviews > REVIEWS_THRESHOLD ||
-    tracks > TRACKS_THRESHOLD;
+    tracks > TRACKS_THRESHOLD ||
+    commentsCount >= COMMENTS_THRESHOLD ||
+    postsCount >= POSTS_THRESHOLD;
 
   res.json({
     unlocked,
@@ -64,6 +80,8 @@ router.get("/secret-photo", requireAuth, async (req, res) => {
       recommendations: { current: recommendations, needed: RECOMMENDATIONS_THRESHOLD },
       reviews: { current: reviews, needed: REVIEWS_THRESHOLD },
       tracks: { current: tracks, needed: TRACKS_THRESHOLD },
+      comments: { current: commentsCount, needed: COMMENTS_THRESHOLD },
+      posts: { current: postsCount, needed: POSTS_THRESHOLD },
     },
   });
 });

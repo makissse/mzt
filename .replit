@@ -58,3 +58,13 @@ timeoutMs = 20000
 
 [nix]
 channel = "stable-25_05"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-6cdc7d79-852b-44ca-b63a-b3eaa2da4798"
+
+[userenv]
+
+[userenv.shared]
+VAPID_PUBLIC_KEY = "BBdydYVua5wEHid0e7LS6uYPNZHtRaMNqlzV3IMYEISFjx3cz6yHEfq0R7I7OQZw9WSKnyopxmRoNiPXVoCCE1U"
+VAPID_SUBJECT = "mailto:noreply@mzt.app"
+VAPID_PRIVATE_KEY = "zOFsa-tcEgSiQ_3-iMCQ1QFB1crEeQ4FTJFOsnM8ZsI"

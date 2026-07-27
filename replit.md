@@ -17,6 +17,12 @@ Both workflows start automatically:
 | `artifacts/mzt: web` | `pnpm --filter @workspace/mzt run dev` | 19721 |
 | `artifacts/api-server: API Server` | `pnpm --filter @workspace/api-server run dev` | 8080 |
 
+For a fresh checkout or import, run `pnpm run setup` once. It restores the
+locked workspace dependencies and applies the existing Drizzle schema to the
+development PostgreSQL database. The API seeds the initial blogs when it starts.
+
+The API health check is available at `/api/healthz`.
+
 ## Environment
 
 - `DATABASE_URL` — Replit-managed PostgreSQL (set automatically)

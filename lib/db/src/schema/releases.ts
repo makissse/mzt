@@ -12,6 +12,7 @@ export const releasesTable = pgTable("releases", {
   coverUrl: text("cover_url").notNull(),
   audioUrl: text("audio_url"), // for singles only
   isOurTrack: boolean("is_our_track").notNull().default(false),
+  isFromSanyaPlaylist: boolean("is_from_sanya_playlist").notNull().default(false),
   createdById: integer("created_by_id").notNull().references(() => usersTable.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
