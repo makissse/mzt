@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict BQG58NKiZPbFl6BoJeQAQQfEpXEMfPFu8RIQfFVBn1750Ud2bGUfwKAa56dCfyN
+\restrict QLmWAdfDqeEGcCOk8ihxqcuKPCBfxvbWfewETwjuGP9lOVnNsRBBwIe5uwa6Sza
 
 -- Dumped from database version 16.14 (9e89e5a)
 -- Dumped by pg_dump version 16.10
@@ -892,6 +892,11 @@ COPY public.blog_comments (id, post_id, user_id, content, attachments, created_a
 55	38	5	Un om dac sa strânge la așa huinea de content	[]	2026-07-28 13:02:15.972104	\N
 56	38	3	zaebali, să intrați ds și nu vă vâibiți	[]	2026-07-28 13:22:09.705657	\N
 57	38	5		[{"type":"image","url":"/api/storage/objects/uploads/c593130e-306f-416b-8538-0f480f951dc6"}]	2026-07-28 13:51:40.310743	\N
+58	39	2	tu tot n-ai intrat, asta in primul rand, in al doilea rand eu is de acord	[]	2026-07-28 21:09:54.372523	\N
+59	39	3	oleaca am intarziat	[{"type":"image","url":"/api/storage/objects/uploads/7d50019d-fea3-4e06-b907-b607fe323729"}]	2026-07-28 21:14:38.633966	\N
+60	39	5	Evident prietenie piatră rară	[]	2026-07-28 21:16:51.469517	\N
+61	39	5		[{"type":"image","url":"/api/storage/objects/uploads/e6de0f82-9175-41fe-9acc-9b498d24c127"}]	2026-07-28 21:16:59.419736	\N
+62	39	3	iaca kentii adevarati, inafara de un pidar	[{"type":"image","url":"/api/storage/objects/uploads/12bcf67c-8d04-4d1d-bf96-241e3020cdac"}]	2026-07-28 21:47:24.121312	\N
 \.
 
 
@@ -982,6 +987,7 @@ COPY public.blog_posts (id, blog_id, created_by_user_id, title, content, created
 36	1	3	#make soroca great again #politie #maniac #besafe	ATENTIE!!!!  \n\nacest specimen a fost zarit astazi pe durmurile orasului Soroca, se zice ca ataca copii mici, in special fete de sub 15 ani, daca l-ati vazut va rugam sa raportati la numarul de telefon 068775110\n\nMultumim	2026-07-28 01:47:35.72559	2026-07-28 01:51:37.649
 37	1	3		pațani, lăsa-ți tiktokul și faceți ceva cu viața voastră	2026-07-28 10:36:01.307122	2026-07-28 10:36:01.307122
 38	1	3	Orele 22:00-23:00	padpisota, azi seara, ne strângem pe discord și facem obzor și razbor la aurica și piesele ei, dar și alte personaje ale tiktokului, așa numita nișevosti a tt, va astept în numar cat mai mare	2026-07-28 12:50:03.428187	2026-07-28 13:02:45.073
+39	1	3		încă odata m-am convins ca toti kentii mei îs pidarasi\nNu o intrat nimeni	2026-07-28 21:08:21.840387	2026-07-28 21:08:21.840387
 \.
 
 
@@ -1046,6 +1052,7 @@ COPY public.playlist_imports (id, track_id, track_title, artist, created_at) FRO
 36	1464060889	Fear of Falling Asleep	TENDER	2026-07-28 00:59:06.033691
 37	1589963819	ИСКАЛА	Zemfira	2026-07-28 01:31:28.420061
 38	1122776156	Clocks	Coldplay	2026-07-28 01:32:25.704935
+39	1421739112	Глупые и ненужные	Gruppa Skryptonite	2026-07-28 20:24:01.812033
 \.
 
 
@@ -1090,6 +1097,7 @@ COPY public.releases (id, type, artist, title, description, cover_url, audio_url
 39	single	Ghostly Kisses	Clay	\N	https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/5d/a0/8e/5da08e61-3aee-effc-27dd-d423d6abce0f/196006985172.jpg/500x500bb.jpg	\N	f	5	2026-07-28 00:57:39.062977	t
 42	single	Zemfira	ИСКАЛА	\N	https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/bb/ca/d0/bbcad0b1-109b-f19b-e4f4-18a35e526ab4/3610154399133.jpg/500x500bb.jpg	\N	f	3	2026-07-28 01:31:28.404673	t
 43	single	Coldplay	Clocks	\N	https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b9/b4/2a/b9b42ad1-1e25-5096-da43-497a247e69a3/190295978051.jpg/500x500bb.jpg	\N	f	3	2026-07-28 01:32:25.691073	t
+44	single	Gruppa Skryptonite	Глупые и ненужные	\N	https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/d7/dc/76/d7dc76f0-5880-aa5d-4c4e-3245d09e9bad/cover.jpg/500x500bb.jpg	\N	f	3	2026-07-28 20:24:01.791207	t
 \.
 
 
@@ -1182,7 +1190,7 @@ SELECT pg_catalog.setval('_system.replit_database_migrations_v1_id_seq', 2, true
 -- Name: blog_comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_comments_id_seq', 57, true);
+SELECT pg_catalog.setval('public.blog_comments_id_seq', 62, true);
 
 
 --
@@ -1203,7 +1211,7 @@ SELECT pg_catalog.setval('public.blog_post_likes_id_seq', 36, true);
 -- Name: blog_posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_posts_id_seq', 38, true);
+SELECT pg_catalog.setval('public.blog_posts_id_seq', 39, true);
 
 
 --
@@ -1224,7 +1232,7 @@ SELECT pg_catalog.setval('public.movies_id_seq', 2, true);
 -- Name: playlist_imports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.playlist_imports_id_seq', 38, true);
+SELECT pg_catalog.setval('public.playlist_imports_id_seq', 39, true);
 
 
 --
@@ -1252,7 +1260,7 @@ SELECT pg_catalog.setval('public.recommendation_tracks_id_seq', 1, false);
 -- Name: releases_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.releases_id_seq', 43, true);
+SELECT pg_catalog.setval('public.releases_id_seq', 44, true);
 
 
 --
@@ -1675,5 +1683,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON TABL
 -- PostgreSQL database dump complete
 --
 
-\unrestrict BQG58NKiZPbFl6BoJeQAQQfEpXEMfPFu8RIQfFVBn1750Ud2bGUfwKAa56dCfyN
+\unrestrict QLmWAdfDqeEGcCOk8ihxqcuKPCBfxvbWfewETwjuGP9lOVnNsRBBwIe5uwa6Sza
 
