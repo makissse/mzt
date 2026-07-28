@@ -2,9 +2,9 @@
 -- PostgreSQL database dump
 --
 
-\restrict aIHxsZNa1bu6JDP7Bd1DXxA6oxmYWhg0acMxQItfIjt2KUOWmmTnp0PM5xF8AlA
+\restrict BQG58NKiZPbFl6BoJeQAQQfEpXEMfPFu8RIQfFVBn1750Ud2bGUfwKAa56dCfyN
 
--- Dumped from database version 16.14 (b253d90)
+-- Dumped from database version 16.14 (9e89e5a)
 -- Dumped by pg_dump version 16.10
 
 SET statement_timeout = 0;
@@ -19,18 +19,20 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: _system; Type: SCHEMA; Schema: -; Owner: -
+-- Name: _system; Type: SCHEMA; Schema: -; Owner: neondb_owner
 --
 
 CREATE SCHEMA _system;
 
+
+ALTER SCHEMA _system OWNER TO neondb_owner;
 
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: replit_database_migrations_v1; Type: TABLE; Schema: _system; Owner: -
+-- Name: replit_database_migrations_v1; Type: TABLE; Schema: _system; Owner: neondb_owner
 --
 
 CREATE TABLE _system.replit_database_migrations_v1 (
@@ -42,8 +44,10 @@ CREATE TABLE _system.replit_database_migrations_v1 (
 );
 
 
+ALTER TABLE _system.replit_database_migrations_v1 OWNER TO neondb_owner;
+
 --
--- Name: replit_database_migrations_v1_id_seq; Type: SEQUENCE; Schema: _system; Owner: -
+-- Name: replit_database_migrations_v1_id_seq; Type: SEQUENCE; Schema: _system; Owner: neondb_owner
 --
 
 CREATE SEQUENCE _system.replit_database_migrations_v1_id_seq
@@ -54,15 +58,17 @@ CREATE SEQUENCE _system.replit_database_migrations_v1_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE _system.replit_database_migrations_v1_id_seq OWNER TO neondb_owner;
+
 --
--- Name: replit_database_migrations_v1_id_seq; Type: SEQUENCE OWNED BY; Schema: _system; Owner: -
+-- Name: replit_database_migrations_v1_id_seq; Type: SEQUENCE OWNED BY; Schema: _system; Owner: neondb_owner
 --
 
 ALTER SEQUENCE _system.replit_database_migrations_v1_id_seq OWNED BY _system.replit_database_migrations_v1.id;
 
 
 --
--- Name: blog_comments; Type: TABLE; Schema: public; Owner: -
+-- Name: blog_comments; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.blog_comments (
@@ -71,12 +77,15 @@ CREATE TABLE public.blog_comments (
     user_id integer NOT NULL,
     content text DEFAULT ''::text NOT NULL,
     attachments json DEFAULT '[]'::json,
-    created_at timestamp without time zone DEFAULT now() NOT NULL
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    reply_to_id integer
 );
 
 
+ALTER TABLE public.blog_comments OWNER TO neondb_owner;
+
 --
--- Name: blog_comments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: blog_comments_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.blog_comments_id_seq
@@ -88,15 +97,17 @@ CREATE SEQUENCE public.blog_comments_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.blog_comments_id_seq OWNER TO neondb_owner;
+
 --
--- Name: blog_comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: blog_comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.blog_comments_id_seq OWNED BY public.blog_comments.id;
 
 
 --
--- Name: blog_media; Type: TABLE; Schema: public; Owner: -
+-- Name: blog_media; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.blog_media (
@@ -109,8 +120,10 @@ CREATE TABLE public.blog_media (
 );
 
 
+ALTER TABLE public.blog_media OWNER TO neondb_owner;
+
 --
--- Name: blog_media_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: blog_media_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.blog_media_id_seq
@@ -122,15 +135,17 @@ CREATE SEQUENCE public.blog_media_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.blog_media_id_seq OWNER TO neondb_owner;
+
 --
--- Name: blog_media_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: blog_media_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.blog_media_id_seq OWNED BY public.blog_media.id;
 
 
 --
--- Name: blog_post_likes; Type: TABLE; Schema: public; Owner: -
+-- Name: blog_post_likes; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.blog_post_likes (
@@ -141,8 +156,10 @@ CREATE TABLE public.blog_post_likes (
 );
 
 
+ALTER TABLE public.blog_post_likes OWNER TO neondb_owner;
+
 --
--- Name: blog_post_likes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: blog_post_likes_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.blog_post_likes_id_seq
@@ -154,15 +171,17 @@ CREATE SEQUENCE public.blog_post_likes_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.blog_post_likes_id_seq OWNER TO neondb_owner;
+
 --
--- Name: blog_post_likes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: blog_post_likes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.blog_post_likes_id_seq OWNED BY public.blog_post_likes.id;
 
 
 --
--- Name: blog_posts; Type: TABLE; Schema: public; Owner: -
+-- Name: blog_posts; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.blog_posts (
@@ -176,8 +195,10 @@ CREATE TABLE public.blog_posts (
 );
 
 
+ALTER TABLE public.blog_posts OWNER TO neondb_owner;
+
 --
--- Name: blog_posts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: blog_posts_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.blog_posts_id_seq
@@ -189,15 +210,17 @@ CREATE SEQUENCE public.blog_posts_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.blog_posts_id_seq OWNER TO neondb_owner;
+
 --
--- Name: blog_posts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: blog_posts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.blog_posts_id_seq OWNED BY public.blog_posts.id;
 
 
 --
--- Name: blogs; Type: TABLE; Schema: public; Owner: -
+-- Name: blogs; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.blogs (
@@ -214,8 +237,10 @@ CREATE TABLE public.blogs (
 );
 
 
+ALTER TABLE public.blogs OWNER TO neondb_owner;
+
 --
--- Name: blogs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: blogs_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.blogs_id_seq
@@ -227,15 +252,17 @@ CREATE SEQUENCE public.blogs_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.blogs_id_seq OWNER TO neondb_owner;
+
 --
--- Name: blogs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: blogs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.blogs_id_seq OWNED BY public.blogs.id;
 
 
 --
--- Name: movies; Type: TABLE; Schema: public; Owner: -
+-- Name: movies; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.movies (
@@ -249,8 +276,10 @@ CREATE TABLE public.movies (
 );
 
 
+ALTER TABLE public.movies OWNER TO neondb_owner;
+
 --
--- Name: movies_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: movies_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.movies_id_seq
@@ -262,15 +291,17 @@ CREATE SEQUENCE public.movies_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.movies_id_seq OWNER TO neondb_owner;
+
 --
--- Name: movies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: movies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.movies_id_seq OWNED BY public.movies.id;
 
 
 --
--- Name: playlist_imports; Type: TABLE; Schema: public; Owner: -
+-- Name: playlist_imports; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.playlist_imports (
@@ -282,8 +313,10 @@ CREATE TABLE public.playlist_imports (
 );
 
 
+ALTER TABLE public.playlist_imports OWNER TO neondb_owner;
+
 --
--- Name: playlist_imports_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: playlist_imports_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.playlist_imports_id_seq
@@ -295,15 +328,54 @@ CREATE SEQUENCE public.playlist_imports_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.playlist_imports_id_seq OWNER TO neondb_owner;
+
 --
--- Name: playlist_imports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: playlist_imports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.playlist_imports_id_seq OWNED BY public.playlist_imports.id;
 
 
 --
--- Name: recommendation_music; Type: TABLE; Schema: public; Owner: -
+-- Name: push_subscriptions; Type: TABLE; Schema: public; Owner: neondb_owner
+--
+
+CREATE TABLE public.push_subscriptions (
+    id integer NOT NULL,
+    endpoint text NOT NULL,
+    p256dh text NOT NULL,
+    auth text NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.push_subscriptions OWNER TO neondb_owner;
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
+--
+
+CREATE SEQUENCE public.push_subscriptions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.push_subscriptions_id_seq OWNER TO neondb_owner;
+
+--
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
+--
+
+ALTER SEQUENCE public.push_subscriptions_id_seq OWNED BY public.push_subscriptions.id;
+
+
+--
+-- Name: recommendation_music; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.recommendation_music (
@@ -318,8 +390,10 @@ CREATE TABLE public.recommendation_music (
 );
 
 
+ALTER TABLE public.recommendation_music OWNER TO neondb_owner;
+
 --
--- Name: recommendation_music_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: recommendation_music_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.recommendation_music_id_seq
@@ -331,15 +405,17 @@ CREATE SEQUENCE public.recommendation_music_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.recommendation_music_id_seq OWNER TO neondb_owner;
+
 --
--- Name: recommendation_music_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: recommendation_music_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.recommendation_music_id_seq OWNED BY public.recommendation_music.id;
 
 
 --
--- Name: recommendation_tracks; Type: TABLE; Schema: public; Owner: -
+-- Name: recommendation_tracks; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.recommendation_tracks (
@@ -352,8 +428,10 @@ CREATE TABLE public.recommendation_tracks (
 );
 
 
+ALTER TABLE public.recommendation_tracks OWNER TO neondb_owner;
+
 --
--- Name: recommendation_tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: recommendation_tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.recommendation_tracks_id_seq
@@ -365,15 +443,17 @@ CREATE SEQUENCE public.recommendation_tracks_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.recommendation_tracks_id_seq OWNER TO neondb_owner;
+
 --
--- Name: recommendation_tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: recommendation_tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.recommendation_tracks_id_seq OWNED BY public.recommendation_tracks.id;
 
 
 --
--- Name: releases; Type: TABLE; Schema: public; Owner: -
+-- Name: releases; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.releases (
@@ -391,8 +471,10 @@ CREATE TABLE public.releases (
 );
 
 
+ALTER TABLE public.releases OWNER TO neondb_owner;
+
 --
--- Name: releases_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: releases_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.releases_id_seq
@@ -404,15 +486,17 @@ CREATE SEQUENCE public.releases_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.releases_id_seq OWNER TO neondb_owner;
+
 --
--- Name: releases_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: releases_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.releases_id_seq OWNED BY public.releases.id;
 
 
 --
--- Name: reviews; Type: TABLE; Schema: public; Owner: -
+-- Name: reviews; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.reviews (
@@ -430,8 +514,10 @@ CREATE TABLE public.reviews (
 );
 
 
+ALTER TABLE public.reviews OWNER TO neondb_owner;
+
 --
--- Name: reviews_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: reviews_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.reviews_id_seq
@@ -443,15 +529,17 @@ CREATE SEQUENCE public.reviews_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.reviews_id_seq OWNER TO neondb_owner;
+
 --
--- Name: reviews_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: reviews_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.reviews_id_seq OWNED BY public.reviews.id;
 
 
 --
--- Name: tracks; Type: TABLE; Schema: public; Owner: -
+-- Name: tracks; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.tracks (
@@ -464,8 +552,10 @@ CREATE TABLE public.tracks (
 );
 
 
+ALTER TABLE public.tracks OWNER TO neondb_owner;
+
 --
--- Name: tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.tracks_id_seq
@@ -477,15 +567,17 @@ CREATE SEQUENCE public.tracks_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.tracks_id_seq OWNER TO neondb_owner;
+
 --
--- Name: tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.tracks_id_seq OWNED BY public.tracks.id;
 
 
 --
--- Name: user_activity_stats; Type: TABLE; Schema: public; Owner: -
+-- Name: user_activity_stats; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.user_activity_stats (
@@ -497,8 +589,10 @@ CREATE TABLE public.user_activity_stats (
 );
 
 
+ALTER TABLE public.user_activity_stats OWNER TO neondb_owner;
+
 --
--- Name: users; Type: TABLE; Schema: public; Owner: -
+-- Name: users; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.users (
@@ -510,8 +604,10 @@ CREATE TABLE public.users (
 );
 
 
+ALTER TABLE public.users OWNER TO neondb_owner;
+
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -523,15 +619,17 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.users_id_seq OWNER TO neondb_owner;
+
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: video_votes; Type: TABLE; Schema: public; Owner: -
+-- Name: video_votes; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.video_votes (
@@ -543,8 +641,10 @@ CREATE TABLE public.video_votes (
 );
 
 
+ALTER TABLE public.video_votes OWNER TO neondb_owner;
+
 --
--- Name: video_votes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: video_votes_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.video_votes_id_seq
@@ -556,15 +656,17 @@ CREATE SEQUENCE public.video_votes_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.video_votes_id_seq OWNER TO neondb_owner;
+
 --
--- Name: video_votes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: video_votes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.video_votes_id_seq OWNED BY public.video_votes.id;
 
 
 --
--- Name: videos; Type: TABLE; Schema: public; Owner: -
+-- Name: videos; Type: TABLE; Schema: public; Owner: neondb_owner
 --
 
 CREATE TABLE public.videos (
@@ -578,8 +680,10 @@ CREATE TABLE public.videos (
 );
 
 
+ALTER TABLE public.videos OWNER TO neondb_owner;
+
 --
--- Name: videos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: videos_id_seq; Type: SEQUENCE; Schema: public; Owner: neondb_owner
 --
 
 CREATE SEQUENCE public.videos_id_seq
@@ -591,161 +695,208 @@ CREATE SEQUENCE public.videos_id_seq
     CACHE 1;
 
 
+ALTER SEQUENCE public.videos_id_seq OWNER TO neondb_owner;
+
 --
--- Name: videos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: videos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: neondb_owner
 --
 
 ALTER SEQUENCE public.videos_id_seq OWNED BY public.videos.id;
 
 
 --
--- Name: replit_database_migrations_v1 id; Type: DEFAULT; Schema: _system; Owner: -
+-- Name: replit_database_migrations_v1 id; Type: DEFAULT; Schema: _system; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY _system.replit_database_migrations_v1 ALTER COLUMN id SET DEFAULT nextval('_system.replit_database_migrations_v1_id_seq'::regclass);
 
 
 --
--- Name: blog_comments id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: blog_comments id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_comments ALTER COLUMN id SET DEFAULT nextval('public.blog_comments_id_seq'::regclass);
 
 
 --
--- Name: blog_media id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: blog_media id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_media ALTER COLUMN id SET DEFAULT nextval('public.blog_media_id_seq'::regclass);
 
 
 --
--- Name: blog_post_likes id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: blog_post_likes id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_post_likes ALTER COLUMN id SET DEFAULT nextval('public.blog_post_likes_id_seq'::regclass);
 
 
 --
--- Name: blog_posts id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: blog_posts id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_posts ALTER COLUMN id SET DEFAULT nextval('public.blog_posts_id_seq'::regclass);
 
 
 --
--- Name: blogs id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: blogs id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blogs ALTER COLUMN id SET DEFAULT nextval('public.blogs_id_seq'::regclass);
 
 
 --
--- Name: movies id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: movies id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.movies ALTER COLUMN id SET DEFAULT nextval('public.movies_id_seq'::regclass);
 
 
 --
--- Name: playlist_imports id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: playlist_imports id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.playlist_imports ALTER COLUMN id SET DEFAULT nextval('public.playlist_imports_id_seq'::regclass);
 
 
 --
--- Name: recommendation_music id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: push_subscriptions id; Type: DEFAULT; Schema: public; Owner: neondb_owner
+--
+
+ALTER TABLE ONLY public.push_subscriptions ALTER COLUMN id SET DEFAULT nextval('public.push_subscriptions_id_seq'::regclass);
+
+
+--
+-- Name: recommendation_music id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.recommendation_music ALTER COLUMN id SET DEFAULT nextval('public.recommendation_music_id_seq'::regclass);
 
 
 --
--- Name: recommendation_tracks id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: recommendation_tracks id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.recommendation_tracks ALTER COLUMN id SET DEFAULT nextval('public.recommendation_tracks_id_seq'::regclass);
 
 
 --
--- Name: releases id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: releases id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.releases ALTER COLUMN id SET DEFAULT nextval('public.releases_id_seq'::regclass);
 
 
 --
--- Name: reviews id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: reviews id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.reviews ALTER COLUMN id SET DEFAULT nextval('public.reviews_id_seq'::regclass);
 
 
 --
--- Name: tracks id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: tracks id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.tracks ALTER COLUMN id SET DEFAULT nextval('public.tracks_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Name: video_votes id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: video_votes id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.video_votes ALTER COLUMN id SET DEFAULT nextval('public.video_votes_id_seq'::regclass);
 
 
 --
--- Name: videos id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: videos id; Type: DEFAULT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.videos ALTER COLUMN id SET DEFAULT nextval('public.videos_id_seq'::regclass);
 
 
 --
--- Data for Name: replit_database_migrations_v1; Type: TABLE DATA; Schema: _system; Owner: -
+-- Data for Name: replit_database_migrations_v1; Type: TABLE DATA; Schema: _system; Owner: neondb_owner
 --
 
 COPY _system.replit_database_migrations_v1 (id, build_id, deployment_id, statement_count, applied_at) FROM stdin;
 1	0ac040cd-f84d-4dc2-9ec0-15c3d3188c85	9427e9e8-5b8e-4af3-84c8-fbe380cfe7bb	1	2026-07-22 22:16:40.832444+00
+2	9ebce900-d85e-4805-8633-52ca422d5254	9427e9e8-5b8e-4af3-84c8-fbe380cfe7bb	3	2026-07-25 14:20:18.787594+00
 \.
 
 
 --
--- Data for Name: blog_comments; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: blog_comments; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
-COPY public.blog_comments (id, post_id, user_id, content, attachments, created_at) FROM stdin;
-4	12	2	good boy vibes	[]	2026-07-23 22:21:49.93256
-5	12	3	👅	[]	2026-07-23 22:22:11.782181
-6	13	3	200 км/час	[]	2026-07-24 10:42:26.969747
-7	13	2	Asta tu te-ai frezat?	[]	2026-07-24 15:35:09.742324
-8	13	3	check new post	[]	2026-07-24 17:33:12.852683
-9	14	3	fute-ma	[]	2026-07-24 17:37:33.677452
-10	14	2	de ce fara ochelari, ca e ziua? si numa noaptea le porti?	[]	2026-07-24 19:56:55.737375
-11	14	4	urod ebanii	[]	2026-07-24 21:05:45.628681
-12	15	2	noi am dat un tanet liutai amu cu pysy. iti recomand	[]	2026-07-24 21:41:27.076354
-13	16	2	asta din ocean ceva?	[]	2026-07-24 21:42:06.988406
-14	16	3	dai mancare la porci?	[]	2026-07-24 21:48:16.219148
-15	15	3	uside-te	[]	2026-07-24 22:57:48.997394
-16	13	4	nu gani	[]	2026-07-25 11:10:14.81706
-17	19	2		[{"type":"image","url":"/api/storage/objects/uploads/faf23633-7b7c-4c42-b491-5b39b667cbe7"}]	2026-07-25 11:13:58.921262
-18	20	4	razminka de dimineata #zebesttrenerinzevord	[]	2026-07-25 11:14:31.100938
-19	20	2	Ahahah, cice bune	[{"type":"image","url":"/api/storage/objects/uploads/222e629f-5015-4966-b101-e6266ea687ef"}]	2026-07-25 11:15:16.61195
-20	21	2	Casa li borozdibov la stolita/capitala	[]	2026-07-25 11:34:25.017224
+COPY public.blog_comments (id, post_id, user_id, content, attachments, created_at, reply_to_id) FROM stdin;
+4	12	2	good boy vibes	[]	2026-07-23 22:21:49.93256	\N
+5	12	3	👅	[]	2026-07-23 22:22:11.782181	\N
+6	13	3	200 км/час	[]	2026-07-24 10:42:26.969747	\N
+7	13	2	Asta tu te-ai frezat?	[]	2026-07-24 15:35:09.742324	\N
+8	13	3	check new post	[]	2026-07-24 17:33:12.852683	\N
+9	14	3	fute-ma	[]	2026-07-24 17:37:33.677452	\N
+10	14	2	de ce fara ochelari, ca e ziua? si numa noaptea le porti?	[]	2026-07-24 19:56:55.737375	\N
+11	14	4	urod ebanii	[]	2026-07-24 21:05:45.628681	\N
+12	15	2	noi am dat un tanet liutai amu cu pysy. iti recomand	[]	2026-07-24 21:41:27.076354	\N
+13	16	2	asta din ocean ceva?	[]	2026-07-24 21:42:06.988406	\N
+14	16	3	dai mancare la porci?	[]	2026-07-24 21:48:16.219148	\N
+15	15	3	uside-te	[]	2026-07-24 22:57:48.997394	\N
+16	13	4	nu gani	[]	2026-07-25 11:10:14.81706	\N
+17	19	2		[{"type":"image","url":"/api/storage/objects/uploads/faf23633-7b7c-4c42-b491-5b39b667cbe7"}]	2026-07-25 11:13:58.921262	\N
+18	20	4	razminka de dimineata #zebesttrenerinzevord	[]	2026-07-25 11:14:31.100938	\N
+19	20	2	Ahahah, cice bune	[{"type":"image","url":"/api/storage/objects/uploads/222e629f-5015-4966-b101-e6266ea687ef"}]	2026-07-25 11:15:16.61195	\N
+20	21	2	Casa li borozdibov la stolita/capitala	[]	2026-07-25 11:34:25.017224	\N
+21	24	2	Android моггает ios	[]	2026-07-25 14:55:52.139115	\N
+22	24	2		[{"type":"image","url":"/api/storage/objects/uploads/47e1b44b-8f24-48d4-a699-8da1346b289d"}]	2026-07-25 15:04:05.229555	21
+23	20	3	cand collab cu trnerul?	[]	2026-07-26 20:10:25.663854	\N
+24	25	2	Da tii minte cum ai promis content de la nunta si n-ai trimas nimic	[]	2026-07-26 20:13:47.397626	\N
+25	24	3	gen z activity	[]	2026-07-26 22:03:15.788311	\N
+26	21	3	iar aista umblă bat prin tot chișinaul, nedoblogher	[]	2026-07-26 22:03:45.221694	\N
+27	26	2	Chentul era in potoc	[]	2026-07-27 00:39:34.048649	\N
+28	26	3	raziob	[]	2026-07-27 13:28:36.017396	\N
+29	26	4	huinea	[]	2026-07-27 15:51:24.510973	\N
+30	26	4	mai bine ma duc la skal si imi bag un shpriț în vână	[]	2026-07-27 15:51:43.578161	\N
+31	25	4	da tii minte cum ai promis sa arunci musorul de la	[]	2026-07-27 15:52:04.929862	\N
+32	25	4	mine din kvartira si nu ai aruncat nimic	[]	2026-07-27 15:52:13.691516	\N
+33	29	2		[{"type":"image","url":"/api/storage/objects/uploads/3a29d7b2-31fa-47b7-9684-674703255dc1"}]	2026-07-27 16:04:11.906582	\N
+34	28	3	#make sanea great again	[]	2026-07-27 20:02:59.129606	\N
+35	30	4	asa numitul vozduh	[{"type":"image","url":"/api/storage/objects/uploads/b884d17f-61e3-4aeb-b15e-433c4def9427"}]	2026-07-27 21:56:51.866677	\N
+36	33	3	uite-te la nosferatul	[]	2026-07-27 23:23:48.457039	\N
+37	33	2	Evident ca sunt interzise, da care tu le-ai spus deja au fost vizionate	[]	2026-07-27 23:29:22.615719	\N
+38	33	2	Aduga cantecele, aici nu o sa dispara	[]	2026-07-27 23:29:45.062006	\N
+39	33	1	uita-l si nu te uita	[]	2026-07-27 23:45:07.60039	36
+40	34	2		[{"type":"image","url":"/api/storage/objects/uploads/74034aae-4d11-4bc4-85f9-981d456e3d25"}]	2026-07-27 23:50:56.012171	\N
+41	34	5		[{"type":"image","url":"/api/storage/objects/uploads/57e04a8c-dee9-4785-900a-cd4e912f3516"}]	2026-07-28 00:21:40.058779	\N
+42	30	2	SI UNDE TU VEZI SERIAL SAU FILM, VERIFICA INFORMATIA TE ROG IANAINTE SA SCRII DEZINFA	[]	2026-07-28 01:09:42.019206	35
+43	30	2	UDALESTE internetul	[]	2026-07-28 01:10:07.913514	35
+44	30	3	pidar, tu stai pe tiktok in loc sa stai cu patanii pe ds	[]	2026-07-28 01:19:21.83792	35
+45	35	2	+	[]	2026-07-28 01:46:15.003018	\N
+46	35	5	Comentariu vragului meu nr 1 pe platforma mzt, eu nas terpesc așa pavidenii în storanaua comunity-ului meu și în fața personalității mele marginalizate pe această platformă eu rog ca adminu să baneze blogu ista	[]	2026-07-28 01:47:53.670193	\N
+47	35	5		[{"type":"image","url":"/api/storage/objects/uploads/b3bff123-2ea4-4409-97b3-127c0835a480"}]	2026-07-28 01:48:13.628312	\N
+48	36	2	Acum prezent pe Familia Cerbere 123	[]	2026-07-28 01:48:41.761005	\N
+49	35	5	Și pui plus uai unde-i egalitatea admin huev	[]	2026-07-28 01:48:44.714604	\N
+50	35	2	eu nu-s admin, VERIFICA INFORMATIA TE ROG	[]	2026-07-28 01:50:17.22659	49
+51	35	2	NU INSELA OAMENII	[]	2026-07-28 01:50:26.86665	49
+52	35	3	esti cu caleasca pe sus nah?	[]	2026-07-28 01:50:29.31867	46
+53	36	5	Acum prezent la pysy în pat zasadindui po glangâ	[]	2026-07-28 01:51:57.672536	\N
+54	36	2	Lasa-l pe mr ganga in pace	[]	2026-07-28 02:11:23.405962	53
+55	38	5	Un om dac sa strânge la așa huinea de content	[]	2026-07-28 13:02:15.972104	\N
+56	38	3	zaebali, să intrați ds și nu vă vâibiți	[]	2026-07-28 13:22:09.705657	\N
+57	38	5		[{"type":"image","url":"/api/storage/objects/uploads/c593130e-306f-416b-8538-0f480f951dc6"}]	2026-07-28 13:51:40.310743	\N
 \.
 
 
 --
--- Data for Name: blog_media; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: blog_media; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.blog_media (id, post_id, type, url, "order", is_circle) FROM stdin;
@@ -756,11 +907,16 @@ COPY public.blog_media (id, post_id, type, url, "order", is_circle) FROM stdin;
 33	17	video	/api/storage/objects/uploads/3b94f021-be62-4448-885c-9a0c406613cb	1	f
 34	20	video	/api/storage/objects/uploads/af76ce73-4808-4430-aa8a-0efc2ec986de	1	t
 35	21	video	/api/storage/objects/uploads/dda3b891-1e94-4c5c-be8a-6b28f0d56a3c	1	f
+37	26	video	/api/storage/objects/uploads/529530bf-ec03-4a22-9692-486bcd4ea4fc	1	f
+38	28	image	/api/storage/objects/uploads/1e5383f1-44d8-4434-9f4f-6cfbdc6e389c	1	f
+39	29	image	/api/storage/objects/uploads/d01fdbed-1b15-4250-8a8d-0363d60b6842	1	f
+40	30	image	/api/storage/objects/uploads/63055f90-ae0f-4498-a70f-82701666aeaa	1	f
+42	36	image	/api/storage/objects/uploads/812ecc88-0db0-4e97-b008-73a1365af9b6	1	f
 \.
 
 
 --
--- Data for Name: blog_post_likes; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: blog_post_likes; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.blog_post_likes (id, post_id, user_id, created_at) FROM stdin;
@@ -779,11 +935,28 @@ COPY public.blog_post_likes (id, post_id, user_id, created_at) FROM stdin;
 17	19	2	2026-07-25 11:11:10.941697
 18	19	4	2026-07-25 11:14:42.369356
 19	20	2	2026-07-25 11:15:30.147384
+20	24	2	2026-07-25 14:54:54.419049
+21	21	3	2026-07-26 20:09:51.509222
+22	20	3	2026-07-26 20:10:03.630647
+23	26	2	2026-07-27 00:39:35.696369
+24	25	4	2026-07-27 15:51:50.601913
+25	26	4	2026-07-27 15:56:01.91634
+26	14	4	2026-07-27 15:56:03.55425
+27	13	4	2026-07-27 15:56:04.660117
+28	12	4	2026-07-27 15:56:05.978786
+29	28	2	2026-07-27 16:02:03.211224
+30	29	2	2026-07-27 16:02:29.168528
+31	30	4	2026-07-27 21:57:30.232553
+32	33	2	2026-07-27 23:24:07.200922
+33	34	2	2026-07-28 01:08:28.147236
+34	35	2	2026-07-28 01:46:16.754814
+35	35	3	2026-07-28 01:47:49.389977
+36	36	2	2026-07-28 02:11:00.772282
 \.
 
 
 --
--- Data for Name: blog_posts; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: blog_posts; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.blog_posts (id, blog_id, created_by_user_id, title, content, created_at, updated_at) FROM stdin;
@@ -796,11 +969,24 @@ COPY public.blog_posts (id, blog_id, created_by_user_id, title, content, created
 19	2	4	toti kentii mei is niste pidari#creatorinsightvideo #soroca		2026-07-25 11:10:47.335865	2026-07-25 11:10:47.335865
 20	2	4			2026-07-25 11:12:23.842049	2026-07-25 11:12:23.842049
 21	2	4			2026-07-25 11:20:53.429876	2026-07-25 11:20:53.429876
+24	2	4	скачать взлом zombie catcher много денег и энергии	Huinea cu limete de timp	2026-07-25 14:54:23.905191	2026-07-25 14:54:23.905191
+25	1	3	#chetrosu #stay focused	pațanii adevarați dau goon de 5 ori pe zi	2026-07-26 20:12:08.678356	2026-07-26 20:12:08.678356
+26	1	3	#casă de piatră și copii de lemn	contentul promis de la nuntă\n\nmă scuzați fanii mei că nu am postat mai mult	2026-07-26 22:01:27.989851	2026-07-26 22:01:27.989851
+27	2	4	numai ce am futut o trenirovka	sap am mancat o banana	2026-07-27 15:53:29.08951	2026-07-27 15:53:29.08951
+28	2	4		make sanea’s pants great again	2026-07-27 15:54:08.129281	2026-07-27 15:54:08.129281
+29	2	4	candva iarba era mai verde	#creatorsearchinsight	2026-07-27 15:55:37.651605	2026-07-27 15:55:37.651605
+30	1	3	#pidari #nu mai cred în prietenie #mor	nu mai sunteți kenții mei	2026-07-27 20:02:20.457321	2026-07-27 20:02:20.457321
+33	2	4	kakova huia ii interzis in recomendatii soprano si igra prestolov? pizdet	bine ca de gospodin nikto si griazi la toti lii pohui. ma duc sa ma uit la ranetki	2026-07-27 21:58:37.747223	2026-07-27 21:58:37.747223
+34	1	3		ma duc sa ma cac pațani	2026-07-27 23:42:23.225131	2026-07-27 23:42:23.225131
+35	1	3	#Z #patani rovnie	Sanea vrea sa isi deschida blog\n\nPadpisota, propun sa scrim petitie in comentarii pentru anularea acestei cereri si blocarea utilizatorului, bratva nu podvediti	2026-07-28 01:45:25.420682	2026-07-28 01:45:25.420682
+36	1	3	#make soroca great again #politie #maniac #besafe	ATENTIE!!!!  \n\nacest specimen a fost zarit astazi pe durmurile orasului Soroca, se zice ca ataca copii mici, in special fete de sub 15 ani, daca l-ati vazut va rugam sa raportati la numarul de telefon 068775110\n\nMultumim	2026-07-28 01:47:35.72559	2026-07-28 01:51:37.649
+37	1	3		pațani, lăsa-ți tiktokul și faceți ceva cu viața voastră	2026-07-28 10:36:01.307122	2026-07-28 10:36:01.307122
+38	1	3	Orele 22:00-23:00	padpisota, azi seara, ne strângem pe discord și facem obzor și razbor la aurica și piesele ei, dar și alte personaje ale tiktokului, așa numita nișevosti a tt, va astept în numar cat mai mare	2026-07-28 12:50:03.428187	2026-07-28 13:02:45.073
 \.
 
 
 --
--- Data for Name: blogs; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: blogs; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.blogs (id, user_id, owner_username, title, handle, description, avatar_url, cover_url, created_at, updated_at) FROM stdin;
@@ -810,15 +996,16 @@ COPY public.blogs (id, user_id, owner_username, title, handle, description, avat
 
 
 --
--- Data for Name: movies; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: movies; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.movies (id, title, description, genre, rating, created_by_id, created_at) FROM stdin;
+1	Господин никто 	Glavnâi geroi îi nemo 	Ахуенная 	10	5	2026-07-28 00:07:20.588722
 \.
 
 
 --
--- Data for Name: playlist_imports; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: playlist_imports; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.playlist_imports (id, track_id, track_title, artist, created_at) FROM stdin;
@@ -849,11 +1036,33 @@ COPY public.playlist_imports (id, track_id, track_title, artist, created_at) FRO
 26	1445158095	All Night	mishlawi	2026-07-25 13:35:58.377796
 27	1375629153	Бошетунмай	Kino	2026-07-25 13:38:39.217306
 28	1680774410	Жвачка (Video Edit)	Noize MC	2026-07-25 13:39:09.759018
+29	1772279531	Belong	TENDER	2026-07-27 23:26:39.927973
+30	1877877039	магия	ooes	2026-07-28 00:08:38.296886
+31	921284973	Green Onions	Booker T. & The M.G.'s	2026-07-28 00:08:56.253347
+32	1440832246	Young and Beautiful	Lana Del Rey	2026-07-28 00:09:06.852577
+33	1772257447	Own Up	TENDER	2026-07-28 00:09:14.883928
+34	1577772175	Clay	Ghostly Kisses	2026-07-28 00:57:39.084256
+35	1841382362	Откровения (feat. FEDUK)	OG BUDA	2026-07-28 00:58:44.896678
+36	1464060889	Fear of Falling Asleep	TENDER	2026-07-28 00:59:06.033691
+37	1589963819	ИСКАЛА	Zemfira	2026-07-28 01:31:28.420061
+38	1122776156	Clocks	Coldplay	2026-07-28 01:32:25.704935
 \.
 
 
 --
--- Data for Name: recommendation_music; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: push_subscriptions; Type: TABLE DATA; Schema: public; Owner: neondb_owner
+--
+
+COPY public.push_subscriptions (id, endpoint, p256dh, auth, created_at) FROM stdin;
+3	https://fcm.googleapis.com/fcm/send/fIdzInKm7o0:APA91bF3Vj51SpZqZKXcvCJhNwGj6WbpjQdzYp1tWYPU2hzixR1iVb-fTnHtO8aiGumSUu4lWyk8UoKmhH7TWttO02GqxLnQdTn-_JR75AwBxDpjnwcKIO6n_x109E35jUKKnHl6z91N	BCD_xE0FfZaVCtd8glbR27SUZdvCc-uCBiFTUCQ4DH6N1_1RsTROoogy_mVYcgJ5MxVHpoHVa2Ip1Q4fs9X3HgQ	pace24Y3WqGkonbdrm39pQ	2026-07-25 14:33:01.175646
+5	https://web.push.apple.com/QN1XFJKg9iEJJTD57tNHQSKF8SCG-EOSCMi5kbUjh4fIcBb_k7DCvGym1WY5sFQFbil-52Ieru7jUiu2XBnVu49lRrWiDsS5CtXG9XQLo32YchDwTezbfvlhG44j2TA5Dwk7DKgXmNl-UzAAu8AlbBiZiFO_q9x400hoAvHlrvc	BGMZnmaRWBtiz5iCR0y50pUhFzlwBqapEHi4aRo4RR3FTIDvp8EbjNeLw5R3xCUQgnPHw5_6g5TXP_T1gGaeQno	Zgff3ZCTwGclEb24Ijr8oQ	2026-07-25 14:44:58.003388
+11	https://web.push.apple.com/QK1Tsmz0LbKQCJkoq-6dYfYH37-NL9PEVyjeKgQfCpWcATccX4z3ZqmQcy4NnWLdSR2Gg6R_Xrt_3EF1AgeWEY0tF6a0n71JX14TsuY_qg8JKx9Bsoo0KRJLtJA6xotof4DNdx_f0fHOmSYvavFzZh-So5WIk_-ek5CDWFEVzJE	BFMFVdcp0R2Tc2dBGvjmgMGXy7V6dVca5_rXa2JFxqkBB3It4GSzQv_OKT4xfnOhCsPP32r7Wr1KJgJldWkkG7c	u4P2TTC7kRLoYUWeXCeqJA	2026-07-28 00:37:16.549622
+12	https://web.push.apple.com/QCD7nLOkELZHAXrtJ46ZBM2sR-r66qvnxxc4QWKrcYep3p8o59cM-9LwQ4UYgrBwM-wWMM3plTtOlvLOeUv5nZXiZdrwPFi0fYJmldvhWSk2OJcm9x1zchWohUl4xcKJDIDoIwAODYGiFNdKJVyJ1hFpK3PeSpXdOoMnOCQ6sNg	BLudCaxPL0kESKOS6vdb6g8erVg7Vb5XWRaKFqrVuk_Icn4wyRLlHI8wPxVVYaKdtkKEi0khzBH3SLe8vNPpA0M	KKvjtMrlqgaajY0eXKRi3w	2026-07-28 10:36:12.162841
+\.
+
+
+--
+-- Data for Name: recommendation_music; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.recommendation_music (id, type, artist, title, description, cover_url, created_by_id, created_at) FROM stdin;
@@ -861,7 +1070,7 @@ COPY public.recommendation_music (id, type, artist, title, description, cover_ur
 
 
 --
--- Data for Name: recommendation_tracks; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: recommendation_tracks; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.recommendation_tracks (id, music_id, title, audio_url, "order", created_at) FROM stdin;
@@ -869,7 +1078,7 @@ COPY public.recommendation_tracks (id, music_id, title, audio_url, "order", crea
 
 
 --
--- Data for Name: releases; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: releases; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.releases (id, type, artist, title, description, cover_url, audio_url, is_our_track, created_by_id, created_at, is_from_sanya_playlist) FROM stdin;
@@ -878,13 +1087,14 @@ COPY public.releases (id, type, artist, title, description, cover_url, audio_url
 27	single	OG BUDA & Dora	Капли	\N	https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/2d/f7/19/2df7196f-bdd9-c45d-a4e1-99324a04e0a3/cover.jpg/500x500bb.jpg	\N	f	2	2026-07-25 13:16:58.779038	t
 28	single	Sting	Shape of My Heart	\N	https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/59/ac/f4/59acf4db-0ea8-a8e5-5607-01e931bb2d58/06UMGIM49867.rgb.jpg/500x500bb.jpg	\N	f	2	2026-07-25 13:28:22.249211	t
 31	single	mishlawi	All Night	\N	https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/71/bd/62/71bd621a-1896-a980-801e-1cc666123409/00602567440185.rgb.jpg/500x500bb.jpg	\N	f	2	2026-07-25 13:35:58.363931	t
-32	single	Kino	Бошетунмай	\N	https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/c7/99/1e/c7991ed1-bee2-8c46-2e66-81d0b8e7eeb2/cover.jpg/500x500bb.jpg	\N	f	2	2026-07-25 13:38:39.198371	t
-33	single	Noize MC	Жвачка (Video Edit)	\N	https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/7a/ec/6c/7aec6cff-b543-1a80-8516-38cb739cbde0/0.jpg/500x500bb.jpg	\N	f	2	2026-07-25 13:39:09.744696	t
+39	single	Ghostly Kisses	Clay	\N	https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/5d/a0/8e/5da08e61-3aee-effc-27dd-d423d6abce0f/196006985172.jpg/500x500bb.jpg	\N	f	5	2026-07-28 00:57:39.062977	t
+42	single	Zemfira	ИСКАЛА	\N	https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/bb/ca/d0/bbcad0b1-109b-f19b-e4f4-18a35e526ab4/3610154399133.jpg/500x500bb.jpg	\N	f	3	2026-07-28 01:31:28.404673	t
+43	single	Coldplay	Clocks	\N	https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b9/b4/2a/b9b42ad1-1e25-5096-da43-497a247e69a3/190295978051.jpg/500x500bb.jpg	\N	f	3	2026-07-28 01:32:25.691073	t
 \.
 
 
 --
--- Data for Name: reviews; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: reviews; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.reviews (id, release_id, user_id, rhymes, structure, style_execution, individuality, atmosphere, score, comment, created_at) FROM stdin;
@@ -893,11 +1103,17 @@ COPY public.reviews (id, release_id, user_id, rhymes, structure, style_execution
 5	27	2	3	6	8	3	2	30	Versia originala adecvata, da drill remixu ista ppt. Si classic freesyle de la og buda, hz huinea polnaia parca. Nice traciok canesna unde din bun e refrenu din alt cantec	2026-07-25 13:22:19.853342
 6	28	2	8	9	10	9	10	81	Zacetno vashe, demult nu am auzit acest cantec, super recomand. Desenul ritmic si motivul sunt super	2026-07-25 13:34:24.816692
 7	31	2	3	9	7	6	8	52	Ebanii golubi si dj mi-o lasat trauma de la cantecul ista, fiecare data imi apare in spotify in recomendatii din cauza lor	2026-07-25 13:37:48.449351
+8	39	5	2	4	3	4	2	34	Muzica dislike stilu huinea cui place ii pidar	2026-07-28 00:58:29.76694
+9	39	2	9	9	10	10	10	86	Tracku ahuienai nu stiu, ce lui Sanea nui place	2026-07-28 01:21:49.451558
+10	39	3	10	10	10	10	10	90	muzica pentru persoane cu bun gust si high iq	2026-07-28 01:29:40.170495
+11	42	3	8	7	7	8	9	65	cred ca 1% din cantecele bune din acest playlist	2026-07-28 01:32:10.355592
+12	43	3	1	1	1	1	1	6	cocks	2026-07-28 01:32:44.533384
+13	43	2	10	10	10	10	10	90	Huinea 90	2026-07-28 01:33:26.65478
 \.
 
 
 --
--- Data for Name: tracks; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: tracks; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.tracks (id, release_id, title, audio_url, "order", created_at) FROM stdin;
@@ -905,17 +1121,19 @@ COPY public.tracks (id, release_id, title, audio_url, "order", created_at) FROM 
 
 
 --
--- Data for Name: user_activity_stats; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: user_activity_stats; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.user_activity_stats (user_id, lifetime_recommendations, lifetime_reviews, lifetime_tracks, updated_at) FROM stdin;
 1	0	2	1	2026-07-22 22:08:03.399913
-2	0	5	0	2026-07-25 13:37:48.537663
+5	2	1	0	2026-07-28 00:58:29.783706
+3	1	3	0	2026-07-28 01:32:44.547321
+2	4	7	0	2026-07-28 01:33:26.668376
 \.
 
 
 --
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.users (id, username, password_hash, is_admin, created_at) FROM stdin;
@@ -923,139 +1141,157 @@ COPY public.users (id, username, password_hash, is_admin, created_at) FROM stdin
 2	makissse	$2b$12$NUjeZ9Lu7wVSqcCjOPcdP.jFIBH2hfNUVcnyU/AYg0ZJhnhfMD3yS	f	2026-07-22 21:48:10.628801
 3	pysy	$2b$12$/dAzdK1aBBI8lW3U.J.fWOW.JbtE0haZk8tP4h/jIOvNp3Gn31dE.	f	2026-07-23 22:16:50.058985
 4	host9315	$2b$12$Ou0doRCUIkDcgE/34wNeQua5zUkKVr8zFt5OfE4dy0tVe7eGi1pjO	f	2026-07-24 21:05:15.853476
+5	Xiereler	$2b$12$0qvstEu9qjUkGGcP9zVzB.GHWhtaZq2nxzPqRtPoMFyHomuYRmkvK	f	2026-07-27 23:24:41.562302
 \.
 
 
 --
--- Data for Name: video_votes; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: video_votes; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.video_votes (id, video_id, user_id, vote, created_at) FROM stdin;
+1	1	2	1	2026-07-27 23:49:33.590192
+2	2	2	1	2026-07-27 23:49:34.722948
+3	3	2	1	2026-07-27 23:49:47.543841
+4	4	2	-1	2026-07-27 23:50:02.96005
+5	3	5	-1	2026-07-28 00:47:30.667676
+7	4	5	-1	2026-07-28 00:47:38.329411
 \.
 
 
 --
--- Data for Name: videos; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: videos; Type: TABLE DATA; Schema: public; Owner: neondb_owner
 --
 
 COPY public.videos (id, url, title, description, thumbnail_url, created_by_id, created_at) FROM stdin;
+1	https://www.youtube.com/watch?v=FGy7KWr7BrM	ЗАСТАВИЛ Г*Я ВЛЮБИТЬСЯ В СЕБЯ [ПОЛНЫЙ ЛОР СЕРИАЛА ОТ МАФАНИ]	\N	https://i.ytimg.com/vi/FGy7KWr7BrM/hqdefault.jpg	2	2026-07-27 23:49:22.413276
+2	https://www.youtube.com/watch?v=_qrtSF5opxY	ПРОИГРАЛ МЕНТАЛКУ В КАЗИНО - Нижний Гемблинг ч.2	\N	https://i.ytimg.com/vi/_qrtSF5opxY/hqdefault.jpg	2	2026-07-27 23:49:31.617321
+3	https://www.youtube.com/watch?v=TWK9Jc3T31Q	НИЖНИЙ ГЕМБЛИНГ - безумие казино-стримеров с 0 онлайна	\N	https://i.ytimg.com/vi/TWK9Jc3T31Q/hqdefault.jpg	2	2026-07-27 23:49:45.550638
+4	https://www.youtube.com/watch?v=GKz-VdYelPI	Как Накачать ПРЕСС за 10 минут ДОМА / ЛУЧШАЯ ТРЕНИРОВКА	\N	https://i.ytimg.com/vi/GKz-VdYelPI/hqdefault.jpg	2	2026-07-27 23:50:01.094449
 \.
 
 
 --
--- Name: replit_database_migrations_v1_id_seq; Type: SEQUENCE SET; Schema: _system; Owner: -
+-- Name: replit_database_migrations_v1_id_seq; Type: SEQUENCE SET; Schema: _system; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('_system.replit_database_migrations_v1_id_seq', 1, true);
-
-
---
--- Name: blog_comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.blog_comments_id_seq', 20, true);
+SELECT pg_catalog.setval('_system.replit_database_migrations_v1_id_seq', 2, true);
 
 
 --
--- Name: blog_media_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: blog_comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_media_id_seq', 35, true);
-
-
---
--- Name: blog_post_likes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.blog_post_likes_id_seq', 19, true);
+SELECT pg_catalog.setval('public.blog_comments_id_seq', 57, true);
 
 
 --
--- Name: blog_posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: blog_media_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_posts_id_seq', 21, true);
+SELECT pg_catalog.setval('public.blog_media_id_seq', 42, true);
 
 
 --
--- Name: blogs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: blog_post_likes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
+--
+
+SELECT pg_catalog.setval('public.blog_post_likes_id_seq', 36, true);
+
+
+--
+-- Name: blog_posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
+--
+
+SELECT pg_catalog.setval('public.blog_posts_id_seq', 38, true);
+
+
+--
+-- Name: blogs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
 SELECT pg_catalog.setval('public.blogs_id_seq', 2, true);
 
 
 --
--- Name: movies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: movies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.movies_id_seq', 1, false);
-
-
---
--- Name: playlist_imports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.playlist_imports_id_seq', 28, true);
+SELECT pg_catalog.setval('public.movies_id_seq', 2, true);
 
 
 --
--- Name: recommendation_music_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: playlist_imports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.recommendation_music_id_seq', 1, false);
+SELECT pg_catalog.setval('public.playlist_imports_id_seq', 38, true);
 
 
 --
--- Name: recommendation_tracks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: push_subscriptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
+--
+
+SELECT pg_catalog.setval('public.push_subscriptions_id_seq', 12, true);
+
+
+--
+-- Name: recommendation_music_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
+--
+
+SELECT pg_catalog.setval('public.recommendation_music_id_seq', 1, true);
+
+
+--
+-- Name: recommendation_tracks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
 SELECT pg_catalog.setval('public.recommendation_tracks_id_seq', 1, false);
 
 
 --
--- Name: releases_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: releases_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.releases_id_seq', 33, true);
-
-
---
--- Name: reviews_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.reviews_id_seq', 7, true);
+SELECT pg_catalog.setval('public.releases_id_seq', 43, true);
 
 
 --
--- Name: tracks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: reviews_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
+--
+
+SELECT pg_catalog.setval('public.reviews_id_seq', 13, true);
+
+
+--
+-- Name: tracks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
 SELECT pg_catalog.setval('public.tracks_id_seq', 1, true);
 
 
 --
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 4, true);
-
-
---
--- Name: video_votes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.video_votes_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 5, true);
 
 
 --
--- Name: videos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: video_votes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.videos_id_seq', 1, false);
+SELECT pg_catalog.setval('public.video_votes_id_seq', 7, true);
 
 
 --
--- Name: replit_database_migrations_v1 replit_database_migrations_v1_pkey; Type: CONSTRAINT; Schema: _system; Owner: -
+-- Name: videos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
+--
+
+SELECT pg_catalog.setval('public.videos_id_seq', 4, true);
+
+
+--
+-- Name: replit_database_migrations_v1 replit_database_migrations_v1_pkey; Type: CONSTRAINT; Schema: _system; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY _system.replit_database_migrations_v1
@@ -1063,7 +1299,7 @@ ALTER TABLE ONLY _system.replit_database_migrations_v1
 
 
 --
--- Name: blog_comments blog_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_comments blog_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_comments
@@ -1071,7 +1307,7 @@ ALTER TABLE ONLY public.blog_comments
 
 
 --
--- Name: blog_media blog_media_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_media blog_media_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_media
@@ -1079,7 +1315,7 @@ ALTER TABLE ONLY public.blog_media
 
 
 --
--- Name: blog_post_likes blog_post_likes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_post_likes blog_post_likes_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_post_likes
@@ -1087,7 +1323,7 @@ ALTER TABLE ONLY public.blog_post_likes
 
 
 --
--- Name: blog_post_likes blog_post_likes_post_id_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_post_likes blog_post_likes_post_id_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_post_likes
@@ -1095,7 +1331,7 @@ ALTER TABLE ONLY public.blog_post_likes
 
 
 --
--- Name: blog_posts blog_posts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_posts blog_posts_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_posts
@@ -1103,7 +1339,7 @@ ALTER TABLE ONLY public.blog_posts
 
 
 --
--- Name: blogs blogs_handle_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blogs blogs_handle_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blogs
@@ -1111,7 +1347,7 @@ ALTER TABLE ONLY public.blogs
 
 
 --
--- Name: blogs blogs_owner_username_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blogs blogs_owner_username_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blogs
@@ -1119,7 +1355,7 @@ ALTER TABLE ONLY public.blogs
 
 
 --
--- Name: blogs blogs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: blogs blogs_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blogs
@@ -1127,7 +1363,7 @@ ALTER TABLE ONLY public.blogs
 
 
 --
--- Name: movies movies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: movies movies_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.movies
@@ -1135,7 +1371,7 @@ ALTER TABLE ONLY public.movies
 
 
 --
--- Name: playlist_imports playlist_imports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: playlist_imports playlist_imports_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.playlist_imports
@@ -1143,7 +1379,7 @@ ALTER TABLE ONLY public.playlist_imports
 
 
 --
--- Name: playlist_imports playlist_imports_track_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: playlist_imports playlist_imports_track_id_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.playlist_imports
@@ -1151,7 +1387,23 @@ ALTER TABLE ONLY public.playlist_imports
 
 
 --
--- Name: recommendation_music recommendation_music_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: push_subscriptions push_subscriptions_endpoint_key; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_endpoint_key UNIQUE (endpoint);
+
+
+--
+-- Name: push_subscriptions push_subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
+--
+
+ALTER TABLE ONLY public.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: recommendation_music recommendation_music_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.recommendation_music
@@ -1159,7 +1411,7 @@ ALTER TABLE ONLY public.recommendation_music
 
 
 --
--- Name: recommendation_tracks recommendation_tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: recommendation_tracks recommendation_tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.recommendation_tracks
@@ -1167,7 +1419,7 @@ ALTER TABLE ONLY public.recommendation_tracks
 
 
 --
--- Name: releases releases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: releases releases_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.releases
@@ -1175,7 +1427,7 @@ ALTER TABLE ONLY public.releases
 
 
 --
--- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.reviews
@@ -1183,7 +1435,7 @@ ALTER TABLE ONLY public.reviews
 
 
 --
--- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.tracks
@@ -1191,7 +1443,7 @@ ALTER TABLE ONLY public.tracks
 
 
 --
--- Name: reviews unique_user_release_review; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: reviews unique_user_release_review; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.reviews
@@ -1199,7 +1451,7 @@ ALTER TABLE ONLY public.reviews
 
 
 --
--- Name: user_activity_stats user_activity_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: user_activity_stats user_activity_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.user_activity_stats
@@ -1207,7 +1459,7 @@ ALTER TABLE ONLY public.user_activity_stats
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.users
@@ -1215,7 +1467,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_username_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: users users_username_unique; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.users
@@ -1223,7 +1475,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: video_votes video_votes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: video_votes video_votes_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.video_votes
@@ -1231,7 +1483,7 @@ ALTER TABLE ONLY public.video_votes
 
 
 --
--- Name: videos videos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: videos videos_pkey; Type: CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.videos
@@ -1239,14 +1491,14 @@ ALTER TABLE ONLY public.videos
 
 
 --
--- Name: idx_replit_database_migrations_v1_build_id; Type: INDEX; Schema: _system; Owner: -
+-- Name: idx_replit_database_migrations_v1_build_id; Type: INDEX; Schema: _system; Owner: neondb_owner
 --
 
 CREATE UNIQUE INDEX idx_replit_database_migrations_v1_build_id ON _system.replit_database_migrations_v1 USING btree (build_id);
 
 
 --
--- Name: blog_comments blog_comments_post_id_blog_posts_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_comments blog_comments_post_id_blog_posts_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_comments
@@ -1254,7 +1506,15 @@ ALTER TABLE ONLY public.blog_comments
 
 
 --
--- Name: blog_comments blog_comments_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_comments blog_comments_reply_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
+--
+
+ALTER TABLE ONLY public.blog_comments
+    ADD CONSTRAINT blog_comments_reply_to_id_fkey FOREIGN KEY (reply_to_id) REFERENCES public.blog_comments(id) ON DELETE SET NULL;
+
+
+--
+-- Name: blog_comments blog_comments_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_comments
@@ -1262,7 +1522,7 @@ ALTER TABLE ONLY public.blog_comments
 
 
 --
--- Name: blog_media blog_media_post_id_blog_posts_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_media blog_media_post_id_blog_posts_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_media
@@ -1270,7 +1530,7 @@ ALTER TABLE ONLY public.blog_media
 
 
 --
--- Name: blog_post_likes blog_post_likes_post_id_blog_posts_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_post_likes blog_post_likes_post_id_blog_posts_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_post_likes
@@ -1278,7 +1538,7 @@ ALTER TABLE ONLY public.blog_post_likes
 
 
 --
--- Name: blog_post_likes blog_post_likes_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_post_likes blog_post_likes_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_post_likes
@@ -1286,7 +1546,7 @@ ALTER TABLE ONLY public.blog_post_likes
 
 
 --
--- Name: blog_posts blog_posts_blog_id_blogs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_posts blog_posts_blog_id_blogs_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_posts
@@ -1294,7 +1554,7 @@ ALTER TABLE ONLY public.blog_posts
 
 
 --
--- Name: blog_posts blog_posts_created_by_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blog_posts blog_posts_created_by_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blog_posts
@@ -1302,7 +1562,7 @@ ALTER TABLE ONLY public.blog_posts
 
 
 --
--- Name: blogs blogs_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: blogs blogs_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.blogs
@@ -1310,7 +1570,7 @@ ALTER TABLE ONLY public.blogs
 
 
 --
--- Name: movies movies_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: movies movies_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.movies
@@ -1318,7 +1578,7 @@ ALTER TABLE ONLY public.movies
 
 
 --
--- Name: recommendation_music recommendation_music_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: recommendation_music recommendation_music_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.recommendation_music
@@ -1326,7 +1586,7 @@ ALTER TABLE ONLY public.recommendation_music
 
 
 --
--- Name: recommendation_tracks recommendation_tracks_music_id_recommendation_music_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: recommendation_tracks recommendation_tracks_music_id_recommendation_music_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.recommendation_tracks
@@ -1334,7 +1594,7 @@ ALTER TABLE ONLY public.recommendation_tracks
 
 
 --
--- Name: releases releases_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: releases releases_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.releases
@@ -1342,7 +1602,7 @@ ALTER TABLE ONLY public.releases
 
 
 --
--- Name: reviews reviews_release_id_releases_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: reviews reviews_release_id_releases_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.reviews
@@ -1350,7 +1610,7 @@ ALTER TABLE ONLY public.reviews
 
 
 --
--- Name: reviews reviews_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: reviews reviews_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.reviews
@@ -1358,7 +1618,7 @@ ALTER TABLE ONLY public.reviews
 
 
 --
--- Name: tracks tracks_release_id_releases_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tracks tracks_release_id_releases_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.tracks
@@ -1366,7 +1626,7 @@ ALTER TABLE ONLY public.tracks
 
 
 --
--- Name: user_activity_stats user_activity_stats_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: user_activity_stats user_activity_stats_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.user_activity_stats
@@ -1374,7 +1634,7 @@ ALTER TABLE ONLY public.user_activity_stats
 
 
 --
--- Name: video_votes video_votes_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: video_votes video_votes_user_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.video_votes
@@ -1382,7 +1642,7 @@ ALTER TABLE ONLY public.video_votes
 
 
 --
--- Name: video_votes video_votes_video_id_videos_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: video_votes video_votes_video_id_videos_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.video_votes
@@ -1390,7 +1650,7 @@ ALTER TABLE ONLY public.video_votes
 
 
 --
--- Name: videos videos_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: videos videos_created_by_id_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: neondb_owner
 --
 
 ALTER TABLE ONLY public.videos
@@ -1398,8 +1658,22 @@ ALTER TABLE ONLY public.videos
 
 
 --
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO neon_superuser WITH GRANT OPTION;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON TABLES TO neon_superuser WITH GRANT OPTION;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict aIHxsZNa1bu6JDP7Bd1DXxA6oxmYWhg0acMxQItfIjt2KUOWmmTnp0PM5xF8AlA
+\unrestrict BQG58NKiZPbFl6BoJeQAQQfEpXEMfPFu8RIQfFVBn1750Ud2bGUfwKAa56dCfyN
 
