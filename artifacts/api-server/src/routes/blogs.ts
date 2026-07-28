@@ -697,6 +697,17 @@ router.post("/blogs/posts/:id/comments", requireAuth, async (req, res) => {
     user: formatUser(user),
     replyTo,
   });
+
+  // Fire-and-forget push notification to all subscribers
+  const [blog] = await db.select().from(blogsTable).where(eq(blogsTable.id, post.blogId)).limit(1);
+  const blogHandle = blog?.handle;
+  const previewText = safeContent.slice(0, 80) || '📎';
+  sendPushToAll({
+    title: `${user.username} написал комментарий`,
+    body: previewText,
+    url: blogHandle ? `/blogs/${blogHandle}` : `/blogs`,
+    tag: `comment-post-${postId}`,
+  }).catch(() => {});
 });
 
 export default router;

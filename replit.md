@@ -21,6 +21,19 @@ For a fresh checkout or import, run `pnpm run setup` once. It restores the
 locked workspace dependencies and applies the existing Drizzle schema to the
 development PostgreSQL database. The API seeds the initial blogs when it starts.
 
+### Restoring from a backup export
+
+If you have a `backup.sql` and `media_export/` from a previous deployment:
+
+```sh
+bash scripts/restore-backup.sh
+```
+
+This truncates all application tables, restores data from `backup.sql` (COPY
+format, FK checks temporarily disabled), resets sequences, and uploads any
+files found in `media_export/media_export/uploads/` to Replit Object Storage.
+After running, restart the API server workflow to pick up the fresh data.
+
 The API health check is available at `/api/healthz`.
 
 ## Environment

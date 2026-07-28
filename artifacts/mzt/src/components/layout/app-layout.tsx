@@ -23,7 +23,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col flex-1 min-w-0">
           {/* Mobile top bar — only visible on small screens */}
           <header className="flex md:hidden items-center gap-3 px-4 h-14 border-b border-border bg-background sticky top-0 z-10">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+            <SidebarTrigger className="h-9 w-9 text-foreground border border-border rounded-lg bg-card hover:bg-accent" />
             <img src="/logo.png" alt="МЗТ" className="h-8 w-auto select-none" draggable={false} />
           </header>
           <main className="flex-1 overflow-y-auto">

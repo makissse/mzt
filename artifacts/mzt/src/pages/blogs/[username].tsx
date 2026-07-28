@@ -851,7 +851,7 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
                 {me && (
                   <button
                     onClick={() => setReplyingTo(replyingTo?.id === c.id ? null : c)}
-                    className={`opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity text-[10px] flex items-center gap-0.5 mt-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground hover:text-foreground font-mono'}`}
+                    className={`sm:opacity-0 sm:group-hover:opacity-100 flex-shrink-0 transition-opacity text-[10px] flex items-center gap-0.5 mt-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground hover:text-foreground font-mono'}`}
                     style={replyingTo?.id === c.id && !isPysy && !isPutzermann ? { color: theme.accent, opacity: 1 } : undefined}
                   >
                     <Reply className="h-3 w-3" /> ответить
