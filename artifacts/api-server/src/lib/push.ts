@@ -20,10 +20,11 @@ export function getVapidPublicKey(): string | null {
   return process.env.VAPID_PUBLIC_KEY ?? null;
 }
 
-export async function sendPushToAll(payload: object): Promise<void> {
+export async function sendPushToAll(payload: object, type: 'post' | 'comment' = 'post'): Promise<void> {
   init();
   if (!initialized) return;
-  const subs = await db.select().from(pushSubscriptionsTable);
+  const allSubs = await db.select().from(pushSubscriptionsTable);
+  const subs = allSubs.filter(s => type === 'post' ? s.notifyPosts : s.notifyComments);
   const body = JSON.stringify(payload);
   await Promise.allSettled(
     subs.map(async (sub) => {

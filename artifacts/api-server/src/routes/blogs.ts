@@ -474,7 +474,7 @@ router.post("/blogs/:handle/posts", requireAuth, async (req, res) => {
     body: (safeTitle || safeContent || "Новая публикация").slice(0, 100),
     url: `/blogs/${blog.handle}`,
     tag: `new-post-${blog.handle}`,
-  }).catch(() => {});
+  }, 'post').catch(() => {});
 });
 
 // ─── Update post ──────────────────────────────────────────────────────────────
@@ -707,7 +707,7 @@ router.post("/blogs/posts/:id/comments", requireAuth, async (req, res) => {
     body: previewText,
     url: blogHandle ? `/blogs/${blogHandle}` : `/blogs`,
     tag: `comment-post-${postId}`,
-  }).catch(() => {});
+  }, 'comment').catch(() => {});
 });
 
 export default router;

@@ -23,23 +23,23 @@ let _authTokenGetter: AuthTokenGetter | null = null;
 // ---------------------------------------------------------------------------
 const MZT_TOKEN_KEY = "mzt-auth-token";
 
-/** Persist a server-issued auth token so it survives page refreshes. */
+/** Persist a server-issued auth token so it survives page refreshes and tab closes. */
 export function storeAuthToken(token: string): void {
-  if (typeof sessionStorage !== "undefined") {
-    sessionStorage.setItem(MZT_TOKEN_KEY, token);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(MZT_TOKEN_KEY, token);
   }
 }
 
 /** Remove the stored auth token (call on logout). */
 export function clearAuthToken(): void {
-  if (typeof sessionStorage !== "undefined") {
-    sessionStorage.removeItem(MZT_TOKEN_KEY);
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(MZT_TOKEN_KEY);
   }
 }
 
 export function getStoredAuthToken(): string | null {
-  if (typeof sessionStorage === "undefined") return null;
-  return sessionStorage.getItem(MZT_TOKEN_KEY);
+  if (typeof localStorage === "undefined") return null;
+  return localStorage.getItem(MZT_TOKEN_KEY);
 }
 
 /**

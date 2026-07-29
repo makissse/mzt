@@ -14,6 +14,7 @@ export const blogsTable = pgTable("blogs", {
   description: text("description").notNull().default(""),
   avatarUrl: text("avatar_url"),
   coverUrl: text("cover_url"),
+  hpValue: integer("hp_value").notNull().default(50),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

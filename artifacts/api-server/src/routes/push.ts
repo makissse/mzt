@@ -41,4 +41,17 @@ router.post("/push/unsubscribe", async (req, res) => {
   res.json({ ok: true });
 });
 
+// ─── Update preferences ───────────────────────────────────────────────────────
+router.patch("/push/preferences", async (req, res) => {
+  const { endpoint, notifyPosts, notifyComments } = req.body ?? {};
+  if (typeof endpoint !== "string") { res.status(400).json({ error: "Invalid" }); return; }
+  const update: Partial<{ notifyPosts: boolean; notifyComments: boolean }> = {};
+  if (typeof notifyPosts === "boolean") update.notifyPosts = notifyPosts;
+  if (typeof notifyComments === "boolean") update.notifyComments = notifyComments;
+  if (Object.keys(update).length > 0) {
+    await db.update(pushSubscriptionsTable).set(update).where(eq(pushSubscriptionsTable.endpoint, endpoint));
+  }
+  res.json({ ok: true });
+});
+
 export default router;

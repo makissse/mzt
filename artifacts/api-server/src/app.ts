@@ -2,9 +2,11 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { getUserIdFromToken } from "./lib/auth-tokens";
+import { pool } from "@workspace/db";
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable is required.");
@@ -62,8 +64,15 @@ app.use(
   })
 );
 
+const PgSession = connectPgSimple(session);
+
 app.use(
   session({
+    store: new PgSession({
+      pool,
+      tableName: "user_sessions",
+      createTableIfMissing: true,
+    }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -71,7 +80,7 @@ app.use(
       httpOnly: true,
       sameSite: "none",
       secure: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },
   })
 );
@@ -85,12 +94,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use((req, _res, next) => {
   const token = req.headers["x-auth-token"] as string | undefined;
   if (token && !req.session.userId) {
-    const userId = getUserIdFromToken(token);
-    if (userId !== undefined) {
-      req.session.userId = userId;
-    }
+    getUserIdFromToken(token).then((userId) => {
+      if (userId !== undefined) {
+        req.session.userId = userId;
+      }
+      next();
+    }).catch(() => next());
+  } else {
+    next();
   }
-  next();
 });
 
 app.use("/api", router);

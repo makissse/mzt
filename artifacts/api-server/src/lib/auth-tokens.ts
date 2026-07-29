@@ -1,35 +1,34 @@
 import crypto from "crypto";
+import { db, authTokensTable } from "@workspace/db";
+import { eq, lt } from "drizzle-orm";
 
-const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, matches session cookie maxAge
+const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-interface TokenEntry {
-  userId: number;
-  expiresAt: number;
-}
-
-// In-memory token store: token -> {userId, expiresAt}
-// Used as a cookie-free auth fallback for environments where cookies are
-// blocked (e.g. the Replit preview iframe). Tokens are intentionally
-// ephemeral — they are cleared on server restart, matching the behaviour
-// of the MemoryStore sessions they complement.
-const authTokens = new Map<string, TokenEntry>();
-
-export function createAuthToken(userId: number): string {
+export async function createAuthToken(userId: number): Promise<string> {
   const token = crypto.randomBytes(32).toString("hex");
-  authTokens.set(token, { userId, expiresAt: Date.now() + TOKEN_TTL_MS });
+  const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
+  await db.insert(authTokensTable).values({ token, userId, expiresAt });
+  // Clean up expired tokens opportunistically (non-blocking)
+  db.delete(authTokensTable)
+    .where(lt(authTokensTable.expiresAt, new Date()))
+    .catch(() => {});
   return token;
 }
 
-export function deleteAuthToken(token: string): void {
-  authTokens.delete(token);
+export async function deleteAuthToken(token: string): Promise<void> {
+  await db.delete(authTokensTable).where(eq(authTokensTable.token, token));
 }
 
-export function getUserIdFromToken(token: string): number | undefined {
-  const entry = authTokens.get(token);
-  if (!entry) return undefined;
-  if (Date.now() > entry.expiresAt) {
-    authTokens.delete(token);
+export async function getUserIdFromToken(token: string): Promise<number | undefined> {
+  const [row] = await db
+    .select()
+    .from(authTokensTable)
+    .where(eq(authTokensTable.token, token))
+    .limit(1);
+  if (!row) return undefined;
+  if (row.expiresAt < new Date()) {
+    await db.delete(authTokensTable).where(eq(authTokensTable.token, token));
     return undefined;
   }
-  return entry.userId;
+  return row.userId;
 }

@@ -42,7 +42,7 @@ router.post("/auth/register", async (req, res) => {
     });
 
   req.session.userId = user.id;
-  const authToken = createAuthToken(user.id);
+  const authToken = await createAuthToken(user.id);
 
   res.status(201).json({ ...user, authToken });
 });
@@ -69,7 +69,7 @@ router.post("/auth/login", async (req, res) => {
   }
 
   req.session.userId = user.id;
-  const authToken = createAuthToken(user.id);
+  const authToken = await createAuthToken(user.id);
 
   res.json({
     id: user.id,
@@ -80,9 +80,9 @@ router.post("/auth/login", async (req, res) => {
   });
 });
 
-router.post("/auth/logout", (req, res) => {
+router.post("/auth/logout", async (req, res) => {
   const token = req.headers["x-auth-token"] as string | undefined;
-  if (token) deleteAuthToken(token);
+  if (token) await deleteAuthToken(token);
   req.session.destroy(() => {
     res.json({ ok: true });
   });

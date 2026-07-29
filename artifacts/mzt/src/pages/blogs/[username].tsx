@@ -595,53 +595,99 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return Uint8Array.from({ length: raw.length }, (_, i) => raw.charCodeAt(i));
 }
 
-function usePushSubscription() {
-  const key = 'mzt-push-subscribed';
-  const [subscribed, setSubscribed] = useState(() => localStorage.getItem(key) === '1');
+/** Ensure the browser push subscription exists and return its endpoint. */
+async function ensurePushSubscription(): Promise<string | null> {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Ваш браузер не поддерживает уведомления');
+    return null;
+  }
+  const reg = await navigator.serviceWorker.register('/sw.js');
+  const vapidRes = await fetch('/api/push/vapid-public-key');
+  if (!vapidRes.ok) { alert('Push не настроен на сервере'); return null; }
+  const { publicKey } = await vapidRes.json();
+
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return null;
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
+    });
+    const j = sub.toJSON();
+    await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': getStoredAuthToken() ?? '' },
+      credentials: 'include',
+      body: JSON.stringify({ endpoint: j.endpoint, keys: j.keys }),
+    });
+  }
+  return sub.endpoint;
+}
+
+/** Unsubscribe from push entirely if both post and comment prefs are off. */
+async function maybeUnsubscribePush(postsOn: boolean, commentsOn: boolean) {
+  if (postsOn || commentsOn) return;
+  const ready = await navigator.serviceWorker.ready;
+  const sub = await ready.pushManager.getSubscription();
+  if (sub) {
+    await fetch('/api/push/unsubscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': getStoredAuthToken() ?? '' },
+      credentials: 'include',
+      body: JSON.stringify({ endpoint: sub.endpoint }),
+    });
+    await sub.unsubscribe();
+  }
+}
+
+function usePushPreference(type: 'posts' | 'comments') {
+  const key = `mzt-push-${type}`;
+  const [enabled, setEnabled] = useState(() => localStorage.getItem(key) === '1');
   const [loading, setLoading] = useState(false);
 
   const toggle = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      alert('Ваш браузер не поддерживает уведомления');
-      return;
-    }
     setLoading(true);
     try {
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      const vapidRes = await fetch('/api/push/vapid-public-key');
-      if (!vapidRes.ok) { alert('Push не настроен на сервере'); return; }
-      const { publicKey } = await vapidRes.json();
-
-      if (!subscribed) {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
-        });
-        const j = sub.toJSON();
-        await fetch('/api/push/subscribe', {
-          method: 'POST',
+      const nextEnabled = !enabled;
+      if (nextEnabled) {
+        const endpoint = await ensurePushSubscription();
+        if (!endpoint) return;
+        await fetch('/api/push/preferences', {
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'x-auth-token': getStoredAuthToken() ?? '' },
           credentials: 'include',
-          body: JSON.stringify({ endpoint: j.endpoint, keys: j.keys }),
+          body: JSON.stringify({
+            endpoint,
+            notifyPosts: type === 'posts' ? true : undefined,
+            notifyComments: type === 'comments' ? true : undefined,
+          }),
         });
         localStorage.setItem(key, '1');
-        setSubscribed(true);
+        setEnabled(true);
       } else {
         const ready = await navigator.serviceWorker.ready;
         const sub = await ready.pushManager.getSubscription();
         if (sub) {
-          await fetch('/api/push/unsubscribe', {
-            method: 'POST',
+          await fetch('/api/push/preferences', {
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'x-auth-token': getStoredAuthToken() ?? '' },
             credentials: 'include',
-            body: JSON.stringify({ endpoint: sub.endpoint }),
+            body: JSON.stringify({
+              endpoint: sub.endpoint,
+              notifyPosts: type === 'posts' ? false : undefined,
+              notifyComments: type === 'comments' ? false : undefined,
+            }),
           });
-          await sub.unsubscribe();
         }
         localStorage.removeItem(key);
-        setSubscribed(false);
+        setEnabled(false);
+        const otherKey = type === 'posts' ? 'mzt-push-comments' : 'mzt-push-posts';
+        const otherOn = localStorage.getItem(otherKey) === '1';
+        await maybeUnsubscribePush(
+          type === 'posts' ? false : otherOn,
+          type === 'comments' ? false : otherOn,
+        );
       }
     } catch (e) {
       console.error('[push]', e);
@@ -650,30 +696,44 @@ function usePushSubscription() {
     }
   };
 
-  return { subscribed, loading, toggle };
+  return { enabled, loading, toggle };
 }
 
-function PushBellButton({ isPutzermann, isPysy, isIsaac, theme }: { isPutzermann?: boolean; isPysy?: boolean; isIsaac?: boolean; theme: BlogTheme }) {
-  const { subscribed, loading, toggle } = usePushSubscription();
+function PushBellButtons({ isPutzermann, isPysy, isIsaac, theme }: { isPutzermann?: boolean; isPysy?: boolean; isIsaac?: boolean; theme: BlogTheme }) {
+  const posts = usePushPreference('posts');
+  const comments = usePushPreference('comments');
+
+  const btnClass = isPysy
+    ? 'win95-button flex items-center gap-1.5 text-xs px-2 py-1'
+    : isPutzermann
+    ? 'noir-button flex items-center gap-1.5 text-xs px-2 py-1'
+    : isIsaac
+    ? 'heart-button flex items-center gap-1.5'
+    : 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-mono transition-colors';
+
   return (
-    <button
-      onClick={toggle}
-      disabled={loading}
-      title={subscribed ? 'Отписаться от уведомлений' : 'Получать уведомления о новых постах'}
-      className={
-        isPysy
-          ? 'win95-button flex items-center gap-1.5 text-xs px-2 py-1'
-          : isPutzermann
-          ? 'noir-button flex items-center gap-1.5 text-xs px-2 py-1'
-          : isIsaac
-          ? 'heart-button flex items-center gap-1.5'
-          : 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-mono transition-colors'
-      }
-      style={!isPysy && !isPutzermann && !isIsaac ? { borderColor: theme.accentBorder, color: subscribed ? theme.accent : undefined } : undefined}
-    >
-      {subscribed ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
-      {subscribed ? 'Уведомления вкл.' : 'Уведомления'}
-    </button>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={posts.toggle}
+        disabled={posts.loading}
+        title={posts.enabled ? 'Отключить уведомления о постах' : 'Уведомления о новых постах'}
+        className={btnClass}
+        style={!isPysy && !isPutzermann && !isIsaac ? { borderColor: theme.accentBorder, color: posts.enabled ? theme.accent : undefined } : undefined}
+      >
+        {posts.enabled ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
+        {posts.enabled ? 'Посты вкл.' : 'Посты'}
+      </button>
+      <button
+        onClick={comments.toggle}
+        disabled={comments.loading}
+        title={comments.enabled ? 'Отключить уведомления о комментариях' : 'Уведомления о новых комментариях'}
+        className={btnClass}
+        style={!isPysy && !isPutzermann && !isIsaac ? { borderColor: theme.accentBorder, color: comments.enabled ? theme.accent : undefined } : undefined}
+      >
+        {comments.enabled ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
+        {comments.enabled ? 'Комментарии вкл.' : 'Комментарии'}
+      </button>
+    </div>
   );
 }
 
@@ -1968,7 +2028,7 @@ export default function BlogPage() {
                     <rect x="3" y="5" width="1" height="1"/>
                   </svg>
                   <p style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '12px' }}>
-                    @{formatOwnerUsername(blog.handle, blog.ownerUsername)}
+                    {formatOwnerUsername(blog.handle, blog.ownerUsername)}
                   </p>
                 </div>
 
@@ -2086,11 +2146,11 @@ export default function BlogPage() {
             <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               ✦ ЗАМЕТКИ
             </span>
-            <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
+            <PushBellButtons isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
           </div>
         ) : (
           <div className="flex justify-end mb-3">
-            <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
+            <PushBellButtons isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
           </div>
         )}
 
