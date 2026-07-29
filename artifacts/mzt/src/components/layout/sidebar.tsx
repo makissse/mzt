@@ -220,8 +220,8 @@ export function AppSidebar({ user }: { user?: User | null }) {
   };
 
   return (
-    <Sidebar className={`${isPysyTheme ? 'win95-panel rounded-none border-0' : isPutzermannNoir ? 'noir-sidebar border-r border-white/20' : isMedicIsaac ? 'medic-sidebar border-r-0' : 'border-r border-border bg-sidebar'}`}>
-      <SidebarHeader className={`hidden md:flex h-20 items-center px-4 ${isPysyTheme ? 'border-b-2 border-b-[#808080]' : isPutzermannNoir ? 'border-b border-white/20' : isMedicIsaac ? 'border-b-2 border-b-[#3d2e14]' : 'border-b border-border'}`}>
+    <Sidebar className={`${isPysyTheme ? 'win95-panel rounded-none border-0' : isPutzermannNoir ? 'noir-sidebar border-r border-white/20' : isMedicIsaac ? 'heart-sidebar' : 'border-r border-border bg-sidebar'}`}>
+      <SidebarHeader className={`hidden md:flex h-20 items-center px-4 ${isPysyTheme ? 'border-b-2 border-b-[#808080]' : isPutzermannNoir ? 'border-b border-white/20' : isMedicIsaac ? 'border-b border-b-[#5c2040]' : 'border-b border-border'}`}>
         <div
           className="cursor-pointer select-none"
           onClick={() => setLocation('/releases')}
@@ -249,7 +249,7 @@ export function AppSidebar({ user }: { user?: User | null }) {
 
         {/* Blog channels */}
         <SidebarGroup className="mt-4">
-          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/50 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-label' : isMedicIsaac ? 'medic-label' : 'font-mono'}`}>
+          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/50 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-label' : isMedicIsaac ? 'heart-label' : 'font-mono'}`}>
             Блоги
           </p>
           <SidebarMenu className="space-y-1">
@@ -267,20 +267,20 @@ export function AppSidebar({ user }: { user?: User | null }) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className={`${isPysyTheme ? 'border-t-2 border-t-[#808080] p-3' : isPutzermannNoir ? 'border-t border-white/20 p-3' : isMedicIsaac ? 'border-t-2 border-t-[#3d2e14] p-3' : 'border-t border-border p-4'}`}>
+      <SidebarFooter className={`${isPysyTheme ? 'border-t-2 border-t-[#808080] p-3' : isPutzermannNoir ? 'border-t border-white/20 p-3' : isMedicIsaac ? 'border-t border-t-[#5c2040] p-3' : 'border-t border-border p-4'}`}>
         {user && (
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <div className={`h-6 w-6 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : isPutzermannNoir ? 'noir-sunken' : isMedicIsaac ? 'medic-sunken' : 'rounded-full bg-card border border-border'}`}>
-                <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'medic-text' : 'text-muted-foreground'}`} />
+              <div className={`h-6 w-6 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : isPutzermannNoir ? 'noir-sunken' : isMedicIsaac ? 'heart-sunken' : 'rounded-full bg-card border border-border'}`}>
+                <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'heart-text' : 'text-muted-foreground'}`} />
               </div>
-              <span className={`text-xs truncate ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'medic-text' : 'font-mono text-muted-foreground'}`}>
+              <span className={`text-xs truncate ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'heart-text' : 'font-mono text-muted-foreground'}`}>
                 {user.username}
               </span>
             </div>
             <button
               onClick={handleLogout}
-              className={isPysyTheme ? 'win95-button p-1' : isPutzermannNoir ? 'noir-button p-1' : isMedicIsaac ? 'medic-button p-1' : 'flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10'}
+              className={isPysyTheme ? 'win95-button p-1' : isPutzermannNoir ? 'noir-button p-1' : isMedicIsaac ? 'heart-button p-1' : 'flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10'}
               title="Выйти"
             >
               <LogOut className="h-4 w-4" />

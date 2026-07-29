@@ -90,9 +90,9 @@ function ThemeEffect() {
       document.documentElement.classList.remove('putzermann-noir-theme');
     }
     if (isMedicIsaac) {
-      document.documentElement.classList.add('isaac-theme');
+      document.documentElement.classList.add('pixel-heart-theme');
     } else {
-      document.documentElement.classList.remove('isaac-theme');
+      document.documentElement.classList.remove('pixel-heart-theme');
     }
   }, [isPysyTheme, isPutzermannNoir, isMedicIsaac]);
   return null;

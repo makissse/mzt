@@ -2,8 +2,8 @@ import { useLocation } from 'wouter';
 
 /**
  * Returns true when the user is on the medic-de-familie blog page.
- * This triggers a Binding of Isaac dungeon theme: dark stone, aged parchment,
- * blood-red accents, and pixel-art typography.
+ * This triggers the Pixel Heart theme: deep plum background, warm rose
+ * pixel accents, Silkscreen font, and heart motifs throughout.
  */
 export function useIsMedicTheme() {
   const [pathname] = useLocation();

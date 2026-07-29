@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Russo+One&family=VT323&family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Russo+One&family=VT323&family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -707,320 +707,326 @@
   background: #222222 !important;
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Тетрадь сердца — medic-de-familie blog
-   Warm cream notebook paper · red pen accent · hand-drawn heart motif.
-   Caveat handwritten headings over ivory + charcoal-ink body text.
-   Cute but not girly — warmth of a personal notepad, not a greeting card.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   ♥ PIXEL HEART THEME — medic-de-familie blog (Xiereler)
+   Deep plum · warm rose pixel accents · Silkscreen font · heart motifs
+   Cozy-dark like a velvet diary — intimate, pixel-precise, alive.
+   Nothing like putzermann-core (cold black CRT): this is WARM and COLORFUL.
+   ──────────────────────────────────────────────────────────────────────── */
 
-:root.isaac-theme,
-.dark.isaac-theme {
-  --background: 38 30% 93%;
-  --foreground: 35 15% 10%;
+:root.pixel-heart-theme,
+.dark.pixel-heart-theme {
+  --background: 310 35% 7%;
+  --foreground: 350 40% 88%;
 
-  --card: 40 50% 98%;
-  --card-foreground: 35 15% 10%;
-  --card-border: 35 25% 68%;
+  --card: 310 35% 9%;
+  --card-foreground: 350 40% 88%;
+  --card-border: 330 55% 22%;
 
-  --popover: 40 50% 98%;
-  --popover-foreground: 35 15% 10%;
-  --popover-border: 35 25% 68%;
+  --popover: 310 35% 9%;
+  --popover-foreground: 350 40% 88%;
+  --popover-border: 330 55% 22%;
 
-  --primary: 4 62% 48%;
-  --primary-foreground: 38 30% 93%;
+  --primary: 349 78% 57%;
+  --primary-foreground: 310 35% 7%;
 
-  --secondary: 38 20% 88%;
-  --secondary-foreground: 35 15% 10%;
+  --secondary: 310 30% 14%;
+  --secondary-foreground: 350 40% 88%;
 
-  --muted: 38 20% 88%;
-  --muted-foreground: 33 20% 43%;
+  --muted: 310 30% 12%;
+  --muted-foreground: 330 25% 55%;
 
-  --accent: 4 62% 48%;
-  --accent-foreground: 38 30% 93%;
+  --accent: 349 78% 57%;
+  --accent-foreground: 310 35% 7%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 35 25% 68%;
-  --input: 38 20% 88%;
-  --ring: 4 62% 48%;
+  --border: 330 55% 22%;
+  --input: 310 30% 12%;
+  --ring: 349 78% 57%;
 
-  --sidebar: 38 25% 90%;
-  --sidebar-foreground: 35 15% 10%;
-  --sidebar-primary: 4 62% 48%;
-  --sidebar-primary-foreground: 38 30% 93%;
-  --sidebar-accent: 38 20% 88%;
-  --sidebar-accent-foreground: 35 15% 10%;
-  --sidebar-border: 35 25% 60%;
-  --sidebar-ring: 4 62% 48%;
+  --sidebar: 310 38% 6%;
+  --sidebar-foreground: 350 40% 88%;
+  --sidebar-primary: 349 78% 57%;
+  --sidebar-primary-foreground: 310 35% 7%;
+  --sidebar-accent: 310 30% 12%;
+  --sidebar-accent-foreground: 350 40% 88%;
+  --sidebar-border: 330 55% 22%;
+  --sidebar-ring: 349 78% 57%;
 
-  --radius: 3px;
+  --radius: 0px;
 
-  --app-font-sans: 'Plus Jakarta Sans', sans-serif;
-  --app-font-mono: 'Space Mono', monospace;
+  --app-font-sans: 'Silkscreen', 'Pixelify Sans', monospace;
+  --app-font-mono: 'Silkscreen', monospace;
 }
 
 /* ── Animations ── */
 
-@keyframes medic-heartbeat {
+@keyframes heart-pulse {
   0%, 100% { transform: scale(1); }
-  15%       { transform: scale(1.14); }
-  30%       { transform: scale(1); }
-  45%       { transform: scale(1.07); }
-  60%       { transform: scale(1); }
+  20%       { transform: scale(1.20); }
+  40%       { transform: scale(0.95); }
+  60%       { transform: scale(1.10); }
+  80%       { transform: scale(1); }
 }
 
-@keyframes medic-ink-in {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes heart-fade-in {
+  from { opacity: 0; transform: translateY(4px); filter: brightness(0.5); }
+  to   { opacity: 1; transform: translateY(0);   filter: brightness(1); }
 }
 
-/* ── Page background — lined notebook paper ── */
+@keyframes heart-shimmer {
+  0%   { box-shadow: 3px 3px 0 #0d050d, 0 0  5px rgba(232,57,90,0.12); }
+  50%  { box-shadow: 3px 3px 0 #0d050d, 0 0 14px rgba(232,57,90,0.32); }
+  100% { box-shadow: 3px 3px 0 #0d050d, 0 0  5px rgba(232,57,90,0.12); }
+}
 
-.medic-page {
-  background-color: #F5F0E8;
+/* ── Page background ── */
+
+.heart-page {
+  background-color: #140a14;
   background-image:
+    radial-gradient(ellipse 70% 40% at 50% -5%, rgba(232,57,90,0.10) 0%, transparent 65%),
     repeating-linear-gradient(
+      45deg,
       transparent,
-      transparent 27px,
-      rgba(180, 155, 120, 0.18) 27px,
-      rgba(180, 155, 120, 0.18) 28px
+      transparent 14px,
+      rgba(232,57,90,0.028) 14px,
+      rgba(232,57,90,0.028) 15px
     );
-  background-attachment: local;
 }
 
-/* No scanlines — just clean paper */
-.medic-page::before {
+.heart-page::before {
   content: none;
 }
 
 /* ── Window (main panel wrapper) ── */
 
-.medic-window {
-  background-color: #FDFAF4;
-  border: 1.5px dashed #C8B89A;
-  box-shadow:
-    2px 3px 0 0 rgba(180, 140, 100, 0.15),
-    0 1px 12px rgba(60, 35, 10, 0.06);
+.heart-window {
+  background-color: #1e0f1e;
+  border: 2px solid #5c2040;
+  box-shadow: 3px 3px 0 #0d050d;
   margin-bottom: 1rem;
   position: relative;
   overflow: hidden;
-  border-radius: 4px;
-  animation: none;
 }
 
-/* Small drawn heart accent in corner */
-.medic-window::before {
-  content: '\2665';
+/* Pixel heart watermark in corner */
+.heart-window::before {
+  content: '♥';
   position: absolute;
-  top: 8px; right: 10px;
-  font-size: 11px;
-  color: #C8372D;
-  opacity: 0.30;
+  top: 6px; right: 8px;
+  font-size: 10px;
+  font-family: 'Silkscreen', monospace;
+  color: #E8395A;
+  opacity: 0.18;
   pointer-events: none;
   z-index: 1;
 }
 
 /* ── Post card ── */
 
-.medic-card {
-  background-color: #FDFAF4;
-  border: 1.5px solid #D4C5A9;
-  border-left: 3px solid #C8372D;
-  box-shadow: 1px 2px 0 0 rgba(180, 140, 100, 0.12);
+.heart-card {
+  background-color: #1e0f1e;
+  border: 2px solid #5c2040;
+  border-left: 3px solid #E8395A;
+  box-shadow: 2px 2px 0 #0d050d;
   margin-bottom: 0.75rem;
   position: relative;
   overflow: hidden;
-  border-radius: 3px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-  animation: medic-ink-in 0.3s ease both;
+  transition: border-color 0.08s steps(1), box-shadow 0.08s steps(1);
+  animation: heart-fade-in 0.2s steps(4) both;
 }
 
-.medic-card:hover {
-  border-left-color: #A02020;
-  box-shadow: 2px 4px 0 0 rgba(180, 100, 80, 0.18);
-  transform: translateY(-1px);
+.heart-card:hover {
+  border-color: #8B2252;
+  border-left-color: #FF6B8A;
+  box-shadow: 3px 3px 0 #0d050d, 0 0 8px rgba(232,57,90,0.22);
 }
 
-.medic-card::before {
+.heart-card::before {
   content: none;
 }
 
 /* ── Title bar ── */
 
-.medic-title-bar {
-  background: #F0EAE0;
-  border-bottom: 1px solid #D4C5A9;
-  color: #5A4530;
-  font-family: 'Caveat', cursive;
-  font-size: 14px;
-  padding: 5px 12px;
+.heart-title-bar {
+  background: #2a0f1e;
+  border-bottom: 2px solid #5c2040;
+  color: #FF8FAB;
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   user-select: none;
 }
 
-.medic-title-bar-text {
+.heart-title-bar-text {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #C8372D;
+  gap: 6px;
+  color: #E8395A;
 }
 
 /* ── Button ── */
 
-.medic-button {
-  background: #FDFAF4;
-  border: 1.5px solid #C8B89A;
-  color: #3A2A18;
-  font-family: 'Caveat', cursive;
-  font-size: 16px;
+.heart-button {
+  background: #1e0f1e;
+  border: 2px solid #5c2040;
+  color: #f0d0d8;
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
   cursor: pointer;
-  padding: 4px 14px;
-  border-radius: 3px;
-  transition: all 0.15s ease;
+  padding: 4px 10px;
+  transition: border-color 0.05s steps(1), box-shadow 0.05s steps(1), transform 0.05s steps(1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  line-height: 1.4;
+  gap: 5px;
+  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.medic-button:hover {
-  background: #FFF5F5;
-  border-color: #C8372D;
-  color: #C8372D;
-  box-shadow: 1px 1px 0 0 rgba(200, 55, 45, 0.22);
+.heart-button:hover {
+  border-color: #E8395A;
+  color: #FF8FAB;
+  box-shadow: 2px 2px 0 #0d050d, 0 0 6px rgba(232,57,90,0.30);
 }
 
-.medic-button:active {
-  transform: translateY(1px);
+.heart-button:active {
+  transform: translate(2px, 2px);
   box-shadow: none;
 }
 
-.medic-button:disabled {
-  opacity: 0.35;
+.heart-button:disabled {
+  opacity: 0.28;
   cursor: not-allowed;
 }
 
-.medic-button-small {
-  padding: 2px 8px;
-  font-size: 13px;
+.heart-button-small {
+  padding: 2px 6px;
+  font-size: 8px;
 }
 
 /* ── Input / sunken ── */
 
-.medic-sunken {
-  background-color: #EDE7DA;
-  border: 1px solid #C8B89A;
-  box-shadow: inset 0 1px 3px rgba(60, 35, 10, 0.10);
-  color: #1E1A14;
-  border-radius: 2px;
+.heart-sunken {
+  background-color: #0d050d;
+  border: 2px solid #3a0a28;
+  box-shadow: inset 1px 1px 0 #000000;
+  color: #f0d0d8;
+  font-family: 'Silkscreen', monospace;
+  font-size: 11px;
 }
 
 /* ── Raised ── */
 
-.medic-raised {
-  background: #FDFAF4;
-  border: 1px solid #D4C5A9;
-  box-shadow: 1px 2px 0 rgba(180, 140, 100, 0.10);
-  border-radius: 3px;
+.heart-raised {
+  background: #2a0f1e;
+  border: 2px solid #5c2040;
+  box-shadow: 2px 2px 0 #0d050d;
 }
 
 /* ── Panel ── */
 
-.medic-panel {
-  background-color: #F0EAE0;
-  border: 1px solid #D4C5A9;
+.heart-panel {
+  background-color: #1e0f1e;
+  border: 2px solid #5c2040;
 }
 
 /* ── Sidebar ── */
 
-.medic-sidebar {
-  background-color: #EEE8DA;
-  border-right: 1.5px solid #D4C5A9;
+.heart-sidebar {
+  background-color: #120810;
+  border-right: 2px solid #5c2040;
 }
 
 /* ── Typography ── */
 
-.medic-text {
-  color: #1E1A14;
-  font-size: 14px;
-  line-height: 1.70;
+.heart-text {
+  color: #f0d0d8;
+  font-family: 'Silkscreen', monospace;
+  font-size: 11px;
+  line-height: 1.80;
 }
 
-.medic-text-muted {
-  color: #8B7355;
-  font-size: 12px;
+.heart-text-muted {
+  color: #9c6070;
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
   line-height: 1.5;
 }
 
-.medic-label {
-  color: #C8372D;
-  font-family: 'Caveat', cursive;
-  font-size: 14px;
-  letter-spacing: 0.05em;
+.heart-label {
+  color: #E8395A;
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
 }
 
-.medic-link {
-  color: #3A2A18;
+.heart-link {
+  color: #f0d0d8;
   text-decoration: underline;
   text-decoration-style: dotted;
-  text-decoration-color: #C8B89A;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  text-decoration-color: #5c2040;
+  transition: color 0.05s steps(1);
+  font-family: 'Silkscreen', monospace;
 }
 
-.medic-link:hover {
-  color: #C8372D;
-  text-decoration-color: #C8372D;
+.heart-link:hover {
+  color: #E8395A;
+  text-decoration-color: #E8395A;
 }
 
 /* ── Icons ── */
 
-.isaac-theme svg,
-.isaac-theme [data-slot="icon"],
-.medic-icon {
-  color: #C8372D;
+.pixel-heart-theme svg,
+.pixel-heart-theme [data-slot="icon"],
+.heart-icon {
+  color: #E8395A;
 }
 
 /* ── Scrollbar ── */
 
-.medic-scrollbar::-webkit-scrollbar {
+.heart-scrollbar::-webkit-scrollbar {
   width: 6px;
-  background: #EEE8DA;
+  background: #0d050d;
 }
-.medic-scrollbar::-webkit-scrollbar-thumb {
-  background: #C8B89A;
-  border-radius: 3px;
+.heart-scrollbar::-webkit-scrollbar-thumb {
+  background: #5c2040;
 }
-.medic-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #C8372D;
+.heart-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #E8395A;
 }
 
 /* ── Slider overrides ── */
 
-:root.isaac-theme [data-slot="slider-range"],
-.dark.isaac-theme [data-slot="slider-range"] {
-  background: linear-gradient(90deg, #C8372D, #E06050);
+:root.pixel-heart-theme [data-slot="slider-range"],
+.dark.pixel-heart-theme [data-slot="slider-range"] {
+  background: linear-gradient(90deg, #E8395A, #FF8FAB);
 }
-:root.isaac-theme [data-slot="slider-thumb"],
-.dark.isaac-theme [data-slot="slider-thumb"] {
-  border-color: #C8372D !important;
-  background-color: #FDFAF4 !important;
-  box-shadow: 0 0 0 2px rgba(200, 55, 45, 0.15) !important;
+:root.pixel-heart-theme [data-slot="slider-thumb"],
+.dark.pixel-heart-theme [data-slot="slider-thumb"] {
+  border-color: #E8395A !important;
+  background-color: #1e0f1e !important;
+  box-shadow: 0 0 0 2px rgba(232,57,90,0.25) !important;
 }
-:root.isaac-theme [data-slot="slider-thumb"]:hover,
-.dark.isaac-theme [data-slot="slider-thumb"]:hover {
-  border-color: #A02020 !important;
-  background-color: #C8372D !important;
-  box-shadow: 0 0 0 3px rgba(200, 55, 45, 0.25) !important;
+:root.pixel-heart-theme [data-slot="slider-thumb"]:hover,
+.dark.pixel-heart-theme [data-slot="slider-thumb"]:hover {
+  border-color: #FF8FAB !important;
+  background-color: #E8395A !important;
+  box-shadow: 0 0 0 3px rgba(232,57,90,0.45) !important;
 }
-:root.isaac-theme [data-slot="slider-track"],
-.dark.isaac-theme [data-slot="slider-track"] {
-  background-color: #D4C5A9 !important;
+:root.pixel-heart-theme [data-slot="slider-track"],
+.dark.pixel-heart-theme [data-slot="slider-track"] {
+  background-color: #3a0a28 !important;
 }
 
 
