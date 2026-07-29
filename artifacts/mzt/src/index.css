@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Russo+One&family=VT323&family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
+/* Pixelify Sans with Cyrillic subset — loaded separately so Google Fonts serves the Cyrillic unicode-range blocks */
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&subset=cyrillic&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -708,92 +710,97 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   ♥ PIXEL HEART THEME — medic-de-familie blog (Xiereler)
-   Deep plum · warm rose pixel accents · Silkscreen font · heart motifs
-   Cozy-dark like a velvet diary — intimate, pixel-precise, alive.
-   Nothing like putzermann-core (cold black CRT): this is WARM and COLORFUL.
+   ♥ PIXEL HEART THEME — medic-de-familie blog
+   Red dominant · white canvas · Pixelify Sans (Latin + Cyrillic)
+   Red Cross medical brand energy — clinical white, RED everywhere else.
    ──────────────────────────────────────────────────────────────────────── */
 
 :root.pixel-heart-theme,
 .dark.pixel-heart-theme {
-  --background: 310 35% 7%;
-  --foreground: 350 40% 88%;
+  --background: 0 0% 100%;
+  --foreground: 350 55% 10%;
 
-  --card: 310 35% 9%;
-  --card-foreground: 350 40% 88%;
-  --card-border: 330 55% 22%;
+  --card: 0 0% 100%;
+  --card-foreground: 350 55% 10%;
+  --card-border: 350 60% 84%;
 
-  --popover: 310 35% 9%;
-  --popover-foreground: 350 40% 88%;
-  --popover-border: 330 55% 22%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 350 55% 10%;
+  --popover-border: 350 60% 84%;
 
-  --primary: 349 78% 57%;
-  --primary-foreground: 310 35% 7%;
+  --primary: 351 75% 44%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 310 30% 14%;
-  --secondary-foreground: 350 40% 88%;
+  --secondary: 350 65% 92%;
+  --secondary-foreground: 350 55% 14%;
 
-  --muted: 310 30% 12%;
-  --muted-foreground: 330 25% 55%;
+  --muted: 350 40% 93%;
+  --muted-foreground: 350 38% 44%;
 
-  --accent: 349 78% 57%;
-  --accent-foreground: 310 35% 7%;
+  --accent: 351 75% 44%;
+  --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 330 55% 22%;
-  --input: 310 30% 12%;
-  --ring: 349 78% 57%;
+  --border: 350 60% 84%;
+  --input: 350 40% 93%;
+  --ring: 351 75% 44%;
 
-  --sidebar: 310 38% 6%;
-  --sidebar-foreground: 350 40% 88%;
-  --sidebar-primary: 349 78% 57%;
-  --sidebar-primary-foreground: 310 35% 7%;
-  --sidebar-accent: 310 30% 12%;
-  --sidebar-accent-foreground: 350 40% 88%;
-  --sidebar-border: 330 55% 22%;
-  --sidebar-ring: 349 78% 57%;
+  /* Sidebar is RED — makes red the dominant visual impression */
+  --sidebar: 351 75% 44%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 0 0% 100%;
+  --sidebar-primary-foreground: 351 75% 44%;
+  --sidebar-accent: 351 65% 37%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 351 70% 35%;
+  --sidebar-ring: 0 0% 100%;
 
   --radius: 0px;
 
-  --app-font-sans: 'Silkscreen', 'Pixelify Sans', monospace;
-  --app-font-mono: 'Silkscreen', monospace;
+  /* Pixelify Sans first — covers both Latin AND Cyrillic */
+  --app-font-sans: 'Pixelify Sans', 'Silkscreen', monospace;
+  --app-font-mono: 'Pixelify Sans', 'Silkscreen', monospace;
 }
 
 /* ── Animations ── */
 
 @keyframes heart-pulse {
-  0%, 100% { transform: scale(1); }
-  20%       { transform: scale(1.20); }
-  40%       { transform: scale(0.95); }
-  60%       { transform: scale(1.10); }
-  80%       { transform: scale(1); }
+  0%, 100% { transform: scale(1);    opacity: 1;    }
+  25%       { transform: scale(1.22); opacity: 0.9;  }
+  50%       { transform: scale(0.94); opacity: 1;    }
+  75%       { transform: scale(1.12); opacity: 0.95; }
 }
 
 @keyframes heart-fade-in {
-  from { opacity: 0; transform: translateY(4px); filter: brightness(0.5); }
-  to   { opacity: 1; transform: translateY(0);   filter: brightness(1); }
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes heart-shimmer {
-  0%   { box-shadow: 3px 3px 0 #0d050d, 0 0  5px rgba(232,57,90,0.12); }
-  50%  { box-shadow: 3px 3px 0 #0d050d, 0 0 14px rgba(232,57,90,0.32); }
-  100% { box-shadow: 3px 3px 0 #0d050d, 0 0  5px rgba(232,57,90,0.12); }
+  0%   { box-shadow: 3px 3px 0 #4A0810, 0 0  6px rgba(212,43,58,0.15); }
+  50%  { box-shadow: 3px 3px 0 #4A0810, 0 0 20px rgba(212,43,58,0.38); }
+  100% { box-shadow: 3px 3px 0 #4A0810, 0 0  6px rgba(212,43,58,0.15); }
+}
+
+@keyframes hp-fill {
+  from { width: 4%; }
+  to   { width: var(--hp-target, 100%); }
 }
 
 /* ── Page background ── */
 
 .heart-page {
-  background-color: #140a14;
+  background-color: #FFFFFF;
   background-image:
-    radial-gradient(ellipse 70% 40% at 50% -5%, rgba(232,57,90,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 50% -5%, rgba(199,37,53,0.06) 0%, transparent 65%),
     repeating-linear-gradient(
       45deg,
       transparent,
       transparent 14px,
-      rgba(232,57,90,0.028) 14px,
-      rgba(232,57,90,0.028) 15px
+      rgba(199,37,53,0.016) 14px,
+      rgba(199,37,53,0.016) 15px
     );
 }
 
@@ -801,26 +808,24 @@
   content: none;
 }
 
-/* ── Window (main panel wrapper) ── */
+/* ── Window ── */
 
 .heart-window {
-  background-color: #1e0f1e;
-  border: 2px solid #5c2040;
-  box-shadow: 3px 3px 0 #0d050d;
+  background-color: #FFFFFF;
+  border: 3px solid #C72535;
+  box-shadow: 0 0 0 1px #F0C0C8, 3px 3px 0 #F0C0C8;
   margin-bottom: 1rem;
   position: relative;
   overflow: hidden;
 }
 
-/* Pixel heart watermark in corner */
 .heart-window::before {
-  content: '♥';
+  content: '✦';
   position: absolute;
-  top: 6px; right: 8px;
-  font-size: 10px;
-  font-family: 'Silkscreen', monospace;
-  color: #E8395A;
-  opacity: 0.18;
+  bottom: 8px; right: 10px;
+  font-size: 12px;
+  color: #C72535;
+  opacity: 0.10;
   pointer-events: none;
   z-index: 1;
 }
@@ -828,34 +833,41 @@
 /* ── Post card ── */
 
 .heart-card {
-  background-color: #1e0f1e;
-  border: 2px solid #5c2040;
-  border-left: 3px solid #E8395A;
-  box-shadow: 2px 2px 0 #0d050d;
+  background-color: #FFFFFF;
+  border: 2px solid #F0C0C8;
+  border-left: 3px solid #C72535;
+  box-shadow: 2px 2px 0 #F0C0C8;
   margin-bottom: 0.75rem;
   position: relative;
   overflow: hidden;
   transition: border-color 0.08s steps(1), box-shadow 0.08s steps(1);
-  animation: heart-fade-in 0.2s steps(4) both;
+  animation: heart-fade-in 0.25s steps(5) both;
 }
 
 .heart-card:hover {
-  border-color: #8B2252;
-  border-left-color: #FF6B8A;
-  box-shadow: 3px 3px 0 #0d050d, 0 0 8px rgba(232,57,90,0.22);
+  border-color: #F0A0B0;
+  border-left-color: #E02840;
+  box-shadow: 3px 3px 0 #F0C0C8;
 }
 
 .heart-card::before {
   content: none;
 }
 
-/* ── Title bar ── */
+/* ── Title bar — RED, scanline texture ── */
 
 .heart-title-bar {
-  background: #2a0f1e;
-  border-bottom: 2px solid #5c2040;
-  color: #FF8FAB;
-  font-family: 'Silkscreen', monospace;
+  background-color: #C72535;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 3px
+  );
+  border-bottom: 2px solid #A01E2C;
+  color: #FFFFFF;
+  font-family: 'Silkscreen', 'Pixelify Sans', monospace;
   font-size: 10px;
   padding: 5px 10px;
   display: flex;
@@ -870,20 +882,20 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #E8395A;
+  color: #FFFFFF;
 }
 
-/* ── Button ── */
+/* ── Button — RED as default (dominant) ── */
 
 .heart-button {
-  background: #1e0f1e;
-  border: 2px solid #5c2040;
-  color: #f0d0d8;
-  font-family: 'Silkscreen', monospace;
-  font-size: 9px;
+  background: #C72535;
+  border: 2px solid #A01E2C;
+  color: #FFFFFF;
+  font-family: 'Pixelify Sans', 'Silkscreen', monospace;
+  font-size: 10px;
   cursor: pointer;
   padding: 4px 10px;
-  transition: border-color 0.05s steps(1), box-shadow 0.05s steps(1), transform 0.05s steps(1);
+  transition: background 0.05s steps(1), border-color 0.05s steps(1), box-shadow 0.05s steps(1), transform 0.05s steps(1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -894,9 +906,9 @@
 }
 
 .heart-button:hover {
-  border-color: #E8395A;
-  color: #FF8FAB;
-  box-shadow: 2px 2px 0 #0d050d, 0 0 6px rgba(232,57,90,0.30);
+  background: #E02840;
+  border-color: #C72535;
+  box-shadow: 2px 2px 0 #A01E2C;
 }
 
 .heart-button:active {
@@ -905,7 +917,7 @@
 }
 
 .heart-button:disabled {
-  opacity: 0.28;
+  opacity: 0.30;
   cursor: not-allowed;
 }
 
@@ -917,72 +929,71 @@
 /* ── Input / sunken ── */
 
 .heart-sunken {
-  background-color: #0d050d;
-  border: 2px solid #3a0a28;
-  box-shadow: inset 1px 1px 0 #000000;
-  color: #f0d0d8;
-  font-family: 'Silkscreen', monospace;
+  background-color: #FFF5F7;
+  border: 2px solid #F0C0C8;
+  box-shadow: inset 1px 1px 0 #F8D8DC;
+  color: #2A0508;
+  font-family: 'Pixelify Sans', 'Silkscreen', monospace;
   font-size: 11px;
 }
 
 /* ── Raised ── */
 
 .heart-raised {
-  background: #2a0f1e;
-  border: 2px solid #5c2040;
-  box-shadow: 2px 2px 0 #0d050d;
+  background: #FFF8F9;
+  border: 2px solid #F0C0C8;
+  box-shadow: 2px 2px 0 #F0C0C8;
 }
 
 /* ── Panel ── */
 
 .heart-panel {
-  background-color: #1e0f1e;
-  border: 2px solid #5c2040;
+  background-color: #FFF5F7;
+  border: 2px solid #F0C0C8;
 }
 
-/* ── Sidebar ── */
+/* ── Sidebar (uses CSS vars — red from --sidebar above) ── */
 
 .heart-sidebar {
-  background-color: #120810;
-  border-right: 2px solid #5c2040;
+  border-right: 2px solid #A01E2C;
 }
 
 /* ── Typography ── */
 
 .heart-text {
-  color: #f0d0d8;
-  font-family: 'Silkscreen', monospace;
-  font-size: 11px;
-  line-height: 1.80;
+  color: #2A0508;
+  font-family: 'Pixelify Sans', 'Silkscreen', monospace;
+  font-size: 12px;
+  line-height: 1.85;
 }
 
 .heart-text-muted {
-  color: #9c6070;
-  font-family: 'Silkscreen', monospace;
-  font-size: 10px;
+  color: #9B4550;
+  font-family: 'Pixelify Sans', 'Silkscreen', monospace;
+  font-size: 11px;
   line-height: 1.5;
 }
 
 .heart-label {
-  color: #E8395A;
-  font-family: 'Silkscreen', monospace;
+  color: #C72535;
+  font-family: 'Silkscreen', 'Pixelify Sans', monospace;
   font-size: 9px;
   letter-spacing: 0.10em;
   text-transform: uppercase;
 }
 
 .heart-link {
-  color: #f0d0d8;
+  color: #C72535;
   text-decoration: underline;
   text-decoration-style: dotted;
-  text-decoration-color: #5c2040;
+  text-decoration-color: #F0C0C8;
   transition: color 0.05s steps(1);
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', 'Silkscreen', monospace;
 }
 
 .heart-link:hover {
-  color: #E8395A;
-  text-decoration-color: #E8395A;
+  color: #A01E2C;
+  text-decoration-color: #C72535;
 }
 
 /* ── Icons ── */
@@ -990,43 +1001,43 @@
 .pixel-heart-theme svg,
 .pixel-heart-theme [data-slot="icon"],
 .heart-icon {
-  color: #E8395A;
+  color: #C72535;
 }
 
 /* ── Scrollbar ── */
 
 .heart-scrollbar::-webkit-scrollbar {
   width: 6px;
-  background: #0d050d;
+  background: #FFF5F7;
 }
 .heart-scrollbar::-webkit-scrollbar-thumb {
-  background: #5c2040;
+  background: #F0C0C8;
 }
 .heart-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #E8395A;
+  background: #C72535;
 }
 
 /* ── Slider overrides ── */
 
 :root.pixel-heart-theme [data-slot="slider-range"],
 .dark.pixel-heart-theme [data-slot="slider-range"] {
-  background: linear-gradient(90deg, #E8395A, #FF8FAB);
+  background: linear-gradient(90deg, #C72535, #E02840);
 }
 :root.pixel-heart-theme [data-slot="slider-thumb"],
 .dark.pixel-heart-theme [data-slot="slider-thumb"] {
-  border-color: #E8395A !important;
-  background-color: #1e0f1e !important;
-  box-shadow: 0 0 0 2px rgba(232,57,90,0.25) !important;
+  border-color: #C72535 !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 0 0 2px rgba(199,37,53,0.22) !important;
 }
 :root.pixel-heart-theme [data-slot="slider-thumb"]:hover,
 .dark.pixel-heart-theme [data-slot="slider-thumb"]:hover {
-  border-color: #FF8FAB !important;
-  background-color: #E8395A !important;
-  box-shadow: 0 0 0 3px rgba(232,57,90,0.45) !important;
+  border-color: #A01E2C !important;
+  background-color: #C72535 !important;
+  box-shadow: 0 0 0 3px rgba(199,37,53,0.38) !important;
 }
 :root.pixel-heart-theme [data-slot="slider-track"],
 .dark.pixel-heart-theme [data-slot="slider-track"] {
-  background-color: #3a0a28 !important;
+  background-color: #F0C0C8 !important;
 }
 
 

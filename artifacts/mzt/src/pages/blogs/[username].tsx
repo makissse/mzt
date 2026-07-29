@@ -96,10 +96,10 @@ const BLOG_THEMES: Record<string, BlogTheme> = {
     coverGradient: 'linear-gradient(135deg, #050505 0%, #0a0a0a 60%, #0f0f0f 100%)',
   },
   'medic-de-familie': {
-    accent: '#E8395A',
-    accentBg: 'rgba(232,57,90,0.08)',
-    accentBorder: 'rgba(232,57,90,0.30)',
-    coverGradient: 'linear-gradient(135deg, #1e0f1e 0%, #2a0f1e 60%, #140a14 100%)',
+    accent: '#D42B3A',
+    accentBg: 'rgba(212,43,58,0.06)',
+    accentBorder: 'rgba(212,43,58,0.25)',
+    coverGradient: 'linear-gradient(135deg, #fff5f7 0%, #ffe8ec 60%, #ffd0d8 100%)',
   },
 };
 
@@ -1042,11 +1042,11 @@ function PostCard({
       )}
       <div className={isPysy ? "p-3 sm:p-4" : isPutzermann ? "p-4 sm:p-5" : isIsaac ? "p-4 sm:p-5" : ""}>
       <div className="flex items-center gap-3 mb-3">
-        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black border border-white" : isIsaac ? "h-10 w-10 flex-shrink-0 rounded-none border border-[#C8B89A]" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
+        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black border border-white" : isIsaac ? "h-10 w-10 flex-shrink-0 rounded-none border-2 border-[#6B0F1A]" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
           <AvatarImage src={blog.avatarUrl ?? undefined} className={isPutzermann || isIsaac ? "rounded-none" : ""} />
           <AvatarFallback
             className={isPysy ? "font-bold text-sm win95-text rounded-none" : isPutzermann ? "font-bold text-sm noir-text rounded-none" : isIsaac ? "font-bold text-sm rounded-none" : "font-bold text-sm"}
-            style={isIsaac ? { fontFamily: "'Silkscreen', monospace", color: '#E8395A', background: '#2a0f1e', imageRendering: 'pixelated' } : !isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
+            style={isIsaac ? { fontFamily: "'Pixelify Sans', 'Silkscreen', monospace", color: '#D42B3A', background: '#1A0406' } : !isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
           >
             {blogAvatarFallback(blog.handle, blog.user.username)}
           </AvatarFallback>
@@ -1723,7 +1723,7 @@ export default function BlogPage() {
     <>
     {isPysy && <div className="fixed inset-0 win95-page -z-10" />}
     {isPutzermann && <div className="fixed inset-0 noir-page -z-10" />}
-    {isIsaac && <div className="fixed inset-0 medic-page -z-10" />}
+    {isIsaac && <div className="fixed inset-0 heart-page -z-10" />}
     <div className={isPysy ? "max-w-3xl mx-auto w-full pb-10 relative pt-4 sm:pt-8" : isPutzermann ? "max-w-3xl mx-auto w-full pb-10 relative" : isIsaac ? "max-w-3xl mx-auto w-full pb-10 relative" : "max-w-3xl mx-auto w-full pb-10"}>
       {isPysy ? (
         <div className="px-4 sm:px-6 mb-6">
@@ -1825,88 +1825,192 @@ export default function BlogPage() {
           </div>
         </div>
             ) : isIsaac ? (
-        /* ── Тетрадь сердца — notebook-style hero ── */
+        /* ── Deltarune Pixel Heart hero ── */
         <div className="mb-2">
-          <div className="relative overflow-hidden" style={{
-            background: '#F5F0E8',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(180,155,120,0.20) 27px, rgba(180,155,120,0.20) 28px)',
-            minHeight: '220px',
+          {/* Card container — white with red border */}
+          <div style={{
+            background: '#FFFFFF',
+            border: '3px solid #C72535',
+            boxShadow: '0 0 0 1px #F0C0C8, 3px 3px 0 #F0C0C8',
+            position: 'relative',
+            overflow: 'hidden',
           }}>
-            {/* Decorative sketch hearts — top-right corner */}
-            <svg className="absolute top-4 right-5 pointer-events-none" width="130" height="110" viewBox="0 0 130 110" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.09 }}>
-              <path d="M65,28 C65,16 52,8 41,17 C30,26 30,41 41,52 L65,76 L89,52 C100,41 100,26 89,17 C78,8 65,16 65,28Z" stroke="#C8372D" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
-              <path d="M20,55 C20,47 13,42 7,48 C1,54 1,63 7,69 L20,82 L33,69 C39,63 39,54 33,48 C27,42 20,47 20,55Z" stroke="#C8372D" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
-              <path d="M112,70 C112,64 107,60 102,65 C97,70 97,77 102,82 L112,92 L122,82 C127,77 127,70 122,65 C117,60 112,64 112,70Z" stroke="#C8372D" strokeWidth="1.5" fill="none" strokeLinejoin="round"/>
-            </svg>
+            {/* Star decorations — top right */}
+            <div className="absolute top-10 right-3 pointer-events-none select-none" style={{
+              color: '#C72535', opacity: 0.12, fontFamily: 'monospace', fontSize: '13px', lineHeight: 1.9, textAlign: 'right'
+            }}>✦<br/>✧<br/>✦</div>
 
-            {/* Label strip */}
-            <div className="relative z-10 px-5 pt-5 flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1 border border-dashed" style={{ borderColor: 'rgba(200,55,45,0.35)', background: 'rgba(200,55,45,0.05)' }}>
-                <span style={{ color: '#C8372D', fontFamily: "'Caveat', cursive", fontSize: '15px', lineHeight: 1 }}>♥ carte medicală</span>
+            {/* Title bar — red, no chrome buttons */}
+            <div className="heart-title-bar">
+              <div className="heart-title-bar-text">
+                {/* Pixel heart — 8×8 */}
+                <svg width="11" height="11" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', flexShrink: 0 }} fill="#FFFFFF">
+                  <rect x="1" y="0" width="2" height="1"/><rect x="5" y="0" width="2" height="1"/>
+                  <rect x="0" y="1" width="3" height="1"/><rect x="4" y="1" width="3" height="1"/>
+                  <rect x="0" y="2" width="8" height="1"/>
+                  <rect x="0" y="3" width="8" height="1"/>
+                  <rect x="1" y="4" width="6" height="1"/>
+                  <rect x="2" y="5" width="4" height="1"/>
+                  <rect x="3" y="6" width="2" height="1"/>
+                  <rect x="3" y="7" width="2" height="1"/>
+                </svg>
+                MEDIC DE FAMILIE
               </div>
-              <div style={{ height: '1px', flex: 1, background: 'linear-gradient(90deg, rgba(200,55,45,0.25), transparent)' }} />
-              <span style={{ color: '#A89070', fontFamily: "'Caveat', cursive", fontSize: '14px' }}>@{blog.handle}</span>
             </div>
 
-            {/* Main content */}
-            <div className="relative z-10 px-5 pt-4 pb-14 flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-10">
-              <div className="flex-1 min-w-0">
-                <h1
-                  className="text-5xl sm:text-7xl font-black leading-none break-words"
-                  style={{
-                    fontFamily: "'Caveat', cursive",
-                    color: '#1E1A14',
-                    letterSpacing: '-0.01em',
-                  }}
-                >
-                  {blog.title || blog.user.username}
-                </h1>
-                <div className="mt-4 flex items-center gap-3">
-                  <div style={{ width: '28px', height: '2px', background: '#C8372D', borderRadius: '1px' }} />
-                  <p style={{ color: '#8B7355', fontFamily: "'Caveat', cursive", fontSize: '17px' }}>
-                    @{formatOwnerUsername(blog.handle, blog.ownerUsername)}
-                  </p>
-                </div>
+            {/* Cover image */}
+            {blog.coverUrl && (
+              <div style={{ margin: '16px 16px 0', border: '2px solid #F0C0C8', overflow: 'hidden', aspectRatio: '3/1' }}>
+                <img src={blog.coverUrl} alt="" className="w-full h-full object-cover" />
               </div>
+            )}
 
-              {/* Avatar */}
-              <div className="shrink-0 relative self-start">
-                <Avatar className="relative h-24 w-24 sm:h-28 sm:w-28" style={{ border: '2px dashed #C8B89A', background: '#EDE7DA' }}>
+            {/* Main content row */}
+            <div className="px-5 pt-5 pb-6 flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-7">
+
+              {/* Left — animated pixel heart + avatar */}
+              <div className="shrink-0 flex flex-col items-center gap-3">
+                {/* Animated 16×16 pixel heart */}
+                <svg
+                  width="48" height="48" viewBox="0 0 16 16"
+                  style={{ imageRendering: 'pixelated', animation: 'heart-pulse 1.8s steps(6, end) infinite', transformOrigin: 'center' }}
+                  fill="#C72535"
+                >
+                  <rect x="2" y="1" width="4" height="1"/><rect x="10" y="1" width="4" height="1"/>
+                  <rect x="1" y="2" width="5" height="1"/><rect x="10" y="2" width="5" height="1"/>
+                  <rect x="0" y="3" width="7" height="1"/><rect x="9" y="3" width="7" height="1"/>
+                  <rect x="0" y="4" width="16" height="1"/>
+                  <rect x="0" y="5" width="16" height="1"/>
+                  <rect x="0" y="6" width="16" height="1"/>
+                  <rect x="1" y="7" width="14" height="1"/>
+                  <rect x="2" y="8" width="12" height="1"/>
+                  <rect x="3" y="9" width="10" height="1"/>
+                  <rect x="4" y="10" width="8" height="1"/>
+                  <rect x="5" y="11" width="6" height="1"/>
+                  <rect x="6" y="12" width="4" height="1"/>
+                  <rect x="7" y="13" width="2" height="1"/>
+                </svg>
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24" style={{ border: '2px solid #C72535', background: '#FFF5F7', borderRadius: '0' }}>
                   <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" />
-                  <AvatarFallback className="font-black text-2xl" style={{ background: '#EDE7DA', color: '#C8372D', fontFamily: "'Caveat', cursive" }}>
+                  <AvatarFallback className="font-bold text-xl" style={{ background: '#FFF5F7', color: '#C72535', fontFamily: "'Pixelify Sans', 'Silkscreen', monospace" }}>
                     {blogAvatarFallback(blog.handle, blog.user.username)}
                   </AvatarFallback>
                 </Avatar>
               </div>
 
-              {blog.isOwner && (
-                <Button variant="outline" onClick={() => setIsEditBlogOpen(true)} className="heart-button gap-2 self-start shrink-0">
-                  <PenSquare className="h-4 w-4" />
-                  Редактировать
-                </Button>
-              )}
-            </div>
+              {/* Right — name, HP bar, stats */}
+              <div className="flex-1 min-w-0">
+                {/* Top row: medical cross label + Edit button */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <svg width="13" height="13" viewBox="0 0 7 7" style={{ imageRendering: 'pixelated', flexShrink: 0 }} fill="#C72535">
+                      <rect x="2" y="0" width="3" height="7"/>
+                      <rect x="0" y="2" width="7" height="3"/>
+                    </svg>
+                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase' }}>CARTE MEDICALĂ</span>
+                  </div>
+                  {blog.isOwner && (
+                    <Button variant="outline" onClick={() => setIsEditBlogOpen(true)} className="heart-button gap-1.5 shrink-0" style={{ fontSize: '9px', padding: '3px 8px' }}>
+                      <PenSquare className="h-3 w-3" />
+                      EDIT
+                    </Button>
+                  )}
+                </div>
 
-            {/* Bottom accent line */}
-            <div className="absolute bottom-0 left-0 right-0" style={{ height: '3px', background: 'linear-gradient(90deg, transparent, rgba(200,55,45,0.40) 20%, rgba(200,55,45,0.60) 50%, rgba(200,55,45,0.40) 80%, transparent)' }} />
+                {/* Blog title */}
+                <h1 style={{
+                  fontFamily: "'Pixelify Sans', 'Silkscreen', monospace",
+                  color: '#C72535',
+                  fontSize: 'clamp(22px, 4vw, 34px)',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  lineHeight: 1.2,
+                }}>
+                  {blog.title || blog.user.username}
+                </h1>
+
+                {/* ── HP Bar — изюминка ── */}
+                <div className="mt-4 space-y-2">
+                  {/* HP row */}
+                  <div className="flex items-center gap-2">
+                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', minWidth: '18px', letterSpacing: '0.06em' }}>HP</span>
+                    <div style={{ flex: 1, height: '11px', background: '#FFF0F2', border: '2px solid #F0C0C8', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{
+                        position: 'absolute', top: 0, left: 0, bottom: 0,
+                        background: 'linear-gradient(90deg, #A01E2C 0%, #C72535 55%, #E02840 100%)',
+                        animation: 'hp-fill 1.4s steps(28) forwards',
+                        '--hp-target': posts.length > 0 ? `${Math.min(100, posts.length * 8 + 40)}%` : '28%',
+                      } as React.CSSProperties} />
+                    </div>
+                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C0A0A8', fontSize: '9px', minWidth: '28px', textAlign: 'right' }}>???</span>
+                  </div>
+                  {/* AT row */}
+                  <div className="flex items-center gap-2">
+                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', minWidth: '18px' }}>AT</span>
+                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>ЗАПИСКИ · НОТАТКИ</span>
+                  </div>
+                  {/* DF row */}
+                  <div className="flex items-center gap-2">
+                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', minWidth: '18px' }}>DF</span>
+                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>МЕДИЧНІ НОТАТКИ</span>
+                  </div>
+                </div>
+
+                {/* Owner */}
+                <div className="mt-3 flex items-center gap-2">
+                  <svg width="7" height="6" viewBox="0 0 7 6" style={{ imageRendering: 'pixelated', flexShrink: 0 }} fill="#C72535" opacity="0.40">
+                    <rect x="1" y="0" width="2" height="1"/><rect x="4" y="0" width="2" height="1"/>
+                    <rect x="0" y="1" width="7" height="1"/>
+                    <rect x="0" y="2" width="7" height="1"/>
+                    <rect x="1" y="3" width="5" height="1"/>
+                    <rect x="2" y="4" width="3" height="1"/>
+                    <rect x="3" y="5" width="1" height="1"/>
+                  </svg>
+                  <p style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '12px' }}>
+                    @{formatOwnerUsername(blog.handle, blog.ownerUsername)}
+                  </p>
+                </div>
+
+                {blog.description && (
+                  <p className="mt-3 heart-text" style={{ fontSize: '12px', lineHeight: 1.85, color: '#6B3540' }}>
+                    {blog.description}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Description */}
-          {blog.description && (
-            <div className="px-5 py-3" style={{ background: '#F0EAE0', borderBottom: '1px solid #D4C5A9' }}>
-              <p className="heart-text text-sm max-w-2xl leading-relaxed" style={{ color: '#5A4530' }}>
-                {blog.description}
-              </p>
-            </div>
-          )}
-
-          {/* Tagline strip */}
-          <div className="px-5 py-2 flex items-center gap-3" style={{ background: 'rgba(200,55,45,0.04)', borderBottom: '1px dashed rgba(200,55,45,0.22)' }}>
-            <span style={{ color: '#C8372D', fontSize: '13px' }}>♥</span>
-            <p style={{ color: '#8B7355', fontFamily: "'Caveat', cursive", fontSize: '15px' }}>
-              Записки сімейного лікаря · читайте з обережністю
-            </p>
-            <span style={{ color: '#C8372D', fontSize: '13px', marginLeft: 'auto' }}>♥</span>
+          {/* Red tagline strip */}
+          <div style={{
+            background: '#C72535',
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 3px)',
+            border: '2px solid #A01E2C',
+            borderTop: 'none',
+            padding: '5px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <svg width="8" height="8" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', flexShrink: 0 }} fill="rgba(255,255,255,0.80)">
+              <rect x="1" y="0" width="2" height="1"/><rect x="5" y="0" width="2" height="1"/>
+              <rect x="0" y="1" width="8" height="1"/>
+              <rect x="0" y="2" width="8" height="1"/>
+              <rect x="1" y="3" width="6" height="1"/>
+              <rect x="2" y="4" width="4" height="1"/>
+              <rect x="3" y="5" width="2" height="1"/>
+            </svg>
+            <span style={{ fontFamily: "'Pixelify Sans', 'Silkscreen', monospace", color: 'rgba(255,255,255,0.95)', fontSize: '11px', letterSpacing: '0.06em' }}>
+              CARTE MEDICALĂ · МЕДИЧНІ НОТАТКИ
+            </span>
+            <svg width="8" height="8" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', marginLeft: 'auto', flexShrink: 0 }} fill="rgba(255,255,255,0.80)">
+              <rect x="1" y="0" width="2" height="1"/><rect x="5" y="0" width="2" height="1"/>
+              <rect x="0" y="1" width="8" height="1"/>
+              <rect x="0" y="2" width="8" height="1"/>
+              <rect x="1" y="3" width="6" height="1"/>
+              <rect x="2" y="4" width="4" height="1"/>
+              <rect x="3" y="5" width="2" height="1"/>
+            </svg>
           </div>
         </div>
       ) : (
