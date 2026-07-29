@@ -708,257 +708,342 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   Marlboro "Doctor's Warning" theme — for medic-de-familie blog
-   Charcoal black + Marlboro crimson red + aged cream white.
-   Rugged, bold, Western-brand-meets-medical-irony.
+   Gorecore × Medical — medic-de-familie blog
+   Deep blood-red (#C41E24) · dark crimson (#7A0010) · bone-white (#E8D8C0)
+   over near-black red-tinted void (#040000).
+   Concept: a patient file soaked through — anatomy as horror, clinical as doom.
    ──────────────────────────────────────────────────────────────────────────── */
 
 :root.isaac-theme,
 .dark.isaac-theme {
-  --background: 0 0% 5%;
-  --foreground: 30 18% 90%;
+  --background: 0 100% 2%;
+  --foreground: 30 30% 88%;
 
-  --card: 0 0% 8%;
-  --card-foreground: 30 18% 90%;
-  --card-border: 0 78% 38%;
+  --card: 0 100% 3.5%;
+  --card-foreground: 30 30% 88%;
+  --card-border: 0 78% 28%;
 
-  --popover: 0 0% 8%;
-  --popover-foreground: 30 18% 90%;
-  --popover-border: 0 78% 38%;
+  --popover: 0 100% 3.5%;
+  --popover-foreground: 30 30% 88%;
+  --popover-border: 0 78% 28%;
 
   --primary: 0 76% 42%;
-  --primary-foreground: 0 0% 98%;
+  --primary-foreground: 30 30% 88%;
 
-  --secondary: 0 0% 12%;
-  --secondary-foreground: 30 18% 90%;
+  --secondary: 0 60% 9%;
+  --secondary-foreground: 30 30% 88%;
 
-  --muted: 0 0% 10%;
-  --muted-foreground: 0 0% 44%;
+  --muted: 0 60% 7%;
+  --muted-foreground: 0 15% 42%;
 
   --accent: 0 76% 42%;
-  --accent-foreground: 0 0% 98%;
+  --accent-foreground: 30 30% 88%;
 
-  --destructive: 0 88% 58%;
+  --destructive: 0 90% 55%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 76% 30%;
-  --input: 0 0% 11%;
+  --border: 0 78% 22%;
+  --input: 0 60% 7%;
   --ring: 0 76% 42%;
 
-  --sidebar: 0 0% 3%;
-  --sidebar-foreground: 30 18% 90%;
+  --sidebar: 0 100% 1.5%;
+  --sidebar-foreground: 30 30% 88%;
   --sidebar-primary: 0 76% 42%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 0 0% 9%;
-  --sidebar-accent-foreground: 30 18% 90%;
-  --sidebar-border: 0 76% 22%;
+  --sidebar-primary-foreground: 30 30% 88%;
+  --sidebar-accent: 0 60% 7%;
+  --sidebar-accent-foreground: 30 30% 88%;
+  --sidebar-border: 0 78% 14%;
   --sidebar-ring: 0 76% 42%;
 
-  --app-font-sans: 'Russo One', 'Plus Jakarta Sans', sans-serif;
+  --radius: 0px;
+
+  --app-font-sans: 'Space Mono', monospace;
   --app-font-mono: 'Space Mono', monospace;
 }
 
-/* Flat near-black page */
-.isaac-page {
-  background-color: #0D0D0D;
+/* ── Animations ── */
+
+@keyframes medic-blood-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(196,30,36,0.18),
+      0 0 16px rgba(100,0,10,0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(196,30,36,0.38),
+      0 0 30px rgba(100,0,10,0.18),
+      0 0 50px rgba(100,0,10,0.06);
+  }
 }
 
-/* Red gradient — used for the cover hero */
-.isaac-dungeon-floor {
-  background: linear-gradient(180deg, #C41E24 0%, #8B0D12 45%, #0D0D0D 100%);
+@keyframes medic-flicker {
+  0%, 100%  { opacity: 1; }
+  94%       { opacity: 1; }
+  95%       { opacity: 0.97; }
+  96%       { opacity: 1; }
+  98%       { opacity: 0.96; }
+  99%       { opacity: 1; }
 }
 
-/* Main panel — dark with red border + top stripe */
-.isaac-window {
-  background-color: #141414;
-  border: 2px solid #C41E24;
-  box-shadow: 0 0 0 1px #7A0D10, 0 6px 28px rgba(196,30,36,0.14);
+/* ── Page background ── */
+
+.medic-page {
+  background-color: #040000;
+  background-image:
+    radial-gradient(ellipse at 14% 78%, rgba(122,0,16,0.24) 0%, transparent 50%),
+    radial-gradient(ellipse at 82% 22%, rgba(90,0,10,0.18) 0%, transparent 42%),
+    radial-gradient(ellipse at 48% 100%, rgba(100,0,12,0.20) 0%, transparent 40%);
+  animation: medic-flicker 7s infinite;
+}
+
+/* Fine scanline overlay */
+.medic-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.07) 3px,
+    rgba(0,0,0,0.07) 4px
+  );
+}
+
+/* ── Window (main panel wrapper) ── */
+
+.medic-window {
+  background-color: #090000;
+  border: 1px solid rgba(196,30,36,0.35);
+  box-shadow:
+    0 0 0 1px rgba(100,0,10,0.15),
+    0 0 22px rgba(100,0,10,0.12),
+    inset 0 0 32px rgba(100,0,10,0.05);
   margin-bottom: 1rem;
   position: relative;
   overflow: hidden;
+  animation: medic-blood-pulse 5s ease-in-out infinite;
 }
 
-.isaac-window::before {
+.medic-window::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: repeating-linear-gradient(
-    90deg,
-    #C41E24 0px, #C41E24 18px,
-    #8B0D12 18px, #8B0D12 36px
+  background: linear-gradient(90deg,
+    #3A0010 0%, #7A0010 22%, #C41E24 50%, #7A0010 78%, #3A0010 100%
   );
   z-index: 1;
 }
 
-/* Post card */
-.isaac-card {
-  background-color: #141414;
-  border: 1px solid rgba(196,30,36,0.5);
-  box-shadow: 0 2px 12px rgba(196,30,36,0.06);
+/* ── Post card ── */
+
+.medic-card {
+  background-color: #090000;
+  border: 1px solid rgba(196,30,36,0.28);
+  box-shadow:
+    0 2px 18px rgba(100,0,10,0.12),
+    inset 0 0 22px rgba(100,0,10,0.04);
   margin-bottom: 0.75rem;
   position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Marlboro crimson title bar */
-.isaac-title-bar {
-  background: linear-gradient(180deg, #C41E24 0%, #9B1018 100%);
-  color: #F5F0E8;
-  font-family: 'Russo One', sans-serif;
-  font-size: 11px;
+.medic-card:hover {
+  border-color: rgba(196,30,36,0.55);
+  box-shadow:
+    0 2px 28px rgba(100,0,10,0.22),
+    inset 0 0 22px rgba(100,0,10,0.07);
+}
+
+.medic-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    #3A0010, #7A0010 28%, #C41E24 55%, #7A0010 80%, #3A0010
+  );
+  z-index: 1;
+  opacity: 0.85;
+}
+
+/* ── Title bar ── */
+
+.medic-title-bar {
+  background: linear-gradient(180deg, #110000 0%, #0D0000 100%);
+  border-bottom: 1px solid rgba(196,30,36,0.28);
+  color: #E8D8C0;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
   padding: 7px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 2px solid #7A0D10;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   user-select: none;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.isaac-title-bar-text {
+.medic-title-bar-text {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #C41E24;
 }
 
-/* Button — dark with red border, fills red on hover */
-.isaac-button {
-  background: #0D0D0D;
-  border: 1px solid #C41E24;
-  color: #F0EBE3;
-  font-family: 'Russo One', sans-serif;
+/* ── Button ── */
+
+.medic-button {
+  background: #090000;
+  border: 1px solid rgba(196,30,36,0.45);
+  color: #E8D8C0;
+  font-family: 'Space Mono', monospace;
   font-size: 10px;
   cursor: pointer;
-  text-shadow: none;
   padding: 5px 14px;
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   line-height: 1.5;
   text-transform: uppercase;
 }
 
-.isaac-button:hover {
-  background: #C41E24;
-  border-color: #E83040;
-  color: #fff;
+.medic-button:hover {
+  background: rgba(196,30,36,0.12);
+  border-color: #C41E24;
+  box-shadow: 0 0 12px rgba(196,30,36,0.22);
+  color: #E8D8C0;
 }
 
-.isaac-button:active {
-  background: #9B1018;
+.medic-button:active {
+  background: rgba(196,30,36,0.20);
 }
 
-.isaac-button:disabled {
-  opacity: 0.35;
+.medic-button:disabled {
+  opacity: 0.28;
   cursor: not-allowed;
 }
 
-.isaac-button-small {
+.medic-button-small {
   padding: 2px 8px;
   font-size: 9px;
 }
 
-/* Sunken input */
-.isaac-sunken {
-  background-color: #0A0A0A;
-  border: 1px solid #5A1018;
-  box-shadow: inset 0 1px 4px rgba(0,0,0,0.8);
-  color: #F0EBE3;
+/* ── Input / sunken ── */
+
+.medic-sunken {
+  background-color: #030000;
+  border: 1px solid rgba(196,30,36,0.22);
+  box-shadow: inset 0 1px 8px rgba(0,0,0,0.92), inset 0 0 16px rgba(100,0,10,0.05);
+  color: #E8D8C0;
 }
 
-/* Raised */
-.isaac-raised {
-  background: #1E1E1E;
-  border: 1px solid #C41E24;
-  box-shadow: 0 2px 8px rgba(196,30,36,0.1);
+/* ── Raised ── */
+
+.medic-raised {
+  background: #120000;
+  border: 1px solid rgba(196,30,36,0.28);
+  box-shadow: 0 2px 12px rgba(100,0,10,0.10);
 }
 
-/* General panel */
-.isaac-panel {
-  background-color: #111111;
-  border: 1px solid #3A1015;
+/* ── Panel ── */
+
+.medic-panel {
+  background-color: #060000;
+  border: 1px solid rgba(196,30,36,0.14);
 }
 
-/* Sidebar */
-.isaac-sidebar {
-  background-color: #0A0A0A;
-  border-right: 1px solid #3A1015;
+/* ── Sidebar ── */
+
+.medic-sidebar {
+  background-color: #050000;
+  border-right: 1px solid rgba(196,30,36,0.16);
 }
 
-/* Text */
-.isaac-text {
-  color: #F0EBE3;
-  font-family: 'Russo One', sans-serif;
+/* ── Typography ── */
+
+.medic-text {
+  color: #E8D8C0;
+  font-family: 'Space Mono', monospace;
   font-size: 14px;
+  line-height: 1.65;
 }
 
-.isaac-text-muted {
-  color: #6A6560;
-  font-family: 'Russo One', sans-serif;
+.medic-text-muted {
+  color: #5A3035;
+  font-family: 'Space Mono', monospace;
   font-size: 12px;
+  line-height: 1.5;
 }
 
-.isaac-label {
+.medic-label {
   color: #C41E24;
-  font-family: 'Russo One', sans-serif;
+  font-family: 'Space Mono', monospace;
   font-size: 9px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
 }
 
-.isaac-link {
-  color: #F0EBE3;
-  font-family: 'Russo One', sans-serif;
+.medic-link {
+  color: #E8D8C0;
+  font-family: 'Space Mono', monospace;
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
-.isaac-link:hover {
+.medic-link:hover {
   color: #C41E24;
 }
 
-/* Icons */
+/* ── Icons ── */
+
 .isaac-theme svg,
 .isaac-theme [data-slot="icon"],
-.isaac-icon {
+.medic-icon {
   color: #C41E24;
 }
 
-/* Scrollbar */
-.isaac-scrollbar::-webkit-scrollbar {
+/* ── Scrollbar ── */
+
+.medic-scrollbar::-webkit-scrollbar {
   width: 6px;
-  background: #0D0D0D;
+  background: #050000;
 }
-.isaac-scrollbar::-webkit-scrollbar-thumb {
-  background: #3A1015;
+.medic-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(196,30,36,0.22);
 }
-.isaac-scrollbar::-webkit-scrollbar-thumb:hover {
+.medic-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #C41E24;
 }
 
-/* Slider overrides */
+/* ── Slider overrides ── */
+
 :root.isaac-theme [data-slot="slider-range"],
 .dark.isaac-theme [data-slot="slider-range"] {
-  background-color: #C41E24;
+  background: linear-gradient(90deg, #7A0010, #C41E24);
 }
 :root.isaac-theme [data-slot="slider-thumb"],
 .dark.isaac-theme [data-slot="slider-thumb"] {
   border-color: #C41E24 !important;
-  background-color: #C41E24 !important;
-  box-shadow: none !important;
+  background-color: #090000 !important;
+  box-shadow: 0 0 6px rgba(196,30,36,0.5) !important;
 }
 :root.isaac-theme [data-slot="slider-thumb"]:hover,
 .dark.isaac-theme [data-slot="slider-thumb"]:hover {
-  border-color: #E83040 !important;
-  background-color: #E83040 !important;
+  border-color: #E8D8C0 !important;
+  background-color: #C41E24 !important;
+  box-shadow: 0 0 12px rgba(196,30,36,0.8) !important;
 }
 :root.isaac-theme [data-slot="slider-track"],
 .dark.isaac-theme [data-slot="slider-track"] {
-  background-color: #2A1015 !important;
+  background-color: #1A0008 !important;
 }
 
 @layer base {

@@ -18,14 +18,14 @@ export function BlogLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className={`flex min-h-screen w-full bg-background ${isPutzermannNoir ? 'noir-page' : ''} ${isMedicIsaac ? 'isaac-page' : ''}`}>
+      <div className={`flex min-h-screen w-full bg-background ${isPutzermannNoir ? 'noir-page' : ''} ${isMedicIsaac ? 'medic-page' : ''}`}>
         <AppSidebar user={user ?? null} />
         <div className="flex flex-col flex-1 min-w-0">
-          <header className={`flex md:hidden items-center gap-3 px-4 h-14 sticky top-0 z-50 ${isPysyTheme ? 'win95-panel' : isPutzermannNoir ? 'noir-panel' : isMedicIsaac ? 'isaac-panel border-b-2 border-b-[#3d2e14]' : 'bg-background border-b border-border'}`}>
-            <SidebarTrigger className={isPysyTheme ? 'win95-button' : isPutzermannNoir ? 'noir-button p-1' : isMedicIsaac ? 'isaac-button p-1' : 'text-muted-foreground hover:text-foreground'} />
+          <header className={`flex md:hidden items-center gap-3 px-4 h-14 sticky top-0 z-50 ${isPysyTheme ? 'win95-panel' : isPutzermannNoir ? 'noir-panel' : isMedicIsaac ? 'medic-panel border-b border-b-[rgba(255,45,155,0.25)]' : 'bg-background border-b border-border'}`}>
+            <SidebarTrigger className={isPysyTheme ? 'win95-button' : isPutzermannNoir ? 'noir-button p-1' : isMedicIsaac ? 'medic-button p-1' : 'text-muted-foreground hover:text-foreground'} />
             <img src="/logo.png" alt="МЗТ" className="h-8 w-auto select-none" draggable={false} />
           </header>
-          <main className={`flex-1 overflow-y-auto ${isPutzermannNoir ? 'noir-scrollbar' : ''} ${isMedicIsaac ? 'isaac-scrollbar' : ''}`}>
+          <main className={`flex-1 overflow-y-auto ${isPutzermannNoir ? 'noir-scrollbar' : ''} ${isMedicIsaac ? 'medic-scrollbar' : ''}`}>
             {children}
           </main>
         </div>

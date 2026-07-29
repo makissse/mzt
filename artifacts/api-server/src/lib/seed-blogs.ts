@@ -14,6 +14,12 @@ const SEEDED_BLOGS = [
     ownerUsername: "host9315",
     description: "",
   },
+  {
+    title: "medic de familie",
+    handle: "medic-de-familie",
+    ownerUsername: "qwer",
+    description: "",
+  },
 ];
 
 export async function seedBlogs(): Promise<void> {
