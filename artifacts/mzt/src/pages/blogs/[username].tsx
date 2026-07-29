@@ -1837,7 +1837,7 @@ export default function BlogPage() {
           }}>
             {/* Star decorations — top right */}
             <div className="absolute top-10 right-3 pointer-events-none select-none" style={{
-              color: '#C72535', opacity: 0.12, fontFamily: 'monospace', fontSize: '13px', lineHeight: 1.9, textAlign: 'right'
+              color: '#C72535', opacity: 0.22, fontFamily: 'monospace', fontSize: '13px', lineHeight: 1.9, textAlign: 'right'
             }}>✦<br/>✧<br/>✦</div>
 
             {/* Title bar — red, no chrome buttons */}
@@ -1948,12 +1948,12 @@ export default function BlogPage() {
                   {/* AT row */}
                   <div className="flex items-center gap-2">
                     <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', minWidth: '18px' }}>AT</span>
-                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>ЗАПИСКИ · НОТАТКИ</span>
+                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>ЗАПИСКИ</span>
                   </div>
                   {/* DF row */}
                   <div className="flex items-center gap-2">
                     <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', minWidth: '18px' }}>DF</span>
-                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>МЕДИЧНІ НОТАТКИ</span>
+                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>МЕД. ЗАМЕТКИ</span>
                   </div>
                 </div>
 
@@ -2001,7 +2001,7 @@ export default function BlogPage() {
               <rect x="3" y="5" width="2" height="1"/>
             </svg>
             <span style={{ fontFamily: "'Pixelify Sans', 'Silkscreen', monospace", color: 'rgba(255,255,255,0.95)', fontSize: '11px', letterSpacing: '0.06em' }}>
-              CARTE MEDICALĂ · МЕДИЧНІ НОТАТКИ
+              CARTE MEDICALĂ · МЕД. ЗАМЕТКИ
             </span>
             <svg width="8" height="8" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', marginLeft: 'auto', flexShrink: 0 }} fill="rgba(255,255,255,0.80)">
               <rect x="1" y="0" width="2" height="1"/><rect x="5" y="0" width="2" height="1"/>
@@ -2069,22 +2069,71 @@ export default function BlogPage() {
       )}
 
       {/* Post feed */}
-      <div className="px-4 sm:px-6 mt-8">
-        <div className="flex justify-end mb-3">
-          <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
-        </div>
+      <div className={`px-4 sm:px-6 ${isIsaac ? 'mt-3' : 'mt-8'}`}>
+
+        {/* Feed section header */}
+        {isIsaac ? (
+          <div style={{
+            background: '#FFFFFF',
+            border: '2px solid #F0C0C8',
+            borderTop: '3px solid #C72535',
+            borderBottom: 'none',
+            padding: '5px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              ✦ ЗАМЕТКИ
+            </span>
+            <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
+          </div>
+        ) : (
+          <div className="flex justify-end mb-3">
+            <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
+          </div>
+        )}
+
         {blog.isOwner && me && (
           <CreatePostBox handle={blog.handle} blog={blog} me={me} theme={theme} isPutzermann={isPutzermann} isIsaac={isIsaac} onPosted={() => {}} />
         )}
 
         {posts.length === 0 ? (
-          <div className={`text-center py-20 ${isPysy ? 'win95-sunken bg-white border-0' : isPutzermann ? 'noir-panel' : isIsaac ? 'heart-panel border-0' : 'border border-dashed bg-card/30 rounded-3xl'}`} style={!isPysy && !isPutzermann && !isIsaac ? { borderColor: theme.accentBorder } : undefined}>
-            {!isPysy && !isPutzermann && !isIsaac && <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />}
-            {isIsaac && <span className="text-3xl block mb-3">✦</span>}
-            <p className={`${isPysy ? 'win95-text-muted font-sans' : isPutzermann ? 'noir-text-muted tracking-widest uppercase' : isIsaac ? 'heart-text-muted tracking-widest uppercase' : 'text-muted-foreground font-mono'}`}>В блоге пока нет постов</p>
-          </div>
+          isIsaac ? (
+            <div style={{ border: '2px solid #F0C0C8', borderTop: 'none', background: '#FFF5F7' }}>
+              <div className="heart-title-bar" style={{ background: '#F5C0C8', backgroundImage: 'none', borderBottom: '2px solid #E0A0B0' }}>
+                <div className="heart-title-bar-text" style={{ color: '#7A1E28' }}>
+                  <span style={{ fontSize: '10px' }}>♥</span>
+                  ЗАПИСЕЙ НЕТ
+                </div>
+              </div>
+              <div className="text-center py-16">
+                <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: 'pixelated', margin: '0 auto 12px', opacity: 0.30 }} fill="#C72535">
+                  <rect x="2" y="1" width="4" height="1"/><rect x="10" y="1" width="4" height="1"/>
+                  <rect x="1" y="2" width="5" height="1"/><rect x="10" y="2" width="5" height="1"/>
+                  <rect x="0" y="3" width="7" height="1"/><rect x="9" y="3" width="7" height="1"/>
+                  <rect x="0" y="4" width="16" height="1"/>
+                  <rect x="0" y="5" width="16" height="1"/>
+                  <rect x="0" y="6" width="16" height="1"/>
+                  <rect x="1" y="7" width="14" height="1"/>
+                  <rect x="2" y="8" width="12" height="1"/>
+                  <rect x="3" y="9" width="10" height="1"/>
+                  <rect x="4" y="10" width="8" height="1"/>
+                  <rect x="5" y="11" width="6" height="1"/>
+                  <rect x="6" y="12" width="4" height="1"/>
+                  <rect x="7" y="13" width="2" height="1"/>
+                </svg>
+                <p className="heart-text-muted tracking-widest uppercase" style={{ fontSize: '11px' }}>В блоге пока нет постов</p>
+              </div>
+            </div>
+          ) : (
+            <div className={`text-center py-20 ${isPysy ? 'win95-sunken bg-white border-0' : isPutzermann ? 'noir-panel' : 'border border-dashed bg-card/30 rounded-3xl'}`} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder } : undefined}>
+              {!isPysy && !isPutzermann && <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />}
+              <p className={`${isPysy ? 'win95-text-muted font-sans' : isPutzermann ? 'noir-text-muted tracking-widest uppercase' : 'text-muted-foreground font-mono'}`}>В блоге пока нет постов</p>
+            </div>
+          )
         ) : (
-          <div className="space-y-5">
+          <div className={isIsaac ? 'space-y-0' : 'space-y-5'} style={isIsaac ? { border: '2px solid #F0C0C8', borderTop: 'none' } : undefined}>
             {posts.map((post) => (
               <PostCard
                 key={post.id}

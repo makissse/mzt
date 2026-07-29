@@ -1004,6 +1004,12 @@
   color: #C72535;
 }
 
+/* Icons inside red buttons must be white */
+.heart-button svg,
+.heart-button [data-slot="icon"] {
+  color: #FFFFFF !important;
+}
+
 /* ── Scrollbar ── */
 
 .heart-scrollbar::-webkit-scrollbar {

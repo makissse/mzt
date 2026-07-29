@@ -69,9 +69,50 @@ const blogItems: NavItem[] = [
   },
 ];
 
-function NavButton({ item, pathname, onClick, isPysyTheme, isPutzermannNoir }: { item: NavItem; pathname: string; onClick: () => void; isPysyTheme?: boolean; isPutzermannNoir?: boolean }) {
+function NavButton({ item, pathname, onClick, isPysyTheme, isPutzermannNoir, isMedicIsaac }: { item: NavItem; pathname: string; onClick: () => void; isPysyTheme?: boolean; isPutzermannNoir?: boolean; isMedicIsaac?: boolean }) {
   const active = item.exact ? pathname === item.path : pathname.startsWith(item.path);
   const accent = isPutzermannNoir ? undefined : item.accentColor;
+
+  if (isMedicIsaac) {
+    return (
+      <SidebarMenuItem>
+        <button
+          onClick={onClick}
+          className={`
+            w-full flex items-center gap-3 px-2 py-3 text-left group/btn
+            transition-all duration-100
+            border-l-2
+            ${active
+              ? 'bg-[#A01E2C] border-white/70'
+              : 'border-transparent hover:bg-[#A01E2C]/60 hover:border-white/30'}
+          `}
+        >
+          {item.icon && (
+            <div className="flex items-center justify-center h-6 w-6 flex-shrink-0">
+              <item.icon
+                className={`h-4 w-4 transition-all duration-100 ${
+                  active ? 'text-white' : 'text-white/60 group-hover/btn:text-white'
+                }`}
+              />
+            </div>
+          )}
+          <div className="flex flex-col min-w-0">
+            <span
+              className={`text-sm leading-tight truncate transition-all duration-100 ${
+                active ? 'text-white font-bold' : 'text-white/70 group-hover/btn:text-white'
+              }`}
+              style={{ fontFamily: "'Pixelify Sans', 'Silkscreen', monospace", letterSpacing: '0.04em' }}
+            >
+              {item.label}
+            </span>
+          </div>
+          {active && (
+            <div className="ml-auto h-1.5 w-1.5 flex-shrink-0 bg-white" />
+          )}
+        </button>
+      </SidebarMenuItem>
+    );
+  }
 
   if (isPutzermannNoir) {
     return (
@@ -175,7 +216,7 @@ function NavButton({ item, pathname, onClick, isPysyTheme, isPutzermannNoir }: {
   );
 }
 
-function SecretNavItem({ user, isPysyTheme, isPutzermannNoir }: { user?: User | null; isPysyTheme?: boolean; isPutzermannNoir?: boolean }) {
+function SecretNavItem({ user, isPysyTheme, isPutzermannNoir, isMedicIsaac }: { user?: User | null; isPysyTheme?: boolean; isPutzermannNoir?: boolean; isMedicIsaac?: boolean }) {
   const [, setLocation] = useLocation();
   const [pathname] = useLocation();
   const { data: secretData } = useGetSecretPhoto({ query: { enabled: !!user, queryKey: ["secretPhoto"] } });
@@ -185,7 +226,7 @@ function SecretNavItem({ user, isPysyTheme, isPutzermannNoir }: { user?: User | 
   const item: NavItem = { label: 'Секретное фото', path: '/secret-photo', icon: Image, description: 'Секретное фото', exact: true };
 
   if (unlocked) {
-    return <NavButton item={item} pathname={pathname} onClick={() => setLocation('/secret-photo')} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />;
+    return <NavButton item={item} pathname={pathname} onClick={() => setLocation('/secret-photo')} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} isMedicIsaac={isMedicIsaac} />;
   }
 
   return (
@@ -194,7 +235,7 @@ function SecretNavItem({ user, isPysyTheme, isPutzermannNoir }: { user?: User | 
         className="opacity-100 transition-all duration-150 ease-out group-hover/secret:opacity-0 group-hover/secret:pointer-events-none group-hover/secret:-translate-x-3"
         style={{ willChange: 'opacity, transform' }}
       >
-        <NavButton item={item} pathname={pathname} onClick={() => {}} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />
+        <NavButton item={item} pathname={pathname} onClick={() => {}} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} isMedicIsaac={isMedicIsaac} />
       </div>
     </div>
   );
@@ -241,15 +282,18 @@ export function AppSidebar({ user }: { user?: User | null }) {
                 onClick={() => setLocation(item.path)}
                 isPysyTheme={isPysyTheme}
                 isPutzermannNoir={isPutzermannNoir}
+                isMedicIsaac={isMedicIsaac}
               />
             ))}
-            <SecretNavItem user={user} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} />
+            <SecretNavItem user={user} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} isMedicIsaac={isMedicIsaac} />
           </SidebarMenu>
         </SidebarGroup>
 
         {/* Blog channels */}
         <SidebarGroup className="mt-4">
-          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/50 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-label' : isMedicIsaac ? 'heart-label' : 'font-mono'}`}>
+          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-label' : isMedicIsaac ? '' : 'font-mono text-muted-foreground/50'}`}
+            style={isMedicIsaac ? { fontFamily: "'Silkscreen', monospace", color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' } : undefined}
+          >
             Блоги
           </p>
           <SidebarMenu className="space-y-1">
@@ -261,6 +305,7 @@ export function AppSidebar({ user }: { user?: User | null }) {
                 onClick={() => setLocation(item.path)}
                 isPysyTheme={isPysyTheme}
                 isPutzermannNoir={isPutzermannNoir}
+                isMedicIsaac={isMedicIsaac}
               />
             ))}
           </SidebarMenu>
@@ -271,8 +316,24 @@ export function AppSidebar({ user }: { user?: User | null }) {
         {user && (
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <div className={`h-6 w-6 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : isPutzermannNoir ? 'noir-sunken' : isMedicIsaac ? 'heart-sunken' : 'rounded-full bg-card border border-border'}`}>
-                <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'heart-text' : 'text-muted-foreground'}`} />
+              <div className={`h-6 w-6 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : isPutzermannNoir ? 'noir-sunken' : isMedicIsaac ? '' : 'rounded-full bg-card border border-border'}`}>
+                {isMedicIsaac ? (
+                  <svg width="14" height="13" viewBox="0 0 14 13" style={{ imageRendering: 'pixelated', flexShrink: 0 }} fill="rgba(255,255,255,0.85)">
+                    <rect x="1" y="0" width="4" height="1"/><rect x="9" y="0" width="4" height="1"/>
+                    <rect x="0" y="1" width="5" height="1"/><rect x="9" y="1" width="5" height="1"/>
+                    <rect x="0" y="2" width="6" height="1"/><rect x="8" y="2" width="6" height="1"/>
+                    <rect x="0" y="3" width="14" height="1"/>
+                    <rect x="0" y="4" width="14" height="1"/>
+                    <rect x="1" y="5" width="12" height="1"/>
+                    <rect x="2" y="6" width="10" height="1"/>
+                    <rect x="3" y="7" width="8" height="1"/>
+                    <rect x="4" y="8" width="6" height="1"/>
+                    <rect x="5" y="9" width="4" height="1"/>
+                    <rect x="6" y="10" width="2" height="1"/>
+                  </svg>
+                ) : (
+                  <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : 'text-muted-foreground'}`} />
+                )}
               </div>
               <span className={`text-xs truncate ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'heart-text' : 'font-mono text-muted-foreground'}`}>
                 {user.username}
