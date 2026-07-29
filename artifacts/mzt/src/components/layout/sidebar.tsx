@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { useLogout, getGetMeQueryKey, clearAuthToken, useGetSecretPhoto, type User } from '@workspace/api-client-react';
 import { useIsPysyTheme } from '@/lib/use-pysy-theme';
 import { useIsPutzermannNoirTheme } from '@/lib/use-putzermann-noir-theme';
+import { useIsMedicTheme } from '@/lib/use-medic-theme';
 
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Disc3, Sparkles, LogOut, User as UserIcon, Clock3, Image } from 'lucide-react';
@@ -58,6 +59,13 @@ const blogItems: NavItem[] = [
     description: 'Блог host9315',
     exact: true,
     accentColor: '#ff6b00',
+  },
+  {
+    label: 'medic de familie',
+    path: '/blogs/medic-de-familie',
+    description: 'Блог Xiereler',
+    exact: true,
+    accentColor: '#c8461a',
   },
 ];
 
@@ -197,6 +205,7 @@ export function AppSidebar({ user }: { user?: User | null }) {
   const [pathname] = useLocation();
   const isPysyTheme = useIsPysyTheme();
   const isPutzermannNoir = useIsPutzermannNoirTheme();
+  const isMedicIsaac = useIsMedicTheme();
   const logout = useLogout();
   const queryClient = useQueryClient();
 
@@ -211,8 +220,8 @@ export function AppSidebar({ user }: { user?: User | null }) {
   };
 
   return (
-    <Sidebar className={`${isPysyTheme ? 'win95-panel rounded-none border-0' : isPutzermannNoir ? 'noir-sidebar border-r border-white/20' : 'border-r border-border bg-sidebar'}`}>
-      <SidebarHeader className={`hidden md:flex h-20 items-center px-4 ${isPysyTheme ? 'border-b-2 border-b-[#808080]' : isPutzermannNoir ? 'border-b border-white/20' : 'border-b border-border'}`}>
+    <Sidebar className={`${isPysyTheme ? 'win95-panel rounded-none border-0' : isPutzermannNoir ? 'noir-sidebar border-r border-white/20' : isMedicIsaac ? 'isaac-sidebar border-r-0' : 'border-r border-border bg-sidebar'}`}>
+      <SidebarHeader className={`hidden md:flex h-20 items-center px-4 ${isPysyTheme ? 'border-b-2 border-b-[#808080]' : isPutzermannNoir ? 'border-b border-white/20' : isMedicIsaac ? 'border-b-2 border-b-[#3d2e14]' : 'border-b border-border'}`}>
         <div
           className="cursor-pointer select-none"
           onClick={() => setLocation('/releases')}
@@ -221,7 +230,7 @@ export function AppSidebar({ user }: { user?: User | null }) {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className={isPysyTheme ? 'px-2 py-3' : isPutzermannNoir ? 'px-3 py-4' : 'px-3 py-4'}>
+      <SidebarContent className={isPysyTheme ? 'px-2 py-3' : isPutzermannNoir ? 'px-3 py-4' : isMedicIsaac ? 'px-2 py-3' : 'px-3 py-4'}>
         <SidebarGroup>
           <SidebarMenu className="space-y-1">
             {navItems.map((item) => (
@@ -240,7 +249,7 @@ export function AppSidebar({ user }: { user?: User | null }) {
 
         {/* Blog channels */}
         <SidebarGroup className="mt-4">
-          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/50 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-label' : 'font-mono'}`}>
+          <p className={`px-3 mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/50 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-label' : isMedicIsaac ? 'isaac-label' : 'font-mono'}`}>
             Блоги
           </p>
           <SidebarMenu className="space-y-1">
@@ -258,20 +267,20 @@ export function AppSidebar({ user }: { user?: User | null }) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className={`${isPysyTheme ? 'border-t-2 border-t-[#808080] p-3' : isPutzermannNoir ? 'border-t border-white/20 p-3' : 'border-t border-border p-4'}`}>
+      <SidebarFooter className={`${isPysyTheme ? 'border-t-2 border-t-[#808080] p-3' : isPutzermannNoir ? 'border-t border-white/20 p-3' : isMedicIsaac ? 'border-t-2 border-t-[#3d2e14] p-3' : 'border-t border-border p-4'}`}>
         {user && (
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <div className={`h-6 w-6 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : isPutzermannNoir ? 'noir-sunken' : 'rounded-full bg-card border border-border'}`}>
-                <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : 'text-muted-foreground'}`} />
+              <div className={`h-6 w-6 flex items-center justify-center flex-shrink-0 ${isPysyTheme ? 'win95-sunken' : isPutzermannNoir ? 'noir-sunken' : isMedicIsaac ? 'isaac-sunken' : 'rounded-full bg-card border border-border'}`}>
+                <UserIcon className={`h-3.5 w-3.5 ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'isaac-text' : 'text-muted-foreground'}`} />
               </div>
-              <span className={`text-xs truncate ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : 'font-mono text-muted-foreground'}`}>
+              <span className={`text-xs truncate ${isPysyTheme ? 'win95-text' : isPutzermannNoir ? 'noir-text' : isMedicIsaac ? 'isaac-text' : 'font-mono text-muted-foreground'}`}>
                 {user.username}
               </span>
             </div>
             <button
               onClick={handleLogout}
-              className={isPysyTheme ? 'win95-button p-1' : isPutzermannNoir ? 'noir-button p-1' : 'flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10'}
+              className={isPysyTheme ? 'win95-button p-1' : isPutzermannNoir ? 'noir-button p-1' : isMedicIsaac ? 'isaac-button p-1' : 'flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10'}
               title="Выйти"
             >
               <LogOut className="h-4 w-4" />

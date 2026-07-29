@@ -95,6 +95,12 @@ const BLOG_THEMES: Record<string, BlogTheme> = {
     accentBorder: 'rgba(232,228,220,0.22)',
     coverGradient: 'linear-gradient(135deg, #050505 0%, #0a0a0a 60%, #0f0f0f 100%)',
   },
+  'medic-de-familie': {
+    accent: '#C41E24',
+    accentBg: 'rgba(196,30,36,0.10)',
+    accentBorder: 'rgba(196,30,36,0.35)',
+    coverGradient: 'linear-gradient(180deg, #C41E24 0%, #8B0D12 50%, #0D0D0D 100%)',
+  },
 };
 
 const DEFAULT_THEME: BlogTheme = {
@@ -537,11 +543,13 @@ function MediaGrid({
   accentColor,
   isPutzermann,
   isPysy,
+  isIsaac,
 }: {
   items: Array<{ type: string; url: string; isCircle?: boolean }>;
   accentColor: string;
   isPutzermann?: boolean;
   isPysy?: boolean;
+  isIsaac?: boolean;
 }) {
   if (items.length === 0) return null;
 
@@ -554,7 +562,7 @@ function MediaGrid({
       {images.length > 0 && (
         <div className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'}`}>
           {images.map((img, idx) => (
-            <div key={idx} className={`overflow-hidden ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} ${images.length !== 1 ? 'aspect-square flex items-center justify-center' : ''}`}>
+            <div key={idx} className={`overflow-hidden ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : isIsaac ? 'isaac-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} ${images.length !== 1 ? 'aspect-square flex items-center justify-center' : ''}`}>
               <img src={img.url} alt="" className={images.length === 1 ? 'w-full h-auto' : 'w-full h-full object-contain'} loading="lazy" />
             </div>
           ))}
@@ -566,7 +574,7 @@ function MediaGrid({
             <CircleVideoPlayer src={vid.url} accentColor={accentColor} />
           </div>
         ) : (
-          <div key={idx} className={`${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} overflow-hidden`}>
+          <div key={idx} className={`${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none' : isIsaac ? 'isaac-sunken rounded-none' : 'rounded-2xl border border-border/60 bg-card'} overflow-hidden`}>
             <video src={vid.url} controls className="w-full max-h-[460px]" preload="metadata" />
           </div>
         )
@@ -645,7 +653,7 @@ function usePushSubscription() {
   return { subscribed, loading, toggle };
 }
 
-function PushBellButton({ isPutzermann, isPysy, theme }: { isPutzermann?: boolean; isPysy?: boolean; theme: BlogTheme }) {
+function PushBellButton({ isPutzermann, isPysy, isIsaac, theme }: { isPutzermann?: boolean; isPysy?: boolean; isIsaac?: boolean; theme: BlogTheme }) {
   const { subscribed, loading, toggle } = usePushSubscription();
   return (
     <button
@@ -657,9 +665,11 @@ function PushBellButton({ isPutzermann, isPysy, theme }: { isPutzermann?: boolea
           ? 'win95-button flex items-center gap-1.5 text-xs px-2 py-1'
           : isPutzermann
           ? 'noir-button flex items-center gap-1.5 text-xs px-2 py-1'
+          : isIsaac
+          ? 'isaac-button flex items-center gap-1.5'
           : 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-mono transition-colors'
       }
-      style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder, color: subscribed ? theme.accent : undefined } : undefined}
+      style={!isPysy && !isPutzermann && !isIsaac ? { borderColor: theme.accentBorder, color: subscribed ? theme.accent : undefined } : undefined}
     >
       {subscribed ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
       {subscribed ? 'Уведомления вкл.' : 'Уведомления'}
@@ -696,11 +706,12 @@ async function resizeImage(file: File, maxPx = 800): Promise<File> {
 }
 
 /** Small attachment strip rendered inside a comment bubble. */
-function CommentAttachments({ attachments, theme, isPutzermann, isPysy }: {
+function CommentAttachments({ attachments, theme, isPutzermann, isPysy, isIsaac }: {
   attachments: CommentAttachment[];
   theme: BlogTheme;
   isPutzermann?: boolean;
   isPysy?: boolean;
+  isIsaac?: boolean;
 }) {
   const videos = attachments.filter((a) => a.type === 'video');
   const images = attachments.filter((a) => a.type === 'image');
@@ -713,7 +724,7 @@ function CommentAttachments({ attachments, theme, isPutzermann, isPysy }: {
         <div className="flex flex-wrap gap-1.5">
           {images.map((img, i) => (
             <a key={i} href={img.url} target="_blank" rel="noopener noreferrer" className="block">
-              <div className={`w-20 h-20 overflow-hidden ${isPysy ? 'win95-sunken rounded-none' : isPutzermann ? 'noir-sunken rounded-none' : 'rounded border border-border/40'}`}>
+              <div className={`w-20 h-20 overflow-hidden ${isPysy ? 'win95-sunken rounded-none' : isPutzermann ? 'noir-sunken rounded-none' : isIsaac ? 'isaac-sunken rounded-none' : 'rounded border border-border/40'}`}>
                 <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" />
               </div>
             </a>
@@ -726,7 +737,7 @@ function CommentAttachments({ attachments, theme, isPutzermann, isPysy }: {
 
 type PendingAttachment = CommentAttachment & { localPreview?: string };
 
-function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChange }: { postId: number; me?: { username: string } | null; theme: BlogTheme; isPutzermann?: boolean; isPysy?: boolean; onCountChange?: (n: number) => void }) {
+function CommentsSection({ postId, me, theme, isPutzermann, isPysy, isIsaac, onCountChange }: { postId: number; me?: { username: string } | null; theme: BlogTheme; isPutzermann?: boolean; isPysy?: boolean; isIsaac?: boolean; onCountChange?: (n: number) => void }) {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [pending, setPending] = useState<PendingAttachment[]>([]);
@@ -819,17 +830,17 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
   };
 
   return (
-    <div className={`mt-3 pt-3 space-y-3 ${isPysy ? 'border-t-2 border-white border-t-[#808080] border-b-2 border-b-[#ffffff] mb-2' : isPutzermann ? 'border-t-2 border-white mt-3 pt-3' : 'border-t border-border/40'}`}>
+    <div className={`mt-3 pt-3 space-y-3 ${isPysy ? 'border-t-2 border-white border-t-[#808080] border-b-2 border-b-[#ffffff] mb-2' : isPutzermann ? 'border-t-2 border-white mt-3 pt-3' : isIsaac ? 'border-t-2 border-t-[#3d2e14] mt-3 pt-3' : 'border-t border-border/40'}`}>
       {isLoading ? (
         <div className="flex justify-center py-2"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
       ) : comments.length === 0 ? (
-        <p className={`text-xs px-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground font-mono'}`}>Комментариев пока нет</p>
+        <p className={`text-xs px-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground font-mono'}`}>Комментариев пока нет</p>
       ) : (
         <div className="space-y-3">
           {comments.map((c) => (
             <div key={c.id} className="space-y-0.5 group">
               {c.replyTo && (
-                <div className={`text-[10px] flex items-center gap-1 mb-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground font-mono'}`}>
+                <div className={`text-[10px] flex items-center gap-1 mb-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground font-mono'}`}>
                   <Reply className="h-2.5 w-2.5 shrink-0" />
                   <span>@{c.replyTo.username}</span>
                 </div>
@@ -837,22 +848,22 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
               <div className="flex gap-2 flex-wrap items-start">
                 <div className="flex-1 min-w-0">
                   <div className="flex gap-2 flex-wrap">
-                    <span className={`text-xs font-bold flex-shrink-0 ${isPysy ? 'win95-text font-bold' : isPutzermann ? 'noir-text' : 'font-mono'}`} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
+                    <span className={`text-xs font-bold flex-shrink-0 ${isPysy ? 'win95-text font-bold' : isPutzermann ? 'noir-text' : isIsaac ? 'isaac-text font-bold' : 'font-mono'}`} style={!isPysy && !isPutzermann && !isIsaac ? { color: theme.accent } : undefined}>
                       {c.user.username}
                     </span>
                     {c.content && (
-                      <span className={`text-xs leading-relaxed ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text opacity-80' : 'font-sans text-foreground'}`}>{c.content}</span>
+                      <span className={`text-xs leading-relaxed ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text opacity-80' : isIsaac ? 'isaac-text opacity-80' : 'font-sans text-foreground'}`}>{c.content}</span>
                     )}
                   </div>
                   {c.attachments && c.attachments.length > 0 && (
-                    <CommentAttachments attachments={c.attachments} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} />
+                    <CommentAttachments attachments={c.attachments} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} />
                   )}
                 </div>
                 {me && (
                   <button
                     onClick={() => setReplyingTo(replyingTo?.id === c.id ? null : c)}
-                    className={`sm:opacity-0 sm:group-hover:opacity-100 flex-shrink-0 transition-opacity text-[10px] flex items-center gap-0.5 mt-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground hover:text-foreground font-mono'}`}
-                    style={replyingTo?.id === c.id && !isPysy && !isPutzermann ? { color: theme.accent, opacity: 1 } : undefined}
+                    className={`sm:opacity-0 sm:group-hover:opacity-100 flex-shrink-0 transition-opacity text-[10px] flex items-center gap-0.5 mt-0.5 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground hover:text-foreground font-mono'}`}
+                    style={replyingTo?.id === c.id && !isPysy && !isPutzermann && !isIsaac ? { color: theme.accent, opacity: 1 } : undefined}
                   >
                     <Reply className="h-3 w-3" /> ответить
                   </button>
@@ -908,7 +919,7 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
 
           {/* Reply chip */}
           {replyingTo && (
-            <div className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded ${isPysy ? 'win95-sunken win95-text-muted' : isPutzermann ? 'noir-sunken noir-text-muted' : 'bg-muted/40 text-muted-foreground font-mono border border-border/50'}`}>
+            <div className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded ${isPysy ? 'win95-sunken win95-text-muted' : isPutzermann ? 'noir-sunken noir-text-muted' : isIsaac ? 'isaac-sunken isaac-text-muted' : 'bg-muted/40 text-muted-foreground font-mono border border-border/50'}`}>
               <Reply className="h-3 w-3 shrink-0" />
               <span className="flex-1 truncate">Ответ → @{replyingTo.user.username}</span>
               <button onClick={() => setReplyingTo(null)} className="shrink-0 hover:opacity-70"><X className="h-3 w-3" /></button>
@@ -925,6 +936,8 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
                 ? "h-8 win95-sunken win95-text px-2 rounded-none"
                 : isPutzermann
                 ? "h-8 noir-sunken noir-text px-2 rounded-none text-sm"
+                : isIsaac
+                ? "h-8 isaac-sunken isaac-text px-2 rounded-none text-sm"
                 : "h-8 text-xs font-sans bg-background/50 border-border/60"}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
             />
@@ -934,7 +947,7 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
               onClick={() => setShowRecorder((v) => !v)}
               disabled={uploadingMedia}
               title="Записать кружок"
-              className={`flex-shrink-0 ${isPysy ? "win95-button h-8 px-2" : isPutzermann ? "noir-button h-8 px-2" : "h-8 px-2"}`}
+              className={`flex-shrink-0 ${isPysy ? "win95-button h-8 px-2" : isPutzermann ? "noir-button h-8 px-2" : isIsaac ? "isaac-button h-8 px-2" : "h-8 px-2"}`}
             >
               <Video className="h-3.5 w-3.5" />
             </Button>
@@ -944,7 +957,7 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
               onClick={() => photoInputRef.current?.click()}
               disabled={uploadingMedia}
               title="Прикрепить фото"
-              className={`flex-shrink-0 ${isPysy ? "win95-button h-8 px-2" : isPutzermann ? "noir-button h-8 px-2" : "h-8 px-2"}`}
+              className={`flex-shrink-0 ${isPysy ? "win95-button h-8 px-2" : isPutzermann ? "noir-button h-8 px-2" : isIsaac ? "isaac-button h-8 px-2" : "h-8 px-2"}`}
             >
               <ImageIcon className="h-3.5 w-3.5" />
             </Button>
@@ -952,8 +965,8 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, onCountChang
               size="sm"
               onClick={submit}
               disabled={!canSend}
-              className={isPysy ? "win95-button h-8 px-3" : isPutzermann ? "noir-button h-8 px-3" : "h-8 px-3 font-mono"}
-              style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
+              className={isPysy ? "win95-button h-8 px-3" : isPutzermann ? "noir-button h-8 px-3" : isIsaac ? "isaac-button h-8 px-3" : "h-8 px-3 font-mono"}
+              style={!isPysy && !isPutzermann && !isIsaac ? { backgroundColor: theme.accent, color: '#000' } : undefined}
             >
               {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
             </Button>
@@ -991,6 +1004,7 @@ function PostCard({
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [liveCommentsCount, setLiveCommentsCount] = useState<number | null>(null);
   const isPysy = blog.handle === 'pysy-exe';
+  const isIsaac = blog.handle === 'medic-de-familie';
 
   return (
     <article
@@ -998,8 +1012,10 @@ function PostCard({
         ? "win95-window mb-6"
         : isPutzermann
           ? "noir-window mb-4"
-          : "bg-card border rounded-2xl p-4 sm:p-5 transition-all duration-200"}
-      style={{ borderColor: !isPysy && !isPutzermann && commentsOpen ? theme.accentBorder : undefined }}
+          : isIsaac
+            ? "isaac-card mb-4"
+            : "bg-card border rounded-2xl p-4 sm:p-5 transition-all duration-200"}
+      style={{ borderColor: !isPysy && !isPutzermann && !isIsaac && commentsOpen ? theme.accentBorder : undefined }}
     >
       {isPysy && (
         <div className="win95-title-bar">
@@ -1013,20 +1029,31 @@ function PostCard({
           </div>
         </div>
       )}
-      <div className={isPysy ? "p-3 sm:p-4" : isPutzermann ? "p-4 sm:p-5" : ""}>
+      {isIsaac && (
+        <div className="isaac-title-bar">
+          <div className="isaac-title-bar-text">
+            <span style={{ fontSize: '10px', opacity: 0.7 }}>✦</span>
+            {post.title ? post.title.toUpperCase() : (post.createdBy?.username ?? blog.user.username).toUpperCase()}
+          </div>
+          <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.08em' }}>
+            {format(new Date(post.createdAt as string), 'dd.MM.yyyy', { locale: ru })}
+          </span>
+        </div>
+      )}
+      <div className={isPysy ? "p-3 sm:p-4" : isPutzermann ? "p-4 sm:p-5" : isIsaac ? "p-4 sm:p-5" : ""}>
       <div className="flex items-center gap-3 mb-3">
-        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black border border-white" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
-          <AvatarImage src={blog.avatarUrl ?? undefined} className={isPutzermann ? "rounded-none" : ""} />
+        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black border border-white" : isIsaac ? "h-10 w-10 flex-shrink-0 rounded-none bg-black border border-[#C41E24]" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
+          <AvatarImage src={blog.avatarUrl ?? undefined} className={isPutzermann || isIsaac ? "rounded-none" : ""} />
           <AvatarFallback
-            className={isPysy ? "font-bold text-sm win95-text rounded-none" : isPutzermann ? "font-bold text-sm noir-text rounded-none" : "font-bold text-sm"}
-            style={!isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
+            className={isPysy ? "font-bold text-sm win95-text rounded-none" : isPutzermann ? "font-bold text-sm noir-text rounded-none" : isIsaac ? "font-bold text-sm rounded-none bg-[#C41E24] text-white" : "font-bold text-sm"}
+            style={isIsaac ? { fontFamily: "'Russo One', sans-serif" } : !isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
           >
             {blogAvatarFallback(blog.handle, blog.user.username)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className={isPysy ? "win95-text font-bold leading-tight" : isPutzermann ? "noir-text font-bold leading-tight tracking-wide" : "font-mono text-xs font-bold"} style={!isPysy && !isPutzermann ? { color: theme.accent } : undefined}>
-            {isPutzermann ? (blog.title || blog.user.username) : (post.createdBy?.username ?? blog.user.username)}
+          <p className={isPysy ? "win95-text font-bold leading-tight" : isPutzermann ? "noir-text font-bold leading-tight tracking-wide" : isIsaac ? "isaac-text font-bold leading-tight tracking-wide uppercase" : "font-mono text-xs font-bold"} style={!isPysy && !isPutzermann && !isIsaac ? { color: theme.accent } : undefined}>
+            {isPutzermann || isIsaac ? (blog.title || blog.user.username) : (post.createdBy?.username ?? blog.user.username)}
           </p>
           {isPysy && (
             <p className="win95-text-muted">
@@ -1038,22 +1065,29 @@ function PostCard({
               {formatOwnerUsername(blog.handle, blog.ownerUsername)}
             </p>
           )}
-          <p className={isPysy ? "win95-text-muted mt-0.5" : isPutzermann ? "noir-text-muted text-xs mt-0.5" : "text-muted-foreground font-sans text-xs"}>
-            {format(new Date(post.createdAt as string), 'd MMM yyyy, HH:mm', { locale: ru })}
-            {post.updatedAt !== post.createdAt && ' · изм.'}
-          </p>
+          {isIsaac && (
+            <p className="isaac-text-muted" style={{ fontSize: '11px' }}>
+              {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+            </p>
+          )}
+          {!isIsaac && (
+            <p className={isPysy ? "win95-text-muted mt-0.5" : isPutzermann ? "noir-text-muted text-xs mt-0.5" : "text-muted-foreground font-sans text-xs"}>
+              {format(new Date(post.createdAt as string), 'd MMM yyyy, HH:mm', { locale: ru })}
+              {post.updatedAt !== post.createdAt && ' · изм.'}
+            </p>
+          )}
         </div>
         {post.isOwner && (
           <div className="flex items-center gap-1">
             <button
               onClick={() => onEdit(post)}
-              className={isPysy ? "win95-button p-1" : isPutzermann ? "noir-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"}
+              className={isPysy ? "win95-button p-1" : isPutzermann ? "noir-button p-1" : isIsaac ? "isaac-button p-1.5" : "p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"}
             >
               <PenSquare className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDelete(post)}
-              className={isPysy ? "win95-button p-1" : isPutzermann ? "noir-button p-1" : "p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"}
+              className={isPysy ? "win95-button p-1" : isPutzermann ? "noir-button p-1" : isIsaac ? "isaac-button p-1.5" : "p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -1061,24 +1095,24 @@ function PostCard({
         )}
       </div>
 
-      {post.title && (
+      {post.title && !isIsaac && (
         <h2 className={isPysy ? "win95-text font-bold text-base sm:text-lg mb-1 leading-tight" : isPutzermann ? "noir-text font-bold text-lg mb-1 leading-tight tracking-widest uppercase" : "font-mono font-bold text-base sm:text-lg mb-1 leading-tight"}>{post.title}</h2>
       )}
 
       {post.content && (
-        <div className={`${isPysy ? "win95-text leading-relaxed" : isPutzermann ? "noir-text text-base leading-relaxed" : "font-sans text-sm sm:text-base text-foreground leading-relaxed"} min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere]`}>
+        <div className={`${isPysy ? "win95-text leading-relaxed" : isPutzermann ? "noir-text text-base leading-relaxed" : isIsaac ? "isaac-text text-sm leading-relaxed opacity-90" : "font-sans text-sm sm:text-base text-foreground leading-relaxed"} min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere]`}>
           {post.content}
         </div>
       )}
 
-      <MediaGrid items={post.media ?? []} accentColor={theme.accent} isPutzermann={isPutzermann} isPysy={isPysy} />
+      <MediaGrid items={post.media ?? []} accentColor={theme.accent} isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} />
 
       {/* Action bar */}
-      <div className={isPysy ? "flex items-center gap-5 mt-4 win95-text-muted" : isPutzermann ? "flex items-center gap-5 mt-4 noir-text-muted" : "flex items-center gap-5 mt-4 text-muted-foreground"}>
+      <div className={isPysy ? "flex items-center gap-5 mt-4 win95-text-muted" : isPutzermann ? "flex items-center gap-5 mt-4 noir-text-muted" : isIsaac ? "flex items-center gap-5 mt-4 isaac-text-muted" : "flex items-center gap-5 mt-4 text-muted-foreground"}>
         <button
           onClick={() => onToggleLike(post.id)}
           disabled={!me}
-          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed" : "flex items-center gap-1.5 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"}
+          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed" : isIsaac ? "isaac-button flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed" : "flex items-center gap-1.5 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"}
           style={likesState.liked ? { color: '#ef4444', borderColor: '#ef4444' } : undefined}
           title={me ? undefined : 'Войдите чтобы поставить лайк'}
         >
@@ -1087,8 +1121,8 @@ function PostCard({
         </button>
         <button
           onClick={() => setCommentsOpen((o) => !o)}
-          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5" : "flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"}
-          style={commentsOpen && !isPysy && !isPutzermann ? { color: theme.accent } : undefined}
+          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5" : isIsaac ? "isaac-button flex items-center gap-1.5" : "flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"}
+          style={commentsOpen && !isPysy && !isPutzermann && !isIsaac ? { color: theme.accent } : undefined}
         >
           <MessageCircle className="h-4 w-4" />
           <span>{liveCommentsCount !== null ? liveCommentsCount : post.commentsCount}</span>
@@ -1096,7 +1130,7 @@ function PostCard({
       </div>
 
       {commentsOpen && (
-        <CommentsSection postId={post.id} me={me} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} onCountChange={setLiveCommentsCount} />
+        <CommentsSection postId={post.id} me={me} theme={theme} isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} onCountChange={setLiveCommentsCount} />
       )}
       </div>
     </article>
@@ -1111,6 +1145,7 @@ function CreatePostBox({
   me,
   theme,
   isPutzermann,
+  isIsaac,
   onPosted,
 }: {
   handle: string;
@@ -1118,6 +1153,7 @@ function CreatePostBox({
   me: { username: string };
   theme: BlogTheme;
   isPutzermann?: boolean;
+  isIsaac?: boolean;
   onPosted: () => void;
 }) {
   const isPysy = blog.handle === 'pysy-exe';
@@ -1178,7 +1214,7 @@ function CreatePostBox({
 
   return (
     <>
-      <div className={isPysy ? "win95-window mb-6" : isPutzermann ? "noir-card mb-4" : "border rounded-2xl p-4 sm:p-5 mb-6"} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder, backgroundColor: theme.accentBg } : undefined}>
+      <div className={isPysy ? "win95-window mb-6" : isPutzermann ? "noir-card mb-4" : isIsaac ? "isaac-window mb-4" : "border rounded-2xl p-4 sm:p-5 mb-6"} style={!isPysy && !isPutzermann && !isIsaac ? { borderColor: theme.accentBorder, backgroundColor: theme.accentBg } : undefined}>
         {isPysy && (
           <div className="win95-title-bar">
             <div className="win95-title-bar-text flex items-center gap-1">
@@ -1191,24 +1227,32 @@ function CreatePostBox({
             </div>
           </div>
         )}
-        <div className={isPysy ? "space-y-3 p-3 sm:p-4" : isPutzermann ? "space-y-3" : "space-y-3"}>
+        {isIsaac && (
+          <div className="isaac-title-bar">
+            <div className="isaac-title-bar-text">✦ НОВАЯ ЗАПИСЬ</div>
+            <div className="flex gap-1">
+              <button className="isaac-button isaac-button-small" onClick={() => {}}>—</button>
+            </div>
+          </div>
+        )}
+        <div className={isPysy ? "space-y-3 p-3 sm:p-4" : isPutzermann ? "space-y-3" : isIsaac ? "space-y-3 p-4" : "space-y-3"}>
           <Input
             placeholder="Заголовок поста"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={isPysy ? "win95-sunken win95-text px-2 h-8 rounded-none w-full" : isPutzermann ? "noir-sunken noir-text px-2 h-8 rounded-none w-full border-white" : "bg-background/60 border-border/60 font-mono font-semibold"}
+            className={isPysy ? "win95-sunken win95-text px-2 h-8 rounded-none w-full" : isPutzermann ? "noir-sunken noir-text px-2 h-8 rounded-none w-full border-white" : isIsaac ? "isaac-sunken isaac-text px-2 h-8 rounded-none w-full" : "bg-background/60 border-border/60 font-mono font-semibold"}
           />
           <Textarea
             placeholder="Что нового?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
-            className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none w-full min-h-[80px] border-white" : "bg-background/60 border-border/60 font-sans resize-none"}
+            className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none w-full min-h-[80px] border-white" : isIsaac ? "isaac-sunken isaac-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : "bg-background/60 border-border/60 font-sans resize-none"}
           />
-          {(isPysy || isPutzermann) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : 'border-t border-dashed border-white/30'}`} />}
+          {(isPysy || isPutzermann || isIsaac) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : isIsaac ? 'border-t border-[#C41E24]/40' : 'border-t border-dashed border-white/30'}`} />}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1">
-              <label className={`cursor-pointer p-2 rounded-none transition-colors ${isPysy ? 'win95-button' : isPutzermann ? 'noir-button' : 'text-muted-foreground hover:text-foreground hover:bg-card rounded-full'}`} title="Прикрепить файл">
+              <label className={`cursor-pointer p-2 rounded-none transition-colors ${isPysy ? 'win95-button' : isPutzermann ? 'noir-button' : isIsaac ? 'isaac-button' : 'text-muted-foreground hover:text-foreground hover:bg-card rounded-full'}`} title="Прикрепить файл">
                 <Paperclip className="h-5 w-5" />
                 <input type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={(e) => {
                   const files = Array.from(e.target.files ?? []);
@@ -1227,8 +1271,8 @@ function CreatePostBox({
                 type="button"
                 onClick={() => setCircleOpen(true)}
                 disabled={uploading}
-                className={isPysy ? "win95-button gap-1.5 h-auto py-1" : isPutzermann ? "noir-button gap-1.5" : "font-mono gap-1.5"}
-                style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
+                className={isPysy ? "win95-button gap-1.5 h-auto py-1" : isPutzermann ? "noir-button gap-1.5" : isIsaac ? "isaac-button gap-1.5" : "font-mono gap-1.5"}
+                style={!isPysy && !isPutzermann && !isIsaac ? { backgroundColor: theme.accent, color: '#000' } : undefined}
                 title="Снять кружок"
               >
                 <Camera className="h-4 w-4" />
@@ -1237,8 +1281,8 @@ function CreatePostBox({
               <Button
                 onClick={handleSubmit}
                 disabled={saving || uploading || !canSubmit}
-                className={isPysy ? "win95-button gap-1.5 h-auto py-1 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : "font-mono gap-1.5"}
-                style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}
+                className={isPysy ? "win95-button gap-1.5 h-auto py-1 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : isIsaac ? "isaac-button gap-1.5" : "font-mono gap-1.5"}
+                style={!isPysy && !isPutzermann && !isIsaac ? { backgroundColor: theme.accent, color: '#000' } : undefined}
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Опубликовать
@@ -1248,11 +1292,11 @@ function CreatePostBox({
           {media.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-1">
               {media.map((m, i) => (
-                <div key={i} className={`relative group overflow-hidden w-16 h-16 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none border-white' : 'rounded-lg border border-border/60 bg-card'}`}>
+                <div key={i} className={`relative group overflow-hidden w-16 h-16 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none border-white' : isIsaac ? 'isaac-sunken rounded-none' : 'rounded-lg border border-border/60 bg-card'}`}>
                   {m.type === 'image' ? (
                     <img src={m.url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className={`w-full h-full flex flex-col items-center justify-center gap-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}>
+                    <div className={`w-full h-full flex flex-col items-center justify-center gap-1 ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground'}`}>
                       {m.isCircle ? <Camera className="h-4 w-4" /> : m.type === 'video' ? <Video className="h-4 w-4" /> : <Music className="h-4 w-4" />}
                       {m.isCircle && <span className="text-[9px] font-mono">кружок</span>}
                     </div>
@@ -1268,7 +1312,7 @@ function CreatePostBox({
       </div>
 
       <Dialog open={circleOpen} onOpenChange={setCircleOpen}>
-        <DialogContent hideClose={isPysy || isPutzermann} className={isPysy ? "max-w-sm win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-sm noir-card p-0 rounded-none border-0" : "max-w-sm border border-border/60 bg-card/95 backdrop-blur"}>
+        <DialogContent hideClose={isPysy || isPutzermann || isIsaac} className={isPysy ? "max-w-sm win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-sm noir-card p-0 rounded-none border-0" : isIsaac ? "max-w-sm isaac-window p-0 rounded-none border-0" : "max-w-sm border border-border/60 bg-card/95 backdrop-blur"}>
           {isPysy && (
             <div className="win95-title-bar">
               <div className="win95-title-bar-text flex items-center gap-1">
@@ -1285,7 +1329,13 @@ function CreatePostBox({
               <button className="noir-button noir-button-small" onClick={() => setCircleOpen(false)}>X</button>
             </div>
           )}
-          {!isPysy && !isPutzermann && (
+          {isIsaac && (
+            <div className="isaac-title-bar">
+              <div className="isaac-title-bar-text"><Camera className="h-3 w-3" /> RECORD</div>
+              <button className="isaac-button isaac-button-small" onClick={() => setCircleOpen(false)}>X</button>
+            </div>
+          )}
+          {!isPysy && !isPutzermann && !isIsaac && (
             <DialogHeader>
               <DialogTitle className="font-mono text-base font-bold flex items-center gap-2">
                 <Camera className="h-4 w-4" style={{ color: theme.accent }} />
@@ -1293,7 +1343,7 @@ function CreatePostBox({
               </DialogTitle>
             </DialogHeader>
           )}
-          <div className={isPysy || isPutzermann ? "p-4" : ""}>
+          <div className={isPysy || isPutzermann || isIsaac ? "p-4" : ""}>
             <CircleVideoRecorder onRecorded={handleCircleVideo} onClose={() => setCircleOpen(false)} theme={theme} isPysy={isPysy} />
           </div>
         </DialogContent>
@@ -1391,10 +1441,11 @@ function EditBlogDialog({
   };
 
   const isPutzermann = blog.handle === 'putzermann-core';
+  const isIsaac = blog.handle === 'medic-de-familie';
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent hideClose={isPysy || isPutzermann} className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-lg noir-card p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
+      <DialogContent hideClose={isPysy || isPutzermann || isIsaac} className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-lg noir-card p-0 rounded-none border-0" : isIsaac ? "max-w-lg isaac-window p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
         {isPysy && (
           <div className="win95-title-bar">
             <div className="win95-title-bar-text">CONFIG.EXE</div>
@@ -1409,7 +1460,13 @@ function EditBlogDialog({
             <button className="noir-button noir-button-small" onClick={onClose}>X</button>
           </div>
         )}
-        {!isPysy && !isPutzermann && (
+        {isIsaac && (
+          <div className="isaac-title-bar">
+            <div className="isaac-title-bar-text">✦ РЕДАКТИРОВАТЬ БЛОГ</div>
+            <button className="isaac-button isaac-button-small" onClick={onClose}>X</button>
+          </div>
+        )}
+        {!isPysy && !isPutzermann && !isIsaac && (
           <DialogHeader>
             <DialogTitle className="font-mono text-lg font-bold flex items-center gap-2">
               <PenSquare className="h-5 w-5" style={{ color: theme.accent }} />
@@ -1417,37 +1474,37 @@ function EditBlogDialog({
             </DialogTitle>
           </DialogHeader>
         )}
-        <div className={isPysy ? "p-4 space-y-4" : isPutzermann ? "p-4 space-y-4" : "space-y-4 pt-2"}>
-          <Input placeholder={isPysy ? 'Название блога' : 'Название блога'} value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 rounded-none border-white" : "bg-background/50 border-border/60 font-mono"} />
-          <Textarea placeholder={isPysy ? 'Описание' : 'Описание'} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none border-white" : "bg-background/50 border-border/60 font-sans resize-none"} />
+        <div className={isPysy ? "p-4 space-y-4" : isPutzermann ? "p-4 space-y-4" : isIsaac ? "p-4 space-y-4" : "space-y-4 pt-2"}>
+          <Input placeholder='Название блога' value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 rounded-none border-white" : isIsaac ? "isaac-sunken isaac-text px-2 rounded-none" : "bg-background/50 border-border/60 font-mono"} />
+          <Textarea placeholder='Описание' value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none border-white" : isIsaac ? "isaac-sunken isaac-text px-2 py-1 resize-none rounded-none" : "bg-background/50 border-border/60 font-sans resize-none"} />
           <div className="flex gap-3">
-            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-sunken' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
+            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-sunken' : isIsaac ? 'isaac-sunken' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
               {coverUrl ? (
                 <div className="relative">
-                  <img src={coverUrl} alt="" className={`w-full aspect-[2/1] object-cover ${isPysy ? 'rounded-none win95-sunken' : isPutzermann ? 'rounded-none noir-sunken border-white' : 'rounded-lg'}`} />
-                  <button type="button" onClick={(e) => { e.preventDefault(); setCoverUrl(''); }} className={`absolute top-1 right-1 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
+                  <img src={coverUrl} alt="" className={`w-full aspect-[2/1] object-cover ${isPysy ? 'rounded-none win95-sunken' : isPutzermann ? 'rounded-none noir-sunken border-white' : isIsaac ? 'rounded-none isaac-sunken' : 'rounded-lg'}`} />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setCoverUrl(''); }} className={`absolute top-1 right-1 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : isIsaac ? 'isaac-button isaac-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
                 </div>
               ) : (
-                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : isPutzermann ? 'noir-label' : 'font-sans'}`}>Обложка</span></div>
+                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : isPutzermann ? 'noir-label' : isIsaac ? 'isaac-label' : 'font-sans'}`}>Обложка</span></div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'cover'); e.target.value = ''; }} />
             </label>
-            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-sunken' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
+            <label className={`flex-1 cursor-pointer p-4 text-center transition-colors ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-sunken' : isIsaac ? 'isaac-sunken' : 'rounded-xl border border-border/60 bg-background/50 hover:border-primary/50'}`}>
               {avatarUrl ? (
                 <div className="relative">
-                  <img src={avatarUrl} alt="" className={`w-16 h-16 mx-auto object-cover ${isPysy ? 'rounded-none win95-sunken' : isPutzermann ? 'rounded-none noir-sunken border-white' : 'rounded-lg'}`} />
-                  <button type="button" onClick={(e) => { e.preventDefault(); setAvatarUrl(''); }} className={`absolute top-1 right-1 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
+                  <img src={avatarUrl} alt="" className={`w-16 h-16 mx-auto object-cover ${isPysy ? 'rounded-none win95-sunken' : isPutzermann ? 'rounded-none noir-sunken border-white' : isIsaac ? 'rounded-none isaac-sunken' : 'rounded-lg'}`} />
+                  <button type="button" onClick={(e) => { e.preventDefault(); setAvatarUrl(''); }} className={`absolute top-1 right-1 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : isIsaac ? 'isaac-button isaac-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
                 </div>
               ) : (
-                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : isPutzermann ? 'noir-label' : 'font-sans'}`}>Аватар</span></div>
+                <div className={`flex flex-col items-center gap-1 ${isPysy ? 'win95-text' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground'}`}><ImageIcon className="h-5 w-5" /><span className={`text-xs ${isPysy ? 'win95-text' : isPutzermann ? 'noir-label' : isIsaac ? 'isaac-label' : 'font-sans'}`}>Аватар</span></div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'avatar'); e.target.value = ''; }} />
             </label>
           </div>
-          {uploading && <div className={`flex items-center gap-2 text-xs ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground font-mono'}`}><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
+          {uploading && <div className={`flex items-center gap-2 text-xs ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground font-mono'}`}><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : isPutzermann ? "noir-button" : "font-mono"}>Отмена</Button>
-            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
+            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : isPutzermann ? "noir-button" : isIsaac ? "isaac-button" : "font-mono"}>Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : isIsaac ? "isaac-button gap-1.5" : "font-mono gap-1.5"} style={!isPysy && !isPutzermann && !isIsaac ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               Сохранить
             </Button>
@@ -1476,6 +1533,7 @@ function EditPostDialog({
 }) {
   const isPysy = handle === 'pysy-exe';
   const isPutzermann = handle === 'putzermann-core';
+  const isIsaac = handle === 'medic-de-familie';
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
   const [media, setMedia] = useState<MediaItem[]>(
@@ -1508,7 +1566,7 @@ function EditPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent hideClose={isPysy || isPutzermann} className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-lg noir-card p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
+      <DialogContent hideClose={isPysy || isPutzermann || isIsaac} className={isPysy ? "max-w-lg win95-window p-0 rounded-none border-0" : isPutzermann ? "max-w-lg noir-card p-0 rounded-none border-0" : isIsaac ? "max-w-lg isaac-window p-0 rounded-none border-0" : "max-w-lg border border-border/60 bg-card/95 backdrop-blur"}>
         {isPysy && (
           <div className="win95-title-bar">
             <div className="win95-title-bar-text">EDIT_POST.EXE</div>
@@ -1523,41 +1581,47 @@ function EditPostDialog({
             <button className="noir-button noir-button-small" onClick={onClose}>X</button>
           </div>
         )}
-        {!isPysy && !isPutzermann && (
+        {isIsaac && (
+          <div className="isaac-title-bar">
+            <div className="isaac-title-bar-text">✦ РЕДАКТИРОВАТЬ ЗАПИСЬ</div>
+            <button className="isaac-button isaac-button-small" onClick={onClose}>X</button>
+          </div>
+        )}
+        {!isPysy && !isPutzermann && !isIsaac && (
           <DialogHeader>
             <DialogTitle className="font-mono text-lg font-bold">Редактировать пост</DialogTitle>
           </DialogHeader>
         )}
-        <div className={isPysy ? "p-4 space-y-4" : isPutzermann ? "p-4 space-y-4" : "space-y-4"}>
-          <Input placeholder='Заголовок' value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 rounded-none border-white" : "font-mono bg-background/50 border-border/60"} />
-          <Textarea placeholder='Текст...' value={content} onChange={(e) => setContent(e.target.value)} rows={5} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none border-white" : "font-sans resize-none bg-background/50 border-border/60"} />
+        <div className={isPysy ? "p-4 space-y-4" : isPutzermann ? "p-4 space-y-4" : isIsaac ? "p-4 space-y-4" : "space-y-4"}>
+          <Input placeholder='Заголовок' value={title} onChange={(e) => setTitle(e.target.value)} className={isPysy ? "win95-sunken win95-text px-2 rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 rounded-none border-white" : isIsaac ? "isaac-sunken isaac-text px-2 rounded-none" : "font-mono bg-background/50 border-border/60"} />
+          <Textarea placeholder='Текст...' value={content} onChange={(e) => setContent(e.target.value)} rows={5} className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none border-white" : isIsaac ? "isaac-sunken isaac-text px-2 py-1 resize-none rounded-none" : "font-sans resize-none bg-background/50 border-border/60"} />
           <div className="flex flex-wrap gap-2">
             {(['image', 'video', 'audio'] as const).map((t) => (
-              <label key={t} className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs transition-all ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-button' : 'rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:border-primary/50'}`}>
+              <label key={t} className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs transition-all ${isPysy ? 'win95-button rounded-none' : isPutzermann ? 'noir-button' : isIsaac ? 'isaac-button' : 'rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:border-primary/50'}`}>
                 {t === 'image' ? <ImageIcon className="h-3.5 w-3.5" /> : t === 'video' ? <Video className="h-3.5 w-3.5" /> : <Music className="h-3.5 w-3.5" />}
                 {t === 'image' ? 'Фото' : t === 'video' ? 'Видео' : 'Аудио'}
                 <input type="file" accept={`${t}/*`} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, t); e.target.value = ''; }} />
               </label>
             ))}
-            {uploading && <Loader2 className={`h-4 w-4 animate-spin ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`} />}
+            {uploading && <Loader2 className={`h-4 w-4 animate-spin ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground'}`} />}
           </div>
           {media.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {media.map((m, i) => (
-                <div key={i} className={`relative group overflow-hidden w-20 h-20 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none border-white' : 'rounded-xl border border-border/60 bg-card'}`}>
+                <div key={i} className={`relative group overflow-hidden w-20 h-20 ${isPysy ? 'win95-sunken rounded-none bg-[#c0c0c0]' : isPutzermann ? 'noir-sunken rounded-none border-white' : isIsaac ? 'isaac-sunken rounded-none' : 'rounded-xl border border-border/60 bg-card'}`}>
                   {m.type === 'image' ? <img src={m.url} alt="" className="w-full h-full object-cover" /> : (
-                    <div className={`w-full h-full flex items-center justify-center ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : 'text-muted-foreground'}`}>
+                    <div className={`w-full h-full flex items-center justify-center ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'isaac-text-muted' : 'text-muted-foreground'}`}>
                       {m.isCircle ? <Camera className="h-5 w-5" /> : m.type === 'video' ? <Video className="h-5 w-5" /> : <Music className="h-5 w-5" />}
                     </div>
                   )}
-                  <button type="button" onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))} className={`absolute top-0.5 right-0.5 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))} className={`absolute top-0.5 right-0.5 p-1 ${isPysy ? 'rounded-none win95-button win95-button-small' : isPutzermann ? 'noir-button noir-button-small' : isIsaac ? 'isaac-button isaac-button-small' : 'rounded-lg bg-black/60 text-white'}`}><X className="h-3 w-3" /></button>
                 </div>
               ))}
             </div>
           )}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : isPutzermann ? "noir-button" : "font-mono"}>Отмена</Button>
-            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : "font-mono gap-1.5"} style={!isPysy && !isPutzermann ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
+            <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : isPutzermann ? "noir-button" : isIsaac ? "isaac-button" : "font-mono"}>Отмена</Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading || !title.trim()} className={isPysy ? "win95-button gap-1.5 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : isIsaac ? "isaac-button gap-1.5" : "font-mono gap-1.5"} style={!isPysy && !isPutzermann && !isIsaac ? { backgroundColor: theme.accent, color: '#000' } : undefined}>
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Сохранить
             </Button>
@@ -1588,6 +1652,7 @@ export default function BlogPage() {
   }, [blog]);
   const isPutzermann = blog?.handle === 'putzermann-core';
   const isPysy = blog?.handle === 'pysy-exe';
+  const isIsaac = blog?.handle === 'medic-de-familie';
 
   // Likes state — initialized from server data, updated optimistically
   const [likesState, setLikesState] = useState<Map<number, { count: number; liked: boolean }>>(new Map());
@@ -1658,7 +1723,8 @@ export default function BlogPage() {
     <>
     {isPysy && <div className="fixed inset-0 win95-page -z-10" />}
     {isPutzermann && <div className="fixed inset-0 noir-page -z-10" />}
-    <div className={isPysy ? "max-w-3xl mx-auto w-full pb-10 relative pt-4 sm:pt-8" : isPutzermann ? "max-w-3xl mx-auto w-full pb-10 relative" : "max-w-3xl mx-auto w-full pb-10"}>
+    {isIsaac && <div className="fixed inset-0 isaac-page -z-10" />}
+    <div className={isPysy ? "max-w-3xl mx-auto w-full pb-10 relative pt-4 sm:pt-8" : isPutzermann ? "max-w-3xl mx-auto w-full pb-10 relative" : isIsaac ? "max-w-3xl mx-auto w-full pb-10 relative" : "max-w-3xl mx-auto w-full pb-10"}>
       {isPysy ? (
         <div className="px-4 sm:px-6 mb-6">
           <div className="win95-window">
@@ -1758,6 +1824,76 @@ export default function BlogPage() {
             </div>
           </div>
         </div>
+      ) : isIsaac ? (
+        /* ── Marlboro Hero Header ── */
+        <div className="mb-2">
+          {/* Red band with stripe pattern */}
+          <div className="relative w-full overflow-hidden" style={{ background: '#C41E24', minHeight: '180px' }}>
+            {/* Repeating thin stripe texture */}
+            <div className="absolute inset-0 opacity-10" style={{
+              backgroundImage: 'repeating-linear-gradient(90deg, #fff 0px, #fff 2px, transparent 2px, transparent 18px)',
+            }} />
+            {/* Top accent line */}
+            <div className="w-full h-2 bg-[#8B1010]" />
+            <div className="w-full h-1 bg-[#F0EBE3]/20" />
+
+            <div className="relative z-10 px-6 pt-6 pb-10 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+              {/* Blog title block */}
+              <div className="flex-1 min-w-0">
+                <div className="isaac-warning-strip inline-block mb-3 px-2 py-0.5 text-[10px] tracking-[0.25em] uppercase font-bold" style={{ background: '#F0EBE3', color: '#C41E24' }}>
+                  MEDIC · DE · FAMILIE
+                </div>
+                <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-wider leading-none" style={{ fontFamily: "'Russo One', sans-serif", color: '#F0EBE3', textShadow: '2px 4px 12px rgba(0,0,0,0.6)' }}>
+                  {blog.title || blog.user.username}
+                </h1>
+                <p className="mt-2 text-[#F0EBE3]/60 text-xs tracking-[0.2em] uppercase font-bold" style={{ fontFamily: "'Russo One', sans-serif" }}>
+                  {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+                </p>
+              </div>
+              {/* Avatar */}
+              <Avatar className="h-24 w-24 sm:h-28 sm:w-28 border-4 shrink-0" style={{ borderColor: '#F0EBE3' }}>
+                <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" />
+                <AvatarFallback className="font-black text-2xl" style={{ background: '#8B1010', color: '#F0EBE3', fontFamily: "'Russo One', sans-serif" }}>
+                  {blogAvatarFallback(blog.handle, blog.user.username)}
+                </AvatarFallback>
+              </Avatar>
+              {blog.isOwner && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditBlogOpen(true)}
+                  className="isaac-button gap-2 self-start sm:self-auto shrink-0"
+                >
+                  <PenSquare className="h-4 w-4" />
+                  Редактировать
+                </Button>
+              )}
+            </div>
+
+            {/* Chevron cutout at the bottom */}
+            <div className="absolute bottom-0 left-0 right-0 overflow-hidden leading-none" style={{ lineHeight: 0 }}>
+              <svg viewBox="0 0 1200 40" preserveAspectRatio="none" className="w-full block" style={{ height: '40px' }}>
+                <polygon points="0,0 600,40 1200,0 1200,40 0,40" fill="#0D0D0D" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Description + surgeon-general strip */}
+          {blog.description && (
+            <div className="px-6 pt-4 pb-2">
+              <p className="isaac-text text-sm sm:text-base max-w-2xl leading-relaxed opacity-80">
+                {blog.description}
+              </p>
+            </div>
+          )}
+
+          {/* Surgeon General's Warning strip */}
+          <div className="mx-4 sm:mx-6 mt-3 border-2 p-3 flex gap-3 items-start" style={{ borderColor: '#C41E24', background: '#F0EBE3' }}>
+            <div className="shrink-0 w-1 self-stretch" style={{ background: '#C41E24' }} />
+            <p className="text-[10px] sm:text-xs leading-snug font-bold uppercase tracking-wide" style={{ color: '#0D0D0D', fontFamily: "'Russo One', sans-serif" }}>
+              ПОПЕРЕДЖЕННЯ: Тривале читання медичних блогів може призвести до надмірного самодіагностування, хронічного занепокоєння та надмірного використання пошукових систем. Читайте з обережністю.
+            </p>
+          </div>
+        </div>
       ) : (
         <>
           {/* Cover — no blue fade, themed gradient or cover image */}
@@ -1816,16 +1952,17 @@ export default function BlogPage() {
       {/* Post feed */}
       <div className="px-4 sm:px-6 mt-8">
         <div className="flex justify-end mb-3">
-          <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} theme={theme} />
+          <PushBellButton isPutzermann={isPutzermann} isPysy={isPysy} isIsaac={isIsaac} theme={theme} />
         </div>
         {blog.isOwner && me && (
-          <CreatePostBox handle={blog.handle} blog={blog} me={me} theme={theme} isPutzermann={isPutzermann} onPosted={() => {}} />
+          <CreatePostBox handle={blog.handle} blog={blog} me={me} theme={theme} isPutzermann={isPutzermann} isIsaac={isIsaac} onPosted={() => {}} />
         )}
 
         {posts.length === 0 ? (
-          <div className={`text-center py-20 ${isPysy ? 'win95-sunken bg-white border-0' : isPutzermann ? 'noir-panel' : 'border border-dashed bg-card/30 rounded-3xl'}`} style={!isPysy && !isPutzermann ? { borderColor: theme.accentBorder } : undefined}>
-            {!isPysy && !isPutzermann && <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />}
-            <p className={`${isPysy ? 'win95-text-muted font-sans' : isPutzermann ? 'noir-text-muted tracking-widest uppercase' : 'text-muted-foreground font-mono'}`}>В блоге пока нет постов</p>
+          <div className={`text-center py-20 ${isPysy ? 'win95-sunken bg-white border-0' : isPutzermann ? 'noir-panel' : isIsaac ? 'isaac-panel border-0' : 'border border-dashed bg-card/30 rounded-3xl'}`} style={!isPysy && !isPutzermann && !isIsaac ? { borderColor: theme.accentBorder } : undefined}>
+            {!isPysy && !isPutzermann && !isIsaac && <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: theme.accent }} />}
+            {isIsaac && <span className="text-3xl block mb-3">✦</span>}
+            <p className={`${isPysy ? 'win95-text-muted font-sans' : isPutzermann ? 'noir-text-muted tracking-widest uppercase' : isIsaac ? 'isaac-text-muted tracking-widest uppercase' : 'text-muted-foreground font-mono'}`}>В блоге пока нет постов</p>
           </div>
         ) : (
           <div className="space-y-5">

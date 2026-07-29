@@ -707,6 +707,260 @@
   background: #222222 !important;
 }
 
+/* ────────────────────────────────────────────────────────────────────────────
+   Marlboro "Doctor's Warning" theme — for medic-de-familie blog
+   Charcoal black + Marlboro crimson red + aged cream white.
+   Rugged, bold, Western-brand-meets-medical-irony.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+:root.isaac-theme,
+.dark.isaac-theme {
+  --background: 0 0% 5%;
+  --foreground: 30 18% 90%;
+
+  --card: 0 0% 8%;
+  --card-foreground: 30 18% 90%;
+  --card-border: 0 78% 38%;
+
+  --popover: 0 0% 8%;
+  --popover-foreground: 30 18% 90%;
+  --popover-border: 0 78% 38%;
+
+  --primary: 0 76% 42%;
+  --primary-foreground: 0 0% 98%;
+
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 30 18% 90%;
+
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 44%;
+
+  --accent: 0 76% 42%;
+  --accent-foreground: 0 0% 98%;
+
+  --destructive: 0 88% 58%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 76% 30%;
+  --input: 0 0% 11%;
+  --ring: 0 76% 42%;
+
+  --sidebar: 0 0% 3%;
+  --sidebar-foreground: 30 18% 90%;
+  --sidebar-primary: 0 76% 42%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 0 0% 9%;
+  --sidebar-accent-foreground: 30 18% 90%;
+  --sidebar-border: 0 76% 22%;
+  --sidebar-ring: 0 76% 42%;
+
+  --app-font-sans: 'Russo One', 'Plus Jakarta Sans', sans-serif;
+  --app-font-mono: 'Space Mono', monospace;
+}
+
+/* Flat near-black page */
+.isaac-page {
+  background-color: #0D0D0D;
+}
+
+/* Red gradient — used for the cover hero */
+.isaac-dungeon-floor {
+  background: linear-gradient(180deg, #C41E24 0%, #8B0D12 45%, #0D0D0D 100%);
+}
+
+/* Main panel — dark with red border + top stripe */
+.isaac-window {
+  background-color: #141414;
+  border: 2px solid #C41E24;
+  box-shadow: 0 0 0 1px #7A0D10, 0 6px 28px rgba(196,30,36,0.14);
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.isaac-window::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    #C41E24 0px, #C41E24 18px,
+    #8B0D12 18px, #8B0D12 36px
+  );
+  z-index: 1;
+}
+
+/* Post card */
+.isaac-card {
+  background-color: #141414;
+  border: 1px solid rgba(196,30,36,0.5);
+  box-shadow: 0 2px 12px rgba(196,30,36,0.06);
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+/* Marlboro crimson title bar */
+.isaac-title-bar {
+  background: linear-gradient(180deg, #C41E24 0%, #9B1018 100%);
+  color: #F5F0E8;
+  font-family: 'Russo One', sans-serif;
+  font-size: 11px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #7A0D10;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.isaac-title-bar-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Button — dark with red border, fills red on hover */
+.isaac-button {
+  background: #0D0D0D;
+  border: 1px solid #C41E24;
+  color: #F0EBE3;
+  font-family: 'Russo One', sans-serif;
+  font-size: 10px;
+  cursor: pointer;
+  text-shadow: none;
+  padding: 5px 14px;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.isaac-button:hover {
+  background: #C41E24;
+  border-color: #E83040;
+  color: #fff;
+}
+
+.isaac-button:active {
+  background: #9B1018;
+}
+
+.isaac-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.isaac-button-small {
+  padding: 2px 8px;
+  font-size: 9px;
+}
+
+/* Sunken input */
+.isaac-sunken {
+  background-color: #0A0A0A;
+  border: 1px solid #5A1018;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.8);
+  color: #F0EBE3;
+}
+
+/* Raised */
+.isaac-raised {
+  background: #1E1E1E;
+  border: 1px solid #C41E24;
+  box-shadow: 0 2px 8px rgba(196,30,36,0.1);
+}
+
+/* General panel */
+.isaac-panel {
+  background-color: #111111;
+  border: 1px solid #3A1015;
+}
+
+/* Sidebar */
+.isaac-sidebar {
+  background-color: #0A0A0A;
+  border-right: 1px solid #3A1015;
+}
+
+/* Text */
+.isaac-text {
+  color: #F0EBE3;
+  font-family: 'Russo One', sans-serif;
+  font-size: 14px;
+}
+
+.isaac-text-muted {
+  color: #6A6560;
+  font-family: 'Russo One', sans-serif;
+  font-size: 12px;
+}
+
+.isaac-label {
+  color: #C41E24;
+  font-family: 'Russo One', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.isaac-link {
+  color: #F0EBE3;
+  font-family: 'Russo One', sans-serif;
+  text-decoration: none;
+}
+
+.isaac-link:hover {
+  color: #C41E24;
+}
+
+/* Icons */
+.isaac-theme svg,
+.isaac-theme [data-slot="icon"],
+.isaac-icon {
+  color: #C41E24;
+}
+
+/* Scrollbar */
+.isaac-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  background: #0D0D0D;
+}
+.isaac-scrollbar::-webkit-scrollbar-thumb {
+  background: #3A1015;
+}
+.isaac-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #C41E24;
+}
+
+/* Slider overrides */
+:root.isaac-theme [data-slot="slider-range"],
+.dark.isaac-theme [data-slot="slider-range"] {
+  background-color: #C41E24;
+}
+:root.isaac-theme [data-slot="slider-thumb"],
+.dark.isaac-theme [data-slot="slider-thumb"] {
+  border-color: #C41E24 !important;
+  background-color: #C41E24 !important;
+  box-shadow: none !important;
+}
+:root.isaac-theme [data-slot="slider-thumb"]:hover,
+.dark.isaac-theme [data-slot="slider-thumb"]:hover {
+  border-color: #E83040 !important;
+  background-color: #E83040 !important;
+}
+:root.isaac-theme [data-slot="slider-track"],
+.dark.isaac-theme [data-slot="slider-track"] {
+  background-color: #2A1015 !important;
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -1,54 +1,51 @@
-# МЗТ — Music Tracking App
+# mzt — Music/Media Platform
 
-A personal music tracking platform with releases, recommendations, a timeline, and user blogs. Built as a pnpm monorepo with a React frontend and Express API backend.
+A full-stack music and media platform with blogs, track recommendations, reviews, uploads, push notifications, and user activity.
 
 ## Stack
 
-- **Frontend**: React 19 + Vite + Tailwind CSS + shadcn/ui (`artifacts/mzt`)
-- **Backend**: Express 5 + Drizzle ORM + PostgreSQL (`artifacts/api-server`)
-- **Shared libs**: `lib/db` (schema + queries), `lib/api-spec` (OpenAPI), `lib/api-zod` (validation), `lib/api-client-react` (typed hooks)
+- **Frontend**: React + Vite (`artifacts/mzt`) — served at `/`
+- **API server**: Express 5 (`artifacts/api-server`) — served at `/api`
+- **Database**: PostgreSQL via Drizzle ORM (`lib/db`)
+- **Schema**: users, releases, tracks, reviews, videos, movies, blogs, push subscriptions, recommendations, playlist imports
 
-## Running the project
+## How to run
+
+Dependencies are managed with pnpm. The database is Replit's built-in PostgreSQL.
+
+```bash
+# Install all workspace packages
+pnpm install
+
+# Push database schema
+pnpm --filter @workspace/db run push
+```
 
 Both workflows start automatically:
+- `artifacts/mzt: web` — Vite dev server (frontend)
+- `artifacts/api-server: API Server` — Express API (builds then serves)
 
-| Workflow | Command | Port |
-|---|---|---|
-| `artifacts/mzt: web` | `pnpm --filter @workspace/mzt run dev` | 19721 |
-| `artifacts/api-server: API Server` | `pnpm --filter @workspace/api-server run dev` | 8080 |
+## Required secrets
 
-For a fresh checkout or import, run `pnpm run setup` once. It restores the
-locked workspace dependencies and applies the existing Drizzle schema to the
-development PostgreSQL database. The API seeds the initial blogs when it starts.
+| Key | Where set | Notes |
+|-----|-----------|-------|
+| `SESSION_SECRET` | Replit Secrets | Express session signing |
+| `DATABASE_URL` | Runtime-managed | Injected automatically by Replit |
+| `VAPID_PUBLIC_KEY` | Shared env | Web push notifications |
+| `VAPID_PRIVATE_KEY` | Shared env | Web push notifications |
+| `VAPID_SUBJECT` | Shared env | Web push contact email |
 
-### Restoring from a backup export
+## Key features
 
-If you have a `backup.sql` and `media_export/` from a previous deployment:
-
-```sh
-bash scripts/restore-backup.sh
-```
-
-This truncates all application tables, restores data from `backup.sql` (COPY
-format, FK checks temporarily disabled), resets sequences, and uploads any
-files found in `media_export/media_export/uploads/` to Replit Object Storage.
-After running, restart the API server workflow to pick up the fresh data.
-
-The API health check is available at `/api/healthz`.
-
-## Environment
-
-- `DATABASE_URL` — Replit-managed PostgreSQL (set automatically)
-- `SESSION_SECRET` — stored as a Replit secret
-
-## Database
-
-Schema is managed with Drizzle ORM. To push schema changes:
-
-```sh
-pnpm --filter @workspace/db exec drizzle-kit push
-```
+- **Auth** — session-based auth with bcrypt password hashing
+- **Releases & Tracks** — full CRUD with upload support
+- **Reviews** — user reviews on releases
+- **Recommendations** — music and track recommendation engine
+- **Blogs** — multi-blog support with per-blog themes; two blogs seeded on startup
+- **Uploads** — files via Replit Object Storage (presigned URLs at `/api/storage/objects/...`)
+- **Push notifications** — Web Push via VAPID (`lib/db/src/schema/pushSubscriptions.ts`)
+- **Videos** — video uploads and voting
 
 ## User preferences
 
-- Keep the existing monorepo structure (artifacts/*, lib/*)
+_None recorded yet._

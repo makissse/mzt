@@ -7,6 +7,7 @@ import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { useIsPysyTheme } from '@/lib/use-pysy-theme';
 import { useIsPutzermannNoirTheme } from '@/lib/use-putzermann-noir-theme';
+import { useIsMedicTheme } from '@/lib/use-medic-theme';
 
 import Login from '@/pages/login';
 import Register from '@/pages/register';
@@ -75,6 +76,7 @@ function Router() {
 function ThemeEffect() {
   const isPysyTheme = useIsPysyTheme();
   const isPutzermannNoir = useIsPutzermannNoirTheme();
+  const isMedicIsaac = useIsMedicTheme();
   useEffect(() => {
     document.documentElement.classList.add('dark');
     if (isPysyTheme) {
@@ -87,7 +89,12 @@ function ThemeEffect() {
     } else {
       document.documentElement.classList.remove('putzermann-noir-theme');
     }
-  }, [isPysyTheme, isPutzermannNoir]);
+    if (isMedicIsaac) {
+      document.documentElement.classList.add('isaac-theme');
+    } else {
+      document.documentElement.classList.remove('isaac-theme');
+    }
+  }, [isPysyTheme, isPutzermannNoir, isMedicIsaac]);
   return null;
 }
 
