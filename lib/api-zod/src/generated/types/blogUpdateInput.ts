@@ -13,4 +13,9 @@ export interface BlogUpdateInput {
   description?: string;
   avatarUrl?: string | null;
   coverUrl?: string | null;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  hpValue?: number;
 }

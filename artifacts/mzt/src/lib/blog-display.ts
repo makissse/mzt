@@ -8,6 +8,7 @@ const BLOG_META: Record<
 > = {
   'pysy-exe': { ownerHandle: 'pysy', avatarFallback: 'P' },
   'putzermann-core': { ownerHandle: 'host9315', avatarFallback: 'PC' },
+  'medic-de-familie': { ownerHandle: 'xiereler', avatarFallback: 'х' },
 };
 
 export function getBlogMeta(handle: string) {

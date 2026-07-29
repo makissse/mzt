@@ -70,6 +70,7 @@ function formatBlog(
     description: blog.description,
     avatarUrl: blog.avatarUrl,
     coverUrl: blog.coverUrl,
+    hpValue: blog.hpValue,
     ownerUsername: blog.ownerUsername,
     createdAt: blog.createdAt,
     updatedAt: blog.updatedAt,
@@ -229,7 +230,7 @@ router.put("/blogs/:handle", requireAuth, async (req, res) => {
     await db.update(blogsTable).set({ userId }).where(eq(blogsTable.id, blog.id));
   }
 
-  const { title, description, avatarUrl, coverUrl } = req.body ?? {};
+  const { title, description, avatarUrl, coverUrl, hpValue } = req.body ?? {};
   const updates: Partial<typeof blogsTable.$inferInsert> = {};
   if (typeof title === "string") updates.title = title.trim();
   if (typeof description === "string") updates.description = description.trim();
@@ -237,6 +238,7 @@ router.put("/blogs/:handle", requireAuth, async (req, res) => {
   else if (avatarUrl === null) updates.avatarUrl = null;
   if (typeof coverUrl === "string" && coverUrl.length > 0) updates.coverUrl = coverUrl;
   else if (coverUrl === null) updates.coverUrl = null;
+  if (typeof hpValue === "number" && hpValue >= 0 && hpValue <= 100) updates.hpValue = Math.round(hpValue);
   updates.updatedAt = new Date();
 
   const [updated] = await db

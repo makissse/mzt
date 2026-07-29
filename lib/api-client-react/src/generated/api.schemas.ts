@@ -407,6 +407,11 @@ export interface BlogUpdateInput {
   description?: string;
   avatarUrl?: string | null;
   coverUrl?: string | null;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  hpValue?: number;
 }
 
 export interface Blog {
@@ -416,6 +421,11 @@ export interface Blog {
   description: string;
   avatarUrl?: string | null;
   coverUrl?: string | null;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  hpValue: number;
   createdAt: string;
   updatedAt: string;
   user: User;

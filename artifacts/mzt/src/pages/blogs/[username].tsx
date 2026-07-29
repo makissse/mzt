@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AudioPlayer } from '@/components/audio-player';
 import { uploadFile } from '@/lib/upload';
@@ -66,6 +67,7 @@ type ExtBlog = {
   description: string;
   avatarUrl: string | null;
   coverUrl: string | null;
+  hpValue: number;
   ownerUsername: string | null;
   user: { id: number; username: string };
   isOwner: boolean;
@@ -1430,6 +1432,7 @@ function EditBlogDialog({
   const [description, setDescription] = useState(blog.description);
   const [avatarUrl, setAvatarUrl] = useState(blog.avatarUrl ?? '');
   const [coverUrl, setCoverUrl] = useState(blog.coverUrl ?? '');
+  const [hpValue, setHpValue] = useState(blog.hpValue ?? 50);
 
   // Reset form fields to current blog data every time the dialog opens
   useEffect(() => {
@@ -1438,8 +1441,9 @@ function EditBlogDialog({
       setDescription(blog.description);
       setAvatarUrl(blog.avatarUrl ?? '');
       setCoverUrl(blog.coverUrl ?? '');
+      setHpValue(blog.hpValue ?? 50);
     }
-  }, [open, blog.title, blog.description, blog.avatarUrl, blog.coverUrl]);
+  }, [open, blog.title, blog.description, blog.avatarUrl, blog.coverUrl, blog.hpValue]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const update = useUpdateMyBlog();
@@ -1489,7 +1493,7 @@ function EditBlogDialog({
     try {
       await update.mutateAsync({
         handle: blog.handle,
-        data: { title: title.trim(), description: description.trim(), avatarUrl: avatarUrl || null, coverUrl: coverUrl || null },
+        data: { title: title.trim(), description: description.trim(), avatarUrl: avatarUrl || null, coverUrl: coverUrl || null, hpValue },
       });
       await queryClient.invalidateQueries({ queryKey: getGetBlogQueryKey(blog.handle) });
       onClose();
@@ -1561,6 +1565,22 @@ function EditBlogDialog({
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, 'avatar'); e.target.value = ''; }} />
             </label>
           </div>
+          {isIsaac && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', letterSpacing: '0.06em' }}>Sanbu&apos;s Dispoziție</span>
+                <span style={{ fontFamily: "'Silkscreen', monospace", color: '#9B4550', fontSize: '9px' }}>{hpValue}</span>
+              </div>
+              <Slider
+                min={0}
+                max={100}
+                step={1}
+                value={[hpValue]}
+                onValueChange={([v]) => setHpValue(v)}
+                className="heart-slider"
+              />
+            </div>
+          )}
           {uploading && <div className={`flex items-center gap-2 text-xs ${isPysy ? 'win95-text-muted' : isPutzermann ? 'noir-text-muted' : isIsaac ? 'heart-text-muted' : 'text-muted-foreground font-mono'}`}><Loader2 className="h-3.5 w-3.5 animate-spin" />Загрузка...</div>}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onClose} className={isPysy ? "win95-button" : isPutzermann ? "noir-button" : isIsaac ? "heart-button" : "font-mono"}>Отмена</Button>
@@ -2000,20 +2020,24 @@ export default function BlogPage() {
                         position: 'absolute', top: 0, left: 0, bottom: 0,
                         background: 'linear-gradient(90deg, #A01E2C 0%, #C72535 55%, #E02840 100%)',
                         animation: 'hp-fill 1.4s steps(28) forwards',
-                        '--hp-target': posts.length > 0 ? `${Math.min(100, posts.length * 8 + 40)}%` : '28%',
+                        '--hp-target': `${blog.hpValue ?? 50}%`,
                       } as React.CSSProperties} />
                     </div>
-                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C0A0A8', fontSize: '9px', minWidth: '28px', textAlign: 'right' }}>???</span>
+                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C0A0A8', fontSize: '9px', minWidth: '28px', textAlign: 'right' }}>{blog.hpValue ?? 50}</span>
+                  </div>
+                  {/* Sanbu's Dispoziție label */}
+                  <div className="flex items-center gap-2">
+                    <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '8px', letterSpacing: '0.04em', opacity: 0.7 }}>Sanbu&apos;s Dispoziție</span>
                   </div>
                   {/* AT row */}
                   <div className="flex items-center gap-2">
                     <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', minWidth: '18px' }}>AT</span>
-                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>ЗАПИСКИ</span>
+                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>Activist</span>
                   </div>
                   {/* DF row */}
                   <div className="flex items-center gap-2">
                     <span style={{ fontFamily: "'Silkscreen', monospace", color: '#C72535', fontSize: '9px', minWidth: '18px' }}>DF</span>
-                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>МЕД. ЗАМЕТКИ</span>
+                    <span style={{ fontFamily: "'Pixelify Sans', monospace", color: '#9B4550', fontSize: '11px' }}>Certificatul de la medic de familie - 300e</span>
                   </div>
                 </div>
 

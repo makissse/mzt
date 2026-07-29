@@ -1522,6 +1522,10 @@ components:
         coverUrl:
           type: string
           nullable: true
+        hpValue:
+          type: integer
+          minimum: 0
+          maximum: 100
 
     Blog:
       type: object
@@ -1540,6 +1544,10 @@ components:
         coverUrl:
           type: string
           nullable: true
+        hpValue:
+          type: integer
+          minimum: 0
+          maximum: 100
         createdAt:
           type: string
           format: date-time
@@ -1557,6 +1565,7 @@ components:
         - title
         - handle
         - description
+        - hpValue
         - createdAt
         - updatedAt
         - user

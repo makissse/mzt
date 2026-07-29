@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict QLmWAdfDqeEGcCOk8ihxqcuKPCBfxvbWfewETwjuGP9lOVnNsRBBwIe5uwa6Sza
+\restrict 9CxdQl57y5eylqWdUysCRmahVUkkCzLwYCx4Lcm25nG8YL8192p13Io9meaZEFH
 
 -- Dumped from database version 16.14 (9e89e5a)
 -- Dumped by pg_dump version 16.10
@@ -897,6 +897,14 @@ COPY public.blog_comments (id, post_id, user_id, content, attachments, created_a
 60	39	5	Evident prietenie piatră rară	[]	2026-07-28 21:16:51.469517	\N
 61	39	5		[{"type":"image","url":"/api/storage/objects/uploads/e6de0f82-9175-41fe-9acc-9b498d24c127"}]	2026-07-28 21:16:59.419736	\N
 62	39	3	iaca kentii adevarati, inafara de un pidar	[{"type":"image","url":"/api/storage/objects/uploads/12bcf67c-8d04-4d1d-bf96-241e3020cdac"}]	2026-07-28 21:47:24.121312	\N
+63	40	2	Eu is interesat 079760288	[]	2026-07-29 09:35:23.27431	\N
+64	40	3	v-am lasat un mesaj în privat!	[]	2026-07-29 09:50:37.992089	63
+65	41	2	Facts	[]	2026-07-29 11:01:19.313509	\N
+66	42	2	Anon! Rate?	[{"type":"image","url":"/api/storage/objects/uploads/e0c97763-36fb-42eb-a495-dfc1f2367fa5"}]	2026-07-29 11:06:40.909411	\N
+67	40	5	Uai eu la svo nu vreu	[]	2026-07-29 12:03:07.268137	\N
+68	41	5	Nu numa pc	[]	2026-07-29 12:03:22.616451	\N
+69	33	5	Undes posturile noi	[]	2026-07-29 12:04:05.223711	\N
+70	42	3	lucrezi la ucipo?	[]	2026-07-29 12:09:51.329047	\N
 \.
 
 
@@ -917,6 +925,8 @@ COPY public.blog_media (id, post_id, type, url, "order", is_circle) FROM stdin;
 39	29	image	/api/storage/objects/uploads/d01fdbed-1b15-4250-8a8d-0363d60b6842	1	f
 40	30	image	/api/storage/objects/uploads/63055f90-ae0f-4498-a70f-82701666aeaa	1	f
 42	36	image	/api/storage/objects/uploads/812ecc88-0db0-4e97-b008-73a1365af9b6	1	f
+43	40	image	/api/storage/objects/uploads/8fcb8ef0-6f8c-4fd8-8b98-0644a6cdbcc5	1	f
+44	42	video	/api/storage/objects/uploads/6714a9e3-953a-4bf1-906f-4315096600a3	1	f
 \.
 
 
@@ -957,6 +967,11 @@ COPY public.blog_post_likes (id, post_id, user_id, created_at) FROM stdin;
 34	35	2	2026-07-28 01:46:16.754814
 35	35	3	2026-07-28 01:47:49.389977
 36	36	2	2026-07-28 02:11:00.772282
+37	40	2	2026-07-29 09:33:55.967507
+38	41	1	2026-07-29 11:00:59.691786
+39	41	2	2026-07-29 11:01:16.877452
+40	42	2	2026-07-29 11:06:55.222853
+41	42	5	2026-07-29 12:02:15.284615
 \.
 
 
@@ -988,6 +1003,9 @@ COPY public.blog_posts (id, blog_id, created_by_user_id, title, content, created
 37	1	3		pațani, lăsa-ți tiktokul și faceți ceva cu viața voastră	2026-07-28 10:36:01.307122	2026-07-28 10:36:01.307122
 38	1	3	Orele 22:00-23:00	padpisota, azi seara, ne strângem pe discord și facem obzor și razbor la aurica și piesele ei, dar și alte personaje ale tiktokului, așa numita nișevosti a tt, va astept în numar cat mai mare	2026-07-28 12:50:03.428187	2026-07-28 13:02:45.073
 39	1	3		încă odata m-am convins ca toti kentii mei îs pidarasi\nNu o intrat nimeni	2026-07-28 21:08:21.840387	2026-07-28 21:08:21.840387
+40	1	3	STOCK LIMITAT!	pațani avem asa ceva nou în stock\n\ncine iubește dulcele și aventuri de neuitat, dm	2026-07-29 09:21:37.949633	2026-07-29 09:21:37.949633
+41	1	1	Eu is pc invalid		2026-07-29 11:00:56.769685	2026-07-29 11:00:56.769685
+42	1	3	#make me famous #chetrosu rap		2026-07-29 11:03:05.450889	2026-07-29 11:03:05.450889
 \.
 
 
@@ -1117,6 +1135,7 @@ COPY public.reviews (id, release_id, user_id, rhymes, structure, style_execution
 11	42	3	8	7	7	8	9	65	cred ca 1% din cantecele bune din acest playlist	2026-07-28 01:32:10.355592
 12	43	3	1	1	1	1	1	6	cocks	2026-07-28 01:32:44.533384
 13	43	2	10	10	10	10	10	90	Huinea 90	2026-07-28 01:33:26.65478
+14	44	5	7	8	9	7	10	70	Ceas	2026-07-29 12:05:18.319549
 \.
 
 
@@ -1134,9 +1153,9 @@ COPY public.tracks (id, release_id, title, audio_url, "order", created_at) FROM 
 
 COPY public.user_activity_stats (user_id, lifetime_recommendations, lifetime_reviews, lifetime_tracks, updated_at) FROM stdin;
 1	0	2	1	2026-07-22 22:08:03.399913
-5	2	1	0	2026-07-28 00:58:29.783706
 3	1	3	0	2026-07-28 01:32:44.547321
 2	4	7	0	2026-07-28 01:33:26.668376
+5	2	2	0	2026-07-29 12:05:18.336819
 \.
 
 
@@ -1190,28 +1209,28 @@ SELECT pg_catalog.setval('_system.replit_database_migrations_v1_id_seq', 2, true
 -- Name: blog_comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_comments_id_seq', 62, true);
+SELECT pg_catalog.setval('public.blog_comments_id_seq', 70, true);
 
 
 --
 -- Name: blog_media_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_media_id_seq', 42, true);
+SELECT pg_catalog.setval('public.blog_media_id_seq', 44, true);
 
 
 --
 -- Name: blog_post_likes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_post_likes_id_seq', 36, true);
+SELECT pg_catalog.setval('public.blog_post_likes_id_seq', 41, true);
 
 
 --
 -- Name: blog_posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.blog_posts_id_seq', 39, true);
+SELECT pg_catalog.setval('public.blog_posts_id_seq', 42, true);
 
 
 --
@@ -1267,7 +1286,7 @@ SELECT pg_catalog.setval('public.releases_id_seq', 44, true);
 -- Name: reviews_id_seq; Type: SEQUENCE SET; Schema: public; Owner: neondb_owner
 --
 
-SELECT pg_catalog.setval('public.reviews_id_seq', 13, true);
+SELECT pg_catalog.setval('public.reviews_id_seq', 14, true);
 
 
 --
@@ -1683,5 +1702,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON TABL
 -- PostgreSQL database dump complete
 --
 
-\unrestrict QLmWAdfDqeEGcCOk8ihxqcuKPCBfxvbWfewETwjuGP9lOVnNsRBBwIe5uwa6Sza
+\unrestrict 9CxdQl57y5eylqWdUysCRmahVUkkCzLwYCx4Lcm25nG8YL8192p13Io9meaZEFH
 

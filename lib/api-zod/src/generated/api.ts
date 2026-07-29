@@ -647,6 +647,11 @@ export const GetSecretPhotoResponse = zod.object({
 /**
  * @summary List all blogs
  */
+export const listBlogsResponseHpValueMin = 0;
+export const listBlogsResponseHpValueMax = 100;
+
+
+
 export const ListBlogsResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string(),
@@ -654,6 +659,7 @@ export const ListBlogsResponseItem = zod.object({
   "description": zod.string(),
   "avatarUrl": zod.string().nullish(),
   "coverUrl": zod.string().nullish(),
+  "hpValue": zod.number().min(listBlogsResponseHpValueMin).max(listBlogsResponseHpValueMax),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "user": zod.object({
@@ -688,6 +694,11 @@ export const CreateMyBlogBody = zod.object({
   "coverUrl": zod.string().nullish()
 })
 
+export const createMyBlogResponseHpValueMin = 0;
+export const createMyBlogResponseHpValueMax = 100;
+
+
+
 export const CreateMyBlogResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
@@ -695,6 +706,7 @@ export const CreateMyBlogResponse = zod.object({
   "description": zod.string(),
   "avatarUrl": zod.string().nullish(),
   "coverUrl": zod.string().nullish(),
+  "hpValue": zod.number().min(createMyBlogResponseHpValueMin).max(createMyBlogResponseHpValueMax),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "user": zod.object({
@@ -714,6 +726,11 @@ export const GetBlogParams = zod.object({
   "handle": zod.coerce.string()
 })
 
+export const getBlogResponseBlogHpValueMin = 0;
+export const getBlogResponseBlogHpValueMax = 100;
+
+
+
 export const GetBlogResponse = zod.object({
   "blog": zod.object({
   "id": zod.number(),
@@ -722,6 +739,7 @@ export const GetBlogResponse = zod.object({
   "description": zod.string(),
   "avatarUrl": zod.string().nullish(),
   "coverUrl": zod.string().nullish(),
+  "hpValue": zod.number().min(getBlogResponseBlogHpValueMin).max(getBlogResponseBlogHpValueMax),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "user": zod.object({
@@ -765,14 +783,23 @@ export const updateMyBlogBodyTitleMax = 120;
 
 export const updateMyBlogBodyDescriptionMax = 500;
 
+export const updateMyBlogBodyHpValueMin = 0;
+export const updateMyBlogBodyHpValueMax = 100;
+
 
 
 export const UpdateMyBlogBody = zod.object({
   "title": zod.string().max(updateMyBlogBodyTitleMax).optional(),
   "description": zod.string().max(updateMyBlogBodyDescriptionMax).optional(),
   "avatarUrl": zod.string().nullish(),
-  "coverUrl": zod.string().nullish()
+  "coverUrl": zod.string().nullish(),
+  "hpValue": zod.number().min(updateMyBlogBodyHpValueMin).max(updateMyBlogBodyHpValueMax).optional()
 })
+
+export const updateMyBlogResponseHpValueMin = 0;
+export const updateMyBlogResponseHpValueMax = 100;
+
+
 
 export const UpdateMyBlogResponse = zod.object({
   "id": zod.number(),
@@ -781,6 +808,7 @@ export const UpdateMyBlogResponse = zod.object({
   "description": zod.string(),
   "avatarUrl": zod.string().nullish(),
   "coverUrl": zod.string().nullish(),
+  "hpValue": zod.number().min(updateMyBlogResponseHpValueMin).max(updateMyBlogResponseHpValueMax),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "user": zod.object({

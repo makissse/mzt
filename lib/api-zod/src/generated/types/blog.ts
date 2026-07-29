@@ -14,6 +14,11 @@ export interface Blog {
   description: string;
   avatarUrl?: string | null;
   coverUrl?: string | null;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  hpValue: number;
   createdAt: Date;
   updatedAt: Date;
   user: User;
