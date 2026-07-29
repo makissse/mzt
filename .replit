@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "bash"]
+modules = ["nodejs-20", "web", "bash", "python-base-3.13"]
 
 [deployment]
 router = "application"
@@ -60,7 +60,7 @@ timeoutMs = 20000
 channel = "stable-25_05"
 
 [objectStorage]
-defaultBucketID = "replit-objstore-5cb7740f-6d1d-4062-bc90-5dd8ee4c7ca7"
+defaultBucketID = "replit-objstore-b77663c3-4a6a-4d82-8ff3-4818d5fe47e7"
 
 [userenv]
 

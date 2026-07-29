@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Russo+One&family=VT323&family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Russo+One&family=VT323&family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -708,183 +708,158 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   Gorecore × Medical — medic-de-familie blog
-   Deep blood-red (#C41E24) · dark crimson (#7A0010) · bone-white (#E8D8C0)
-   over near-black red-tinted void (#040000).
-   Concept: a patient file soaked through — anatomy as horror, clinical as doom.
+   Тетрадь сердца — medic-de-familie blog
+   Warm cream notebook paper · red pen accent · hand-drawn heart motif.
+   Caveat handwritten headings over ivory + charcoal-ink body text.
+   Cute but not girly — warmth of a personal notepad, not a greeting card.
    ──────────────────────────────────────────────────────────────────────────── */
 
 :root.isaac-theme,
 .dark.isaac-theme {
-  --background: 0 100% 2%;
-  --foreground: 30 30% 88%;
+  --background: 38 30% 93%;
+  --foreground: 35 15% 10%;
 
-  --card: 0 100% 3.5%;
-  --card-foreground: 30 30% 88%;
-  --card-border: 0 78% 28%;
+  --card: 40 50% 98%;
+  --card-foreground: 35 15% 10%;
+  --card-border: 35 25% 68%;
 
-  --popover: 0 100% 3.5%;
-  --popover-foreground: 30 30% 88%;
-  --popover-border: 0 78% 28%;
+  --popover: 40 50% 98%;
+  --popover-foreground: 35 15% 10%;
+  --popover-border: 35 25% 68%;
 
-  --primary: 0 76% 42%;
-  --primary-foreground: 30 30% 88%;
+  --primary: 4 62% 48%;
+  --primary-foreground: 38 30% 93%;
 
-  --secondary: 0 60% 9%;
-  --secondary-foreground: 30 30% 88%;
+  --secondary: 38 20% 88%;
+  --secondary-foreground: 35 15% 10%;
 
-  --muted: 0 60% 7%;
-  --muted-foreground: 0 15% 42%;
+  --muted: 38 20% 88%;
+  --muted-foreground: 33 20% 43%;
 
-  --accent: 0 76% 42%;
-  --accent-foreground: 30 30% 88%;
+  --accent: 4 62% 48%;
+  --accent-foreground: 38 30% 93%;
 
-  --destructive: 0 90% 55%;
+  --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 78% 22%;
-  --input: 0 60% 7%;
-  --ring: 0 76% 42%;
+  --border: 35 25% 68%;
+  --input: 38 20% 88%;
+  --ring: 4 62% 48%;
 
-  --sidebar: 0 100% 1.5%;
-  --sidebar-foreground: 30 30% 88%;
-  --sidebar-primary: 0 76% 42%;
-  --sidebar-primary-foreground: 30 30% 88%;
-  --sidebar-accent: 0 60% 7%;
-  --sidebar-accent-foreground: 30 30% 88%;
-  --sidebar-border: 0 78% 14%;
-  --sidebar-ring: 0 76% 42%;
+  --sidebar: 38 25% 90%;
+  --sidebar-foreground: 35 15% 10%;
+  --sidebar-primary: 4 62% 48%;
+  --sidebar-primary-foreground: 38 30% 93%;
+  --sidebar-accent: 38 20% 88%;
+  --sidebar-accent-foreground: 35 15% 10%;
+  --sidebar-border: 35 25% 60%;
+  --sidebar-ring: 4 62% 48%;
 
-  --radius: 0px;
+  --radius: 3px;
 
-  --app-font-sans: 'Space Mono', monospace;
+  --app-font-sans: 'Plus Jakarta Sans', sans-serif;
   --app-font-mono: 'Space Mono', monospace;
 }
 
 /* ── Animations ── */
 
-@keyframes medic-blood-pulse {
-  0%, 100% {
-    box-shadow:
-      0 0 0 1px rgba(196,30,36,0.18),
-      0 0 16px rgba(100,0,10,0.08);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px rgba(196,30,36,0.38),
-      0 0 30px rgba(100,0,10,0.18),
-      0 0 50px rgba(100,0,10,0.06);
-  }
+@keyframes medic-heartbeat {
+  0%, 100% { transform: scale(1); }
+  15%       { transform: scale(1.14); }
+  30%       { transform: scale(1); }
+  45%       { transform: scale(1.07); }
+  60%       { transform: scale(1); }
 }
 
-@keyframes medic-flicker {
-  0%, 100%  { opacity: 1; }
-  94%       { opacity: 1; }
-  95%       { opacity: 0.97; }
-  96%       { opacity: 1; }
-  98%       { opacity: 0.96; }
-  99%       { opacity: 1; }
+@keyframes medic-ink-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Page background ── */
+/* ── Page background — lined notebook paper ── */
 
 .medic-page {
-  background-color: #040000;
+  background-color: #F5F0E8;
   background-image:
-    radial-gradient(ellipse at 14% 78%, rgba(122,0,16,0.24) 0%, transparent 50%),
-    radial-gradient(ellipse at 82% 22%, rgba(90,0,10,0.18) 0%, transparent 42%),
-    radial-gradient(ellipse at 48% 100%, rgba(100,0,12,0.20) 0%, transparent 40%);
-  animation: medic-flicker 7s infinite;
+    repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      rgba(180, 155, 120, 0.18) 27px,
+      rgba(180, 155, 120, 0.18) 28px
+    );
+  background-attachment: local;
 }
 
-/* Fine scanline overlay */
+/* No scanlines — just clean paper */
 .medic-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  background: repeating-linear-gradient(
-    transparent,
-    transparent 3px,
-    rgba(0,0,0,0.07) 3px,
-    rgba(0,0,0,0.07) 4px
-  );
+  content: none;
 }
 
 /* ── Window (main panel wrapper) ── */
 
 .medic-window {
-  background-color: #090000;
-  border: 1px solid rgba(196,30,36,0.35);
+  background-color: #FDFAF4;
+  border: 1.5px dashed #C8B89A;
   box-shadow:
-    0 0 0 1px rgba(100,0,10,0.15),
-    0 0 22px rgba(100,0,10,0.12),
-    inset 0 0 32px rgba(100,0,10,0.05);
+    2px 3px 0 0 rgba(180, 140, 100, 0.15),
+    0 1px 12px rgba(60, 35, 10, 0.06);
   margin-bottom: 1rem;
   position: relative;
   overflow: hidden;
-  animation: medic-blood-pulse 5s ease-in-out infinite;
+  border-radius: 4px;
+  animation: none;
 }
 
+/* Small drawn heart accent in corner */
 .medic-window::before {
-  content: '';
+  content: '\2665';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg,
-    #3A0010 0%, #7A0010 22%, #C41E24 50%, #7A0010 78%, #3A0010 100%
-  );
+  top: 8px; right: 10px;
+  font-size: 11px;
+  color: #C8372D;
+  opacity: 0.30;
+  pointer-events: none;
   z-index: 1;
 }
 
 /* ── Post card ── */
 
 .medic-card {
-  background-color: #090000;
-  border: 1px solid rgba(196,30,36,0.28);
-  box-shadow:
-    0 2px 18px rgba(100,0,10,0.12),
-    inset 0 0 22px rgba(100,0,10,0.04);
+  background-color: #FDFAF4;
+  border: 1.5px solid #D4C5A9;
+  border-left: 3px solid #C8372D;
+  box-shadow: 1px 2px 0 0 rgba(180, 140, 100, 0.12);
   margin-bottom: 0.75rem;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 3px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  animation: medic-ink-in 0.3s ease both;
 }
 
 .medic-card:hover {
-  border-color: rgba(196,30,36,0.55);
-  box-shadow:
-    0 2px 28px rgba(100,0,10,0.22),
-    inset 0 0 22px rgba(100,0,10,0.07);
+  border-left-color: #A02020;
+  box-shadow: 2px 4px 0 0 rgba(180, 100, 80, 0.18);
+  transform: translateY(-1px);
 }
 
 .medic-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    #3A0010, #7A0010 28%, #C41E24 55%, #7A0010 80%, #3A0010
-  );
-  z-index: 1;
-  opacity: 0.85;
+  content: none;
 }
 
 /* ── Title bar ── */
 
 .medic-title-bar {
-  background: linear-gradient(180deg, #110000 0%, #0D0000 100%);
-  border-bottom: 1px solid rgba(196,30,36,0.28);
-  color: #E8D8C0;
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  padding: 7px 12px;
+  background: #F0EAE0;
+  border-bottom: 1px solid #D4C5A9;
+  color: #5A4530;
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  padding: 5px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   user-select: none;
 }
 
@@ -892,114 +867,115 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #C41E24;
+  color: #C8372D;
 }
 
 /* ── Button ── */
 
 .medic-button {
-  background: #090000;
-  border: 1px solid rgba(196,30,36,0.45);
-  color: #E8D8C0;
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  background: #FDFAF4;
+  border: 1.5px solid #C8B89A;
+  color: #3A2A18;
+  font-family: 'Caveat', cursive;
+  font-size: 16px;
   cursor: pointer;
-  padding: 5px 14px;
+  padding: 4px 14px;
+  border-radius: 3px;
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  letter-spacing: 0.12em;
-  line-height: 1.5;
-  text-transform: uppercase;
+  line-height: 1.4;
 }
 
 .medic-button:hover {
-  background: rgba(196,30,36,0.12);
-  border-color: #C41E24;
-  box-shadow: 0 0 12px rgba(196,30,36,0.22);
-  color: #E8D8C0;
+  background: #FFF5F5;
+  border-color: #C8372D;
+  color: #C8372D;
+  box-shadow: 1px 1px 0 0 rgba(200, 55, 45, 0.22);
 }
 
 .medic-button:active {
-  background: rgba(196,30,36,0.20);
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .medic-button:disabled {
-  opacity: 0.28;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .medic-button-small {
   padding: 2px 8px;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 /* ── Input / sunken ── */
 
 .medic-sunken {
-  background-color: #030000;
-  border: 1px solid rgba(196,30,36,0.22);
-  box-shadow: inset 0 1px 8px rgba(0,0,0,0.92), inset 0 0 16px rgba(100,0,10,0.05);
-  color: #E8D8C0;
+  background-color: #EDE7DA;
+  border: 1px solid #C8B89A;
+  box-shadow: inset 0 1px 3px rgba(60, 35, 10, 0.10);
+  color: #1E1A14;
+  border-radius: 2px;
 }
 
 /* ── Raised ── */
 
 .medic-raised {
-  background: #120000;
-  border: 1px solid rgba(196,30,36,0.28);
-  box-shadow: 0 2px 12px rgba(100,0,10,0.10);
+  background: #FDFAF4;
+  border: 1px solid #D4C5A9;
+  box-shadow: 1px 2px 0 rgba(180, 140, 100, 0.10);
+  border-radius: 3px;
 }
 
 /* ── Panel ── */
 
 .medic-panel {
-  background-color: #060000;
-  border: 1px solid rgba(196,30,36,0.14);
+  background-color: #F0EAE0;
+  border: 1px solid #D4C5A9;
 }
 
 /* ── Sidebar ── */
 
 .medic-sidebar {
-  background-color: #050000;
-  border-right: 1px solid rgba(196,30,36,0.16);
+  background-color: #EEE8DA;
+  border-right: 1.5px solid #D4C5A9;
 }
 
 /* ── Typography ── */
 
 .medic-text {
-  color: #E8D8C0;
-  font-family: 'Space Mono', monospace;
+  color: #1E1A14;
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.70;
 }
 
 .medic-text-muted {
-  color: #5A3035;
-  font-family: 'Space Mono', monospace;
+  color: #8B7355;
   font-size: 12px;
   line-height: 1.5;
 }
 
 .medic-label {
-  color: #C41E24;
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+  color: #C8372D;
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  letter-spacing: 0.05em;
 }
 
 .medic-link {
-  color: #E8D8C0;
-  font-family: 'Space Mono', monospace;
-  text-decoration: none;
-  transition: color 0.15s ease;
+  color: #3A2A18;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: #C8B89A;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
 .medic-link:hover {
-  color: #C41E24;
+  color: #C8372D;
+  text-decoration-color: #C8372D;
 }
 
 /* ── Icons ── */
@@ -1007,44 +983,46 @@
 .isaac-theme svg,
 .isaac-theme [data-slot="icon"],
 .medic-icon {
-  color: #C41E24;
+  color: #C8372D;
 }
 
 /* ── Scrollbar ── */
 
 .medic-scrollbar::-webkit-scrollbar {
   width: 6px;
-  background: #050000;
+  background: #EEE8DA;
 }
 .medic-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(196,30,36,0.22);
+  background: #C8B89A;
+  border-radius: 3px;
 }
 .medic-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #C41E24;
+  background: #C8372D;
 }
 
 /* ── Slider overrides ── */
 
 :root.isaac-theme [data-slot="slider-range"],
 .dark.isaac-theme [data-slot="slider-range"] {
-  background: linear-gradient(90deg, #7A0010, #C41E24);
+  background: linear-gradient(90deg, #C8372D, #E06050);
 }
 :root.isaac-theme [data-slot="slider-thumb"],
 .dark.isaac-theme [data-slot="slider-thumb"] {
-  border-color: #C41E24 !important;
-  background-color: #090000 !important;
-  box-shadow: 0 0 6px rgba(196,30,36,0.5) !important;
+  border-color: #C8372D !important;
+  background-color: #FDFAF4 !important;
+  box-shadow: 0 0 0 2px rgba(200, 55, 45, 0.15) !important;
 }
 :root.isaac-theme [data-slot="slider-thumb"]:hover,
 .dark.isaac-theme [data-slot="slider-thumb"]:hover {
-  border-color: #E8D8C0 !important;
-  background-color: #C41E24 !important;
-  box-shadow: 0 0 12px rgba(196,30,36,0.8) !important;
+  border-color: #A02020 !important;
+  background-color: #C8372D !important;
+  box-shadow: 0 0 0 3px rgba(200, 55, 45, 0.25) !important;
 }
 :root.isaac-theme [data-slot="slider-track"],
 .dark.isaac-theme [data-slot="slider-track"] {
-  background-color: #1A0008 !important;
+  background-color: #D4C5A9 !important;
 }
+
 
 @layer base {
   * {

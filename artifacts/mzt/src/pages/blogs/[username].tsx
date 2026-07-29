@@ -96,10 +96,10 @@ const BLOG_THEMES: Record<string, BlogTheme> = {
     coverGradient: 'linear-gradient(135deg, #050505 0%, #0a0a0a 60%, #0f0f0f 100%)',
   },
   'medic-de-familie': {
-    accent: '#C41E24',
-    accentBg: 'rgba(196,30,36,0.10)',
-    accentBorder: 'rgba(196,30,36,0.35)',
-    coverGradient: 'linear-gradient(180deg, #040000 0%, #0D0000 100%)',
+    accent: '#C8372D',
+    accentBg: 'rgba(200,55,45,0.07)',
+    accentBorder: 'rgba(200,55,45,0.28)',
+    coverGradient: 'linear-gradient(135deg, #F5F0E8 0%, #EDE7DA 100%)',
   },
 };
 
@@ -830,7 +830,7 @@ function CommentsSection({ postId, me, theme, isPutzermann, isPysy, isIsaac, onC
   };
 
   return (
-    <div className={`mt-3 pt-3 space-y-3 ${isPysy ? 'border-t-2 border-white border-t-[#808080] border-b-2 border-b-[#ffffff] mb-2' : isPutzermann ? 'border-t-2 border-white mt-3 pt-3' : isIsaac ? 'border-t-2 border-t-[#3d2e14] mt-3 pt-3' : 'border-t border-border/40'}`}>
+    <div className={`mt-3 pt-3 space-y-3 ${isPysy ? 'border-t-2 border-white border-t-[#808080] border-b-2 border-b-[#ffffff] mb-2' : isPutzermann ? 'border-t-2 border-white mt-3 pt-3' : isIsaac ? 'border-t border-t-[#D4C5A9] mt-3 pt-3' : 'border-t border-border/40'}`}>
       {isLoading ? (
         <div className="flex justify-center py-2"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
       ) : comments.length === 0 ? (
@@ -1042,11 +1042,11 @@ function PostCard({
       )}
       <div className={isPysy ? "p-3 sm:p-4" : isPutzermann ? "p-4 sm:p-5" : isIsaac ? "p-4 sm:p-5" : ""}>
       <div className="flex items-center gap-3 mb-3">
-        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black border border-white" : isIsaac ? "h-10 w-10 flex-shrink-0 rounded-none bg-black border border-[#C41E24]" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
+        <Avatar className={isPysy ? "h-10 w-10 flex-shrink-0 win95-sunken rounded-none bg-[#c0c0c0]" : isPutzermann ? "h-10 w-10 flex-shrink-0 noir-sunken rounded-none bg-black border border-white" : isIsaac ? "h-10 w-10 flex-shrink-0 rounded-none border border-[#C8B89A]" : "h-10 w-10 border-2 border-background shadow-md flex-shrink-0"}>
           <AvatarImage src={blog.avatarUrl ?? undefined} className={isPutzermann || isIsaac ? "rounded-none" : ""} />
           <AvatarFallback
-            className={isPysy ? "font-bold text-sm win95-text rounded-none" : isPutzermann ? "font-bold text-sm noir-text rounded-none" : isIsaac ? "font-bold text-sm rounded-none bg-[#C41E24] text-white" : "font-bold text-sm"}
-            style={isIsaac ? { fontFamily: "'Russo One', sans-serif" } : !isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
+            className={isPysy ? "font-bold text-sm win95-text rounded-none" : isPutzermann ? "font-bold text-sm noir-text rounded-none" : isIsaac ? "font-bold text-sm rounded-none" : "font-bold text-sm"}
+            style={isIsaac ? { fontFamily: "'Caveat', cursive", color: '#C8372D', background: '#EDE7DA' } : !isPysy && !isPutzermann ? { background: `linear-gradient(135deg, ${theme.accent}44, ${theme.accent}22)`, color: theme.accent } : undefined}
           >
             {blogAvatarFallback(blog.handle, blog.user.username)}
           </AvatarFallback>
@@ -1249,7 +1249,7 @@ function CreatePostBox({
             rows={3}
             className={isPysy ? "win95-sunken win95-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : isPutzermann ? "noir-sunken noir-text px-2 py-1 resize-none rounded-none w-full min-h-[80px] border-white" : isIsaac ? "medic-sunken medic-text px-2 py-1 resize-none rounded-none w-full min-h-[80px]" : "bg-background/60 border-border/60 font-sans resize-none"}
           />
-          {(isPysy || isPutzermann || isIsaac) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : isIsaac ? 'border-t border-[#C41E24]/40' : 'border-t border-dashed border-white/30'}`} />}
+          {(isPysy || isPutzermann || isIsaac) && <div className={`h-px w-full my-2 ${isPysy ? 'border-t-2 border-[#808080] border-b-2 border-[#ffffff]' : isIsaac ? 'border-t border-[#C8B89A]' : 'border-t border-dashed border-white/30'}`} />}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1">
               <label className={`cursor-pointer p-2 rounded-none transition-colors ${isPysy ? 'win95-button' : isPutzermann ? 'noir-button' : isIsaac ? 'medic-button' : 'text-muted-foreground hover:text-foreground hover:bg-card rounded-full'}`} title="Прикрепить файл">
@@ -1824,81 +1824,56 @@ export default function BlogPage() {
             </div>
           </div>
         </div>
-      ) : isIsaac ? (
-        /* ── Gorecore × Medical Hero ── */
+            ) : isIsaac ? (
+        /* ── Тетрадь сердца — notebook-style hero ── */
         <div className="mb-2">
-          <div className="relative overflow-hidden" style={{ minHeight: '260px', background: '#040000' }}>
-            {/* Blood pool radials */}
-            <div className="absolute inset-0 pointer-events-none" style={{
-              background: 'radial-gradient(ellipse at 50% 115%, rgba(140,0,16,0.60) 0%, rgba(100,0,12,0.35) 30%, transparent 60%)',
-            }} />
-            <div className="absolute inset-0 pointer-events-none" style={{
-              background: 'radial-gradient(ellipse at 10% 85%, rgba(100,0,10,0.30) 0%, transparent 42%)',
-            }} />
-            <div className="absolute inset-0 pointer-events-none" style={{
-              background: 'radial-gradient(ellipse at 88% 15%, rgba(80,0,8,0.20) 0%, transparent 35%)',
-            }} />
-
-            {/* Organic vein SVG overlay */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid slice" viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.14 }}>
-              <path d="M0,140 C70,118 140,170 240,132 S390,95 470,155 S610,195 720,138 S820,112 900,140" stroke="#8B0010" strokeWidth="2" fill="none"/>
-              <path d="M0,190 C90,168 175,210 285,182 S440,162 530,205 S660,235 900,188" stroke="#6A0008" strokeWidth="1.2" fill="none"/>
-              <path d="M0,90 C60,105 100,75 150,95 S200,115 220,90 S260,65 900,85" stroke="#5A0008" strokeWidth="0.9" fill="none"/>
-              <path d="M110,0 C128,55 98,115 138,175 S158,230 148,280" stroke="#7A0010" strokeWidth="1.2" fill="none"/>
-              <path d="M620,0 C598,75 638,148 608,215 S578,268 608,280" stroke="#7A0010" strokeWidth="1" fill="none"/>
-              <path d="M320,0 C300,48 342,98 318,158 S288,202 320,260" stroke="#5A0008" strokeWidth="0.8" fill="none"/>
-              <path d="M820,0 C800,60 840,118 815,185 S790,240 815,280" stroke="#6A0008" strokeWidth="0.9" fill="none"/>
-              {/* Branching capillaries */}
-              <path d="M240,132 C260,120 275,108 295,118" stroke="#7A0010" strokeWidth="0.7" fill="none"/>
-              <path d="M470,155 C490,142 508,130 525,140" stroke="#6A0008" strokeWidth="0.7" fill="none"/>
-              <path d="M138,175 C155,182 168,190 162,205" stroke="#6A0008" strokeWidth="0.6" fill="none"/>
+          <div className="relative overflow-hidden" style={{
+            background: '#F5F0E8',
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(180,155,120,0.20) 27px, rgba(180,155,120,0.20) 28px)',
+            minHeight: '220px',
+          }}>
+            {/* Decorative sketch hearts — top-right corner */}
+            <svg className="absolute top-4 right-5 pointer-events-none" width="130" height="110" viewBox="0 0 130 110" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.09 }}>
+              <path d="M65,28 C65,16 52,8 41,17 C30,26 30,41 41,52 L65,76 L89,52 C100,41 100,26 89,17 C78,8 65,16 65,28Z" stroke="#C8372D" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
+              <path d="M20,55 C20,47 13,42 7,48 C1,54 1,63 7,69 L20,82 L33,69 C39,63 39,54 33,48 C27,42 20,47 20,55Z" stroke="#C8372D" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
+              <path d="M112,70 C112,64 107,60 102,65 C97,70 97,77 102,82 L112,92 L122,82 C127,77 127,70 122,65 C117,60 112,64 112,70Z" stroke="#C8372D" strokeWidth="1.5" fill="none" strokeLinejoin="round"/>
             </svg>
 
-            {/* Cover image (multiply blend to stain over bg) */}
-            {blog.coverUrl && (
-              <img src={blog.coverUrl} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.12, mixBlendMode: 'lighten' }} />
-            )}
-
-            {/* Record label bar */}
+            {/* Label strip */}
             <div className="relative z-10 px-5 pt-5 flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1 border" style={{ borderColor: 'rgba(196,30,36,0.40)', background: 'rgba(196,30,36,0.07)' }}>
-                <span style={{ color: '#C41E24', fontFamily: 'Space Mono,monospace', fontSize: '9px', letterSpacing: '0.28em' }}>✚ CARTE MEDICALĂ</span>
+              <div className="flex items-center gap-2 px-3 py-1 border border-dashed" style={{ borderColor: 'rgba(200,55,45,0.35)', background: 'rgba(200,55,45,0.05)' }}>
+                <span style={{ color: '#C8372D', fontFamily: "'Caveat', cursive", fontSize: '15px', lineHeight: 1 }}>♥ carte medicală</span>
               </div>
-              <div style={{ height: '1px', flex: 1, background: 'linear-gradient(90deg, rgba(196,30,36,0.35), transparent)' }} />
-              <span style={{ color: '#3A1015', fontFamily: 'Space Mono,monospace', fontSize: '9px', letterSpacing: '0.18em' }}>ID:{blog.handle}</span>
+              <div style={{ height: '1px', flex: 1, background: 'linear-gradient(90deg, rgba(200,55,45,0.25), transparent)' }} />
+              <span style={{ color: '#A89070', fontFamily: "'Caveat', cursive", fontSize: '14px' }}>@{blog.handle}</span>
             </div>
 
             {/* Main content */}
-            <div className="relative z-10 px-5 pt-6 pb-16 flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-10">
+            <div className="relative z-10 px-5 pt-4 pb-14 flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-10">
               <div className="flex-1 min-w-0">
                 <h1
-                  className="text-5xl sm:text-7xl font-black uppercase leading-none break-words"
+                  className="text-5xl sm:text-7xl font-black leading-none break-words"
                   style={{
-                    fontFamily: 'Space Mono, monospace',
-                    color: '#E8D8C0',
-                    textShadow: '0 2px 24px rgba(196,30,36,0.35), 2px 0 rgba(140,0,10,0.55)',
-                    letterSpacing: '0.02em',
+                    fontFamily: "'Caveat', cursive",
+                    color: '#1E1A14',
+                    letterSpacing: '-0.01em',
                   }}
                 >
                   {blog.title || blog.user.username}
                 </h1>
-                <div className="mt-5 flex items-center gap-3">
-                  <div style={{ width: '28px', height: '1px', background: '#C41E24' }} />
-                  <p className="text-[11px] tracking-[0.28em] uppercase" style={{ color: '#5A3035', fontFamily: 'Space Mono,monospace' }}>
-                    {formatOwnerUsername(blog.handle, blog.ownerUsername)}
+                <div className="mt-4 flex items-center gap-3">
+                  <div style={{ width: '28px', height: '2px', background: '#C8372D', borderRadius: '1px' }} />
+                  <p style={{ color: '#8B7355', fontFamily: "'Caveat', cursive", fontSize: '17px' }}>
+                    @{formatOwnerUsername(blog.handle, blog.ownerUsername)}
                   </p>
                 </div>
               </div>
 
               {/* Avatar */}
               <div className="shrink-0 relative self-start">
-                <div className="absolute -inset-3 pointer-events-none" style={{
-                  background: 'radial-gradient(ellipse, rgba(196,30,36,0.22) 0%, transparent 70%)',
-                  filter: 'blur(6px)',
-                }} />
-                <Avatar className="relative h-24 w-24 sm:h-28 sm:w-28 border-2" style={{ borderColor: 'rgba(196,30,36,0.55)', boxShadow: '0 0 20px rgba(196,30,36,0.28), inset 0 0 14px rgba(100,0,10,0.35)' }}>
+                <Avatar className="relative h-24 w-24 sm:h-28 sm:w-28" style={{ border: '2px dashed #C8B89A', background: '#EDE7DA' }}>
                   <AvatarImage src={blog.avatarUrl ?? undefined} alt={blog.user.username} className="object-cover" />
-                  <AvatarFallback className="font-black text-2xl" style={{ background: '#0D0000', color: '#C41E24', fontFamily: 'Space Mono,monospace' }}>
+                  <AvatarFallback className="font-black text-2xl" style={{ background: '#EDE7DA', color: '#C8372D', fontFamily: "'Caveat', cursive" }}>
                     {blogAvatarFallback(blog.handle, blog.user.username)}
                   </AvatarFallback>
                 </Avatar>
@@ -1912,42 +1887,26 @@ export default function BlogPage() {
               )}
             </div>
 
-            {/* Blood drip divider at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none" style={{ lineHeight: 0 }}>
-              <svg viewBox="0 0 1200 56" preserveAspectRatio="none" className="w-full block" style={{ height: '56px' }}>
-                {/* Crimson band */}
-                <rect x="0" y="0" width="1200" height="3" fill="rgba(122,0,16,0.90)"/>
-                {/* Blood drips */}
-                <ellipse cx="75"  cy="10" rx="6"  ry="14" fill="rgba(90,0,10,0.85)"/>
-                <ellipse cx="195" cy="8"  rx="5"  ry="11" fill="rgba(110,0,14,0.80)"/>
-                <ellipse cx="340" cy="12" rx="7"  ry="16" fill="rgba(85,0,10,0.85)"/>
-                <ellipse cx="520" cy="9"  rx="5"  ry="12" fill="rgba(100,0,12,0.75)"/>
-                <ellipse cx="680" cy="11" rx="6"  ry="15" fill="rgba(90,0,10,0.80)"/>
-                <ellipse cx="850" cy="8"  rx="5"  ry="11" fill="rgba(110,0,14,0.75)"/>
-                <ellipse cx="1020" cy="12" rx="7" ry="14" fill="rgba(85,0,10,0.80)"/>
-                <ellipse cx="1150" cy="9"  rx="5" ry="12" fill="rgba(100,0,12,0.75)"/>
-                {/* Dark fill below → merges to page bg */}
-                <polygon points="0,56 0,20 1200,20 1200,56" fill="#040000"/>
-              </svg>
-            </div>
+            {/* Bottom accent line */}
+            <div className="absolute bottom-0 left-0 right-0" style={{ height: '3px', background: 'linear-gradient(90deg, transparent, rgba(200,55,45,0.40) 20%, rgba(200,55,45,0.60) 50%, rgba(200,55,45,0.40) 80%, transparent)' }} />
           </div>
 
           {/* Description */}
           {blog.description && (
-            <div className="px-5 py-4" style={{ background: '#060000', borderBottom: '1px solid rgba(196,30,36,0.16)' }}>
-              <p className="medic-text text-sm max-w-2xl leading-relaxed opacity-80">
+            <div className="px-5 py-3" style={{ background: '#F0EAE0', borderBottom: '1px solid #D4C5A9' }}>
+              <p className="medic-text text-sm max-w-2xl leading-relaxed" style={{ color: '#5A4530' }}>
                 {blog.description}
               </p>
             </div>
           )}
 
-          {/* Warning strip */}
-          <div className="px-5 py-2.5 flex items-start gap-3" style={{ background: 'rgba(196,30,36,0.05)', borderBottom: '1px solid rgba(196,30,36,0.16)' }}>
-            <span className="shrink-0 mt-0.5" style={{ color: '#7A0010', fontSize: '12px' }}>✚</span>
-            <p className="flex-1 text-[9px] sm:text-[10px] leading-snug uppercase tracking-[0.15em]" style={{ color: '#5A3035', fontFamily: 'Space Mono,monospace' }}>
-              ПОПЕРЕДЖЕННЯ: Тривале читання може призвести до надмірного самодіагностування · Читайте з обережністю
+          {/* Tagline strip */}
+          <div className="px-5 py-2 flex items-center gap-3" style={{ background: 'rgba(200,55,45,0.04)', borderBottom: '1px dashed rgba(200,55,45,0.22)' }}>
+            <span style={{ color: '#C8372D', fontSize: '13px' }}>♥</span>
+            <p style={{ color: '#8B7355', fontFamily: "'Caveat', cursive", fontSize: '15px' }}>
+              Записки сімейного лікаря · читайте з обережністю
             </p>
-            <span className="shrink-0 mt-0.5" style={{ color: '#7A0010', fontSize: '12px' }}>✚</span>
+            <span style={{ color: '#C8372D', fontSize: '13px', marginLeft: 'auto' }}>♥</span>
           </div>
         </div>
       ) : (
