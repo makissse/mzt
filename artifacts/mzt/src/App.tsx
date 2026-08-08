@@ -20,6 +20,7 @@ import RecommendationMusicDetail from '@/pages/recommendations/music/[id]';
 import TimelinePage from '@/pages/timeline/index';
 import SecretPhotoPage from '@/pages/secret-photo/index';
 import BlogPage from '@/pages/blogs/[username]';
+import AdminUsersPage from '@/pages/admin/users';
 import { AppLayout } from '@/components/layout/app-layout';
 import { BlogLayout } from '@/components/layout/blog-layout';
 
@@ -61,6 +62,9 @@ function Router() {
       </Route>
       <Route path="/secret-photo">
         {() => <AppLayout><SecretPhotoPage /></AppLayout>}
+      </Route>
+      <Route path="/admin/users">
+        {() => <AppLayout><AdminUsersPage /></AppLayout>}
       </Route>
 
       {/* Blog routes — accessible without login, but show user context when logged in */}

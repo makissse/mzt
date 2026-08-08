@@ -38,6 +38,7 @@ router.post("/auth/register", async (req, res) => {
       id: usersTable.id,
       username: usersTable.username,
       isAdmin: usersTable.isAdmin,
+      canViewTimeline: usersTable.canViewTimeline,
       createdAt: usersTable.createdAt,
     });
 
@@ -75,6 +76,7 @@ router.post("/auth/login", async (req, res) => {
     id: user.id,
     username: user.username,
     isAdmin: user.isAdmin,
+    canViewTimeline: user.canViewTimeline,
     createdAt: user.createdAt,
     authToken,
   });
@@ -99,6 +101,7 @@ router.get("/auth/me", async (req, res) => {
       id: usersTable.id,
       username: usersTable.username,
       isAdmin: usersTable.isAdmin,
+      canViewTimeline: usersTable.canViewTimeline,
       createdAt: usersTable.createdAt,
     })
     .from(usersTable)

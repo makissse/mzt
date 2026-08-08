@@ -17,7 +17,7 @@ const SEEDED_BLOGS = [
   {
     title: "medic de familie",
     handle: "medic-de-familie",
-    ownerUsername: "xiereler",
+    ownerUsername: "Xiereler",
     description: "",
   },
 ];

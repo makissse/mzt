@@ -10,6 +10,7 @@ import secretPhotoRouter from "./secretPhoto";
 import blogsRouter from "./blogs";
 import storageRouter from "./storage";
 import pushRouter from "./push";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(secretPhotoRouter);
 router.use(blogsRouter);
 router.use(storageRouter);
 router.use(pushRouter);
+router.use(adminRouter);
 
 export default router;

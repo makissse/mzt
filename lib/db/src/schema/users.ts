@@ -7,6 +7,7 @@ export const usersTable = pgTable("users", {
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   isAdmin: boolean("is_admin").notNull().default(false),
+  canViewTimeline: boolean("can_view_timeline").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

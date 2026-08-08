@@ -57,6 +57,7 @@ type ExtPost = BlogPost & {
   likesCount: number;
   isLikedByMe: boolean;
   commentsCount: number;
+  hasUnreadComments?: boolean;
   media: ExtMedia[];
 };
 
@@ -1065,8 +1066,31 @@ function PostCard({
 }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [liveCommentsCount, setLiveCommentsCount] = useState<number | null>(null);
+  const [markedRead, setMarkedRead] = useState(false);
   const isPysy = blog.handle === 'pysy-exe';
   const isIsaac = blog.handle === 'medic-de-familie';
+
+  const showUnreadDot = !!post.hasUnreadComments && !markedRead && !commentsOpen;
+
+  const handleToggleComments = () => {
+    setCommentsOpen((o) => {
+      const opening = !o;
+      if (opening && post.hasUnreadComments && !markedRead) {
+        setMarkedRead(true);
+        fetch(`${import.meta.env.BASE_URL}api/blogs/posts/${post.id}/comments/mark-read`, {
+          method: 'POST',
+          credentials: 'include',
+        }).catch(() => {});
+      }
+      return opening;
+    });
+  };
+
+  // Medic de familie footer detection
+  const MEDIC_FOOTER_MARKER = '\n\nEu, Alexandru Babără,';
+  const footerIdx = isIsaac ? (post.content ?? '').indexOf(MEDIC_FOOTER_MARKER) : -1;
+  const mainContent = footerIdx >= 0 ? (post.content ?? '').slice(0, footerIdx) : post.content;
+  const footerText = footerIdx >= 0 ? (post.content ?? '').slice(footerIdx).trim() : null;
 
   return (
     <article
@@ -1098,7 +1122,7 @@ function PostCard({
             {post.title ? post.title.toUpperCase() : (post.createdBy?.username ?? blog.user.username).toUpperCase()}
           </div>
           <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.08em' }}>
-            {format(new Date(post.createdAt as string), 'dd.MM.yyyy', { locale: ru })}
+            {format(new Date(post.createdAt as string), 'dd.MM.yyyy, HH:mm', { locale: ru })}
           </span>
         </div>
       )}
@@ -1161,9 +1185,32 @@ function PostCard({
         <h2 className={isPysy ? "win95-text font-bold text-base sm:text-lg mb-1 leading-tight" : isPutzermann ? "noir-text font-bold text-lg mb-1 leading-tight tracking-widest uppercase" : "font-mono font-bold text-base sm:text-lg mb-1 leading-tight"}>{post.title}</h2>
       )}
 
-      {post.content && (
+      {(isIsaac ? mainContent : post.content) && (
         <div className={`${isPysy ? "win95-text leading-relaxed" : isPutzermann ? "noir-text text-base leading-relaxed" : isIsaac ? "heart-text text-sm leading-relaxed opacity-90" : "font-sans text-sm sm:text-base text-foreground leading-relaxed"} min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere]`}>
-          {post.content}
+          {isIsaac ? mainContent : post.content}
+        </div>
+      )}
+
+      {isIsaac && footerText && (
+        <div style={{
+          marginTop: '12px',
+          borderTop: '2px solid #6B0F1A',
+          paddingTop: '8px',
+          paddingLeft: '10px',
+          paddingRight: '10px',
+          paddingBottom: '8px',
+          background: 'rgba(107,15,26,0.10)',
+          borderLeft: '3px solid #D42B3A',
+          borderRadius: '0 2px 2px 0',
+          fontFamily: "'Pixelify Sans', 'Silkscreen', monospace",
+          fontSize: '10px',
+          lineHeight: 1.7,
+          color: '#9B4550',
+          letterSpacing: '0.02em',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-words',
+        }}>
+          {footerText}
         </div>
       )}
 
@@ -1181,14 +1228,30 @@ function PostCard({
           <Heart className="h-4 w-4" fill={likesState.liked ? '#ef4444' : 'none'} />
           <span>{likesState.count}</span>
         </button>
-        <button
-          onClick={() => setCommentsOpen((o) => !o)}
-          className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5" : isIsaac ? "heart-button flex items-center gap-1.5" : "flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"}
-          style={commentsOpen && !isPysy && !isPutzermann && !isIsaac ? { color: theme.accent } : undefined}
-        >
-          <MessageCircle className="h-4 w-4" />
-          <span>{liveCommentsCount !== null ? liveCommentsCount : post.commentsCount}</span>
-        </button>
+        <span className="flex items-center gap-1.5">
+          <button
+            onClick={handleToggleComments}
+            className={isPysy ? "win95-button flex items-center gap-1.5" : isPutzermann ? "noir-button flex items-center gap-1.5" : isIsaac ? "heart-button flex items-center gap-1.5" : "flex items-center gap-1.5 transition-colors text-sm font-mono hover:text-foreground"}
+            style={commentsOpen && !isPysy && !isPutzermann && !isIsaac ? { color: theme.accent } : undefined}
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span>{liveCommentsCount !== null ? liveCommentsCount : post.commentsCount}</span>
+          </button>
+          {showUnreadDot && (
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={
+                isPysy
+                  ? { background: '#1f3561' }
+                  : isIsaac
+                    ? { background: '#D42B3A' }
+                    : isPutzermann
+                      ? { background: '#fff' }
+                      : { background: '#ef4444' }
+              }
+            />
+          )}
+        </span>
       </div>
 
       {commentsOpen && (
@@ -1343,7 +1406,7 @@ function CreatePostBox({
               <Button
                 onClick={handleSubmit}
                 disabled={saving || uploading || !canSubmit}
-                className={isPysy ? "win95-button gap-1.5 h-auto py-1 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : isIsaac ? "heart-button gap-1.5" : "font-mono gap-1.5"}
+                className={isPysy ? "win95-button win95-button-blue gap-1.5 h-auto py-1 font-bold" : isPutzermann ? "noir-button gap-1.5 font-bold" : isIsaac ? "heart-button gap-1.5" : "font-mono gap-1.5"}
                 style={!isPysy && !isPutzermann && !isIsaac ? { backgroundColor: theme.accent, color: '#000' } : undefined}
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -2061,6 +2124,7 @@ export default function BlogPage() {
                     {blog.description}
                   </p>
                 )}
+
               </div>
             </div>
           </div>
@@ -2085,7 +2149,7 @@ export default function BlogPage() {
               <rect x="3" y="5" width="2" height="1"/>
             </svg>
             <span style={{ fontFamily: "'Pixelify Sans', 'Silkscreen', monospace", color: 'rgba(255,255,255,0.95)', fontSize: '11px', letterSpacing: '0.06em' }}>
-              CARTE MEDICALĂ · МЕД. ЗАМЕТКИ
+              CARTE MEDICALĂ · INJECȚII LA 67+ GRATIS
             </span>
             <svg width="8" height="8" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', marginLeft: 'auto', flexShrink: 0 }} fill="rgba(255,255,255,0.80)">
               <rect x="1" y="0" width="2" height="1"/><rect x="5" y="0" width="2" height="1"/>

@@ -20,6 +20,8 @@ export interface OkResponse {
 export interface User {
   id: number;
   username: string;
+  isAdmin?: boolean;
+  canViewTimeline?: boolean;
   createdAt: string;
 }
 
@@ -442,6 +444,10 @@ export interface BlogPost {
   createdBy: User;
   media: BlogMedia[];
   isOwner: boolean;
+  likesCount?: number;
+  isLikedByMe?: boolean;
+  commentsCount?: number;
+  hasUnreadComments?: boolean;
 }
 
 export interface BlogFeed {

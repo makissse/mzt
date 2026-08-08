@@ -6,7 +6,7 @@ import { useIsPutzermannNoirTheme } from '@/lib/use-putzermann-noir-theme';
 import { useIsMedicTheme } from '@/lib/use-medic-theme';
 
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
-import { Disc3, Sparkles, LogOut, User as UserIcon, Clock3, Image } from 'lucide-react';
+import { Disc3, Sparkles, LogOut, User as UserIcon, Clock3, Image, Users, Lock } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 function MztLogo() {
@@ -37,13 +37,14 @@ const navItems: NavItem[] = [
     icon: Sparkles,
     description: 'Музыка и кино',
   },
-  {
-    label: 'Таймлайн',
-    path: '/timeline',
-    icon: Clock3,
-    description: 'История чата',
-  },
 ];
+
+const timelineItem: NavItem = {
+  label: 'Таймлайн',
+  path: '/timeline',
+  icon: Clock3,
+  description: 'История чата',
+};
 
 const blogItems: NavItem[] = [
   {
@@ -241,6 +242,93 @@ function SecretNavItem({ user, isPysyTheme, isPutzermannNoir, isMedicIsaac }: { 
   );
 }
 
+function AdminNavItem({ user, isPysyTheme, isPutzermannNoir, isMedicIsaac }: { user?: User | null; isPysyTheme?: boolean; isPutzermannNoir?: boolean; isMedicIsaac?: boolean }) {
+  const [, setLocation] = useLocation();
+  const [pathname] = useLocation();
+  if (!user?.isAdmin) return null;
+  const item: NavItem = { label: 'Пользователи', path: '/admin/users', icon: Users, description: 'Управление пользователями', exact: true };
+  return <NavButton item={item} pathname={pathname} onClick={() => setLocation('/admin/users')} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} isMedicIsaac={isMedicIsaac} />;
+}
+
+function TimelineNavItem({ user, isPysyTheme, isPutzermannNoir, isMedicIsaac }: { user?: User | null; isPysyTheme?: boolean; isPutzermannNoir?: boolean; isMedicIsaac?: boolean }) {
+  const [, setLocation] = useLocation();
+  const [pathname] = useLocation();
+  const unlocked = !!user?.canViewTimeline;
+
+  if (unlocked) {
+    return (
+      <NavButton
+        item={timelineItem}
+        pathname={pathname}
+        onClick={() => setLocation('/timeline')}
+        isPysyTheme={isPysyTheme}
+        isPutzermannNoir={isPutzermannNoir}
+        isMedicIsaac={isMedicIsaac}
+      />
+    );
+  }
+
+  // Locked state — render a disabled button matching the current theme
+  if (isMedicIsaac) {
+    return (
+      <SidebarMenuItem>
+        <div className="w-full flex items-center gap-3 px-2 py-3 opacity-40 cursor-not-allowed select-none">
+          <div className="flex items-center justify-center h-6 w-6 flex-shrink-0">
+            <Clock3 className="h-4 w-4 text-white/60" />
+          </div>
+          <span className="text-sm leading-tight text-white/70 truncate" style={{ fontFamily: "'Pixelify Sans', 'Silkscreen', monospace", letterSpacing: '0.04em' }}>
+            {timelineItem.label}
+          </span>
+          <Lock className="ml-auto h-3.5 w-3.5 flex-shrink-0 text-white/40" />
+        </div>
+      </SidebarMenuItem>
+    );
+  }
+
+  if (isPutzermannNoir) {
+    return (
+      <SidebarMenuItem>
+        <div className="w-full flex items-center gap-3 px-2 py-3 opacity-35 cursor-not-allowed select-none">
+          <div className="flex items-center justify-center h-6 w-6 flex-shrink-0">
+            <Clock3 className="h-4 w-4 noir-icon" />
+          </div>
+          <span className="noir-text text-base leading-tight truncate">{timelineItem.label}</span>
+          <Lock className="ml-auto h-3.5 w-3.5 flex-shrink-0 noir-icon" />
+        </div>
+      </SidebarMenuItem>
+    );
+  }
+
+  if (isPysyTheme) {
+    return (
+      <SidebarMenuItem>
+        <div className="w-full flex items-center gap-3 px-3 py-3 opacity-40 cursor-not-allowed select-none win95-text">
+          <div className="flex items-center justify-center h-7 w-7 flex-shrink-0">
+            <Clock3 className="h-4 w-4" />
+          </div>
+          <span className="font-semibold leading-tight truncate">{timelineItem.label}</span>
+          <Lock className="ml-auto h-3.5 w-3.5 flex-shrink-0" />
+        </div>
+      </SidebarMenuItem>
+    );
+  }
+
+  // Default theme
+  return (
+    <SidebarMenuItem>
+      <div className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-transparent text-muted-foreground/40 cursor-not-allowed select-none">
+        <div className="flex items-center justify-center h-9 w-9 rounded-lg flex-shrink-0 bg-card/50 text-muted-foreground/40">
+          <Clock3 className="h-4 w-4" />
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="font-mono text-sm font-semibold leading-tight truncate">{timelineItem.label}</span>
+        </div>
+        <Lock className="ml-auto h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/35" />
+      </div>
+    </SidebarMenuItem>
+  );
+}
+
 export function AppSidebar({ user }: { user?: User | null }) {
   const [, setLocation] = useLocation();
   const [pathname] = useLocation();
@@ -285,7 +373,9 @@ export function AppSidebar({ user }: { user?: User | null }) {
                 isMedicIsaac={isMedicIsaac}
               />
             ))}
+            <TimelineNavItem user={user} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} isMedicIsaac={isMedicIsaac} />
             <SecretNavItem user={user} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} isMedicIsaac={isMedicIsaac} />
+            <AdminNavItem user={user} isPysyTheme={isPysyTheme} isPutzermannNoir={isPutzermannNoir} isMedicIsaac={isMedicIsaac} />
           </SidebarMenu>
         </SidebarGroup>
 

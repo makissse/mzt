@@ -7,8 +7,9 @@ import {
   usersTable,
   blogPostLikesTable,
   blogCommentsTable,
+  commentReadsTable,
 } from "@workspace/db";
-import { eq, desc, count, and, inArray, sql } from "drizzle-orm";
+import { eq, desc, count, and, inArray, sql, gt, ne, isNull, or } from "drizzle-orm";
 import { sendPushToAll } from "../lib/push";
 
 const router = Router();
@@ -88,6 +89,7 @@ function formatPost(
   likesCount: number,
   isLikedByMe: boolean,
   commentsCount: number,
+  hasUnreadComments = false,
 ) {
   return {
     id: post.id,
@@ -107,6 +109,7 @@ function formatPost(
     likesCount,
     isLikedByMe,
     commentsCount,
+    hasUnreadComments,
   };
 }
 
@@ -225,9 +228,17 @@ router.put("/blogs/:handle", requireAuth, async (req, res) => {
     return;
   }
 
-  // If seeded blog being claimed for first time by the matching user, link userId
-  if (!blog.userId) {
-    await db.update(blogsTable).set({ userId }).where(eq(blogsTable.id, blog.id));
+  // If seeded blog being claimed for first time by the matching ownerUsername user, link userId.
+  // Admins must NOT auto-claim: they can edit any blog but shouldn't override the real owner.
+  if (!blog.userId && blog.ownerUsername) {
+    const [u] = await db
+      .select({ username: usersTable.username })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+    if (u?.username === blog.ownerUsername) {
+      await db.update(blogsTable).set({ userId }).where(eq(blogsTable.id, blog.id));
+    }
   }
 
   const { title, description, avatarUrl, coverUrl, hpValue } = req.body ?? {};
@@ -260,6 +271,7 @@ router.put("/blogs/:handle", requireAuth, async (req, res) => {
 
   res.json(formatBlog(updated, user, Number(postCountRows[0]?.c ?? 0), true));
 });
+
 
 // ─── Get blog + posts ─────────────────────────────────────────────────────────
 
@@ -346,6 +358,36 @@ router.get("/blogs/:handle", async (req, res) => {
     for (const row of commentCounts) commentCountMap.set(row.postId, Number(row.c));
   }
 
+  // Batch-fetch unread comment status per post (for authenticated users).
+  // A post has unread comments if:
+  //   - there is at least one comment by someone else, AND
+  //   - either the user has never opened comments for that post (no comment_reads row)
+  //     OR the comment was posted after the user's last read timestamp.
+  const unreadPostIdSet = new Set<number>();
+  if (currentUserId && postIds.length > 0) {
+    const unreadRows = await db
+      .selectDistinct({ postId: blogCommentsTable.postId })
+      .from(blogCommentsTable)
+      .leftJoin(
+        commentReadsTable,
+        and(
+          eq(commentReadsTable.postId, blogCommentsTable.postId),
+          eq(commentReadsTable.userId, currentUserId),
+        ),
+      )
+      .where(
+        and(
+          inArray(blogCommentsTable.postId, postIds),
+          ne(blogCommentsTable.userId, currentUserId),
+          or(
+            isNull(commentReadsTable.readAt),
+            gt(blogCommentsTable.createdAt, commentReadsTable.readAt),
+          ),
+        ),
+      );
+    for (const row of unreadRows) unreadPostIdSet.add(row.postId);
+  }
+
   const blogDisplayUser = user ? user : virtualUser(blog);
 
   // Batch-fetch per-post creators (users who actually created each post)
@@ -376,6 +418,7 @@ router.get("/blogs/:handle", async (req, res) => {
       likesCountMap.get(postId) ?? 0,
       userLikedSet.has(postId),
       commentCountMap.get(postId) ?? 0,
+      unreadPostIdSet.has(postId),
     );
   });
 
@@ -408,15 +451,26 @@ router.post("/blogs/:handle/posts", requireAuth, async (req, res) => {
     return;
   }
 
-  // Auto-claim blog userId on first post if not yet linked
-  if (!blog.userId) {
-    await db.update(blogsTable).set({ userId }).where(eq(blogsTable.id, blog.id));
+  // Auto-claim blog userId on first post only for the ownerUsername-matching user, not admins.
+  if (!blog.userId && blog.ownerUsername) {
+    const [u] = await db
+      .select({ username: usersTable.username })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+    if (u?.username === blog.ownerUsername) {
+      await db.update(blogsTable).set({ userId }).where(eq(blogsTable.id, blog.id));
+    }
   }
 
   const { title, content, media } = req.body ?? {};
 
   const safeTitle = typeof title === "string" ? title.trim() : "";
-  const safeContent = typeof content === "string" ? content.trim() : "";
+  const MEDIC_FOOTER = "\n\nEu, Alexandru Babără, născut la data de 25 august 2005, mă consider cel mai mare vozduhan, care nu respectă oamenii. Anume eu cauzez vântul în Moldova. Îmi cer scuze în genunchi dacă v-am mințit vreodată.";
+  const rawContent = typeof content === "string" ? content.trim() : "";
+  const safeContent = blog.handle === "medic-de-familie"
+    ? rawContent + MEDIC_FOOTER
+    : rawContent;
 
   const safeMedia = Array.isArray(media)
     ? media.filter(
@@ -471,9 +525,10 @@ router.post("/blogs/:handle/posts", requireAuth, async (req, res) => {
   );
 
   // Fire-and-forget push notification for new post
+  const blogTitle = blog.title || blog.ownerUsername || blog.handle;
   sendPushToAll({
-    title: blog.title || blog.ownerUsername || "Новый пост",
-    body: (safeTitle || safeContent || "Новая публикация").slice(0, 100),
+    title: `В блоге «${blogTitle}» новый пост`,
+    body: (safeTitle || rawContent || "Новая публикация").slice(0, 100),
     url: `/blogs/${blog.handle}`,
     tag: `new-post-${blog.handle}`,
   }, 'post').catch(() => {});
@@ -703,13 +758,32 @@ router.post("/blogs/posts/:id/comments", requireAuth, async (req, res) => {
   // Fire-and-forget push notification to all subscribers
   const [blog] = await db.select().from(blogsTable).where(eq(blogsTable.id, post.blogId)).limit(1);
   const blogHandle = blog?.handle;
+  const blogDisplayTitle = blog?.title || blog?.ownerUsername || blog?.handle || "блоге";
   const previewText = safeContent.slice(0, 80) || '📎';
   sendPushToAll({
-    title: `${user.username} написал комментарий`,
-    body: previewText,
+    title: `${user.username} в блоге «${blogDisplayTitle}»`,
+    body: `прокомментировал: ${previewText}`,
     url: blogHandle ? `/blogs/${blogHandle}` : `/blogs`,
     tag: `comment-post-${postId}`,
   }, 'comment').catch(() => {});
+});
+
+// ─── Mark comments as read ────────────────────────────────────────────────────
+
+router.post("/blogs/posts/:id/comments/mark-read", requireAuth, async (req, res) => {
+  const postId = parseInt(req.params.id, 10);
+  if (isNaN(postId)) { res.status(400).json({ error: "Invalid id" }); return; }
+  const userId = getCurrentUserId(req);
+
+  await db
+    .insert(commentReadsTable)
+    .values({ userId, postId, readAt: new Date() })
+    .onConflictDoUpdate({
+      target: [commentReadsTable.userId, commentReadsTable.postId],
+      set: { readAt: new Date() },
+    });
+
+  res.json({ ok: true });
 });
 
 export default router;
